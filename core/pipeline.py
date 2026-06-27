@@ -16,7 +16,7 @@ import numpy as np
 from core import scoring, shakemap
 from core.data_sources import get_sismo, get_sismos, synthetic_mmi
 from core.geo import make_grid
-from core.osm import assign_areas, fetch_resources
+from core.osm import _geo_sector, assign_areas, fetch_resources
 from core.population import (
     HORA_SISMO_VET, apply_occupancy, generate_zone_population,
     get_population, population_present, zone_vuln_void,
@@ -50,6 +50,10 @@ def _build_operativo(zone, config, now, with_osm=True):
     sismo = get_sismo(config)
     grid = make_grid(zone["bbox"], config["rejilla"]["tamano_celda_m"])
     df = grid.copy()
+    # Área/sector geográfico de cada celda (mismos sectores que los recursos OSM,
+    # para que una brigada cruce "Sector Este" de celdas con recursos del mismo).
+    df["area"] = [_geo_sector(la, lo, zone["bbox"])
+                  for la, lo in zip(df["lat"].values, df["lon"].values)]
     layers, hs = [], hours_since(sismo, now)
     proyec_cfg = config.get("proyecciones_estadisticas", {})
     proyec_ok = proyec_cfg.get("habilitadas", False)

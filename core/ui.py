@@ -390,17 +390,26 @@ def render_zone(zone_id: str) -> None:
 
     # ── DISPONIBILIDAD Y PROYECCIONES ─────────────────────────────────────────
     pop_src = ctx.get("pop_src", "no_disponible")
-    _POP_SRC_MSG = {
-        "local":      ("banner_pop_remota", "info"),   # reutiliza texto similar
-        "remota":     ("banner_pop_remota", "info"),
-        "api":        ("banner_pop_api",    "info"),
-        "censo_ine":  ("banner_pop_censo",  "info"),
+    # Población con variación espacial real (TIF/API) → banner informativo.
+    # Censo (densidad uniforme por municipio) no varía entre celdas y no inclina
+    # el ranking: se aclara en un caption discreto, sin prometer precisión por celda.
+    _POP_SRC_BANNER = {
+        "local":  "banner_pop_remota", "remota": "banner_pop_remota",
+        "api":    "banner_pop_api",
     }
     if not ctx["pop_available"]:
         st.warning(t("banner_sin_poblacion", lang))
-    elif pop_src in _POP_SRC_MSG:
-        key, lvl = _POP_SRC_MSG[pop_src]
-        getattr(st, lvl)(t(key, lang))
+    elif pop_src in _POP_SRC_BANNER:
+        st.info(t(_POP_SRC_BANNER[pop_src], lang))
+    elif pop_src == "censo_ine":
+        st.caption(
+            "🔎 La prioridad se basa en **sacudimiento (USGS) × vulnerabilidad "
+            "estructural (HAZUS) × tiempo**. La densidad poblacional (Censo INE 2011) "
+            "es de referencia a nivel de municipio, no por celda."
+            if lang == "es" else
+            "🔎 Priority is based on **shaking (USGS) × structural vulnerability "
+            "(HAZUS) × time**. Population density (INE 2011 census) is municipal-level "
+            "reference, not per-cell.")
     if ctx.get("proyec_ok"):
         st.caption(t("nota_proyeccion", lang))
 
@@ -424,48 +433,46 @@ def render_zone(zone_id: str) -> None:
                 "search guided by confirmed field reports and reassess on each update."
             )
         else:
-            top = con_esperanza.nlargest(20, "p_vida")
+            top = con_esperanza.nlargest(20, "p_vida").copy()
             n_total = len(con_esperanza)
-            top = top.copy()
             top["prioridad"] = top["prioridad"].map(
                 lambda k: t(f"prioridad_{k}", lang) if k in ("alta", "media", "baja") else k)
             # p_vida → porcentaje legible (probabilidad absoluta de hallar con vida)
             top["p_vida_pct"] = top["p_vida"].apply(
                 lambda x: f"{x*100:.1f}%" if pd.notna(x) else "—")
-            # Personas estimadas presentes al momento del sismo
-            if "pop" in top.columns:
-                top["pop"] = top["pop"].apply(
-                    lambda x: f"~{int(x):,}" if pd.notna(x) and x is not None else "—")
+            # Enlace directo al punto exacto de la celda (Google Maps)
+            top["maps"] = top.apply(
+                lambda r: f"https://www.google.com/maps/search/?api=1"
+                          f"&query={r['lat']:.5f},{r['lon']:.5f}", axis=1)
 
-            pop_src = ctx.get("pop_src", "")
-            src_suffix = {"censo_ine": " (INE)", "api": " (WorldPop API)",
-                          "local": " (WorldPop)", "remota": " (WorldPop)"}.get(pop_src, "")
-            col_pop = (f"Personas en celda{src_suffix}" if lang == "es"
-                       else f"Persons in cell{src_suffix}")
-            col_prob = ("Prob. hallar con vida" if lang == "es" else "Prob. find alive")
+            col_area = "Área / sector" if lang == "es" else "Area / sector"
+            col_prob = "Prob. hallar con vida" if lang == "es" else "Prob. find alive"
+            col_maps = "Ubicación" if lang == "es" else "Location"
 
-            view_cols = ["cell_id", "lat", "lon", "mmi", "pop", "prioridad", "p_vida_pct"]
+            view_cols = ["cell_id", "area", "lat", "lon", "mmi", "prioridad",
+                         "p_vida_pct", "maps"]
             view_cols = [c for c in view_cols if c in top.columns]
             view = top[view_cols].rename(columns={
-                "cell_id": t("col_celda", lang), "lat": t("col_lat", lang),
-                "lon": t("col_lon", lang), "mmi": t("col_mmi", lang),
-                "pop": col_pop, "prioridad": t("col_prioridad", lang),
-                "p_vida_pct": col_prob})
-            st.dataframe(view, width="stretch", hide_index=True)
+                "cell_id": t("col_celda", lang), "area": col_area,
+                "lat": t("col_lat", lang), "lon": t("col_lon", lang),
+                "mmi": t("col_mmi", lang), "prioridad": t("col_prioridad", lang),
+                "p_vida_pct": col_prob, "maps": col_maps})
+            st.dataframe(
+                view, width="stretch", hide_index=True,
+                column_config={
+                    col_maps: st.column_config.LinkColumn(
+                        col_maps,
+                        display_text="📍 " + ("Abrir" if lang == "es" else "Open")),
+                })
 
             st.caption(
                 f"✅ Mostrando las {len(top)} celdas con mayor probabilidad de hallar "
-                f"sobrevivientes con vida ({n_total} celdas con esperanza en la zona)."
+                f"sobrevivientes con vida ({n_total} celdas con esperanza en la zona). "
+                f"Toca **📍 Abrir** para ir al punto exacto en el mapa."
                 if lang == "es" else
                 f"✅ Showing the {len(top)} cells with highest probability of finding "
-                f"survivors alive ({n_total} cells with hope in the zone).")
-            if pop_src == "censo_ine":
-                st.caption(
-                    "📊 Personas en celda: densidad censal INE Venezuela 2011 × "
-                    "ocupación HAZUS 18:05 VET. Fuente: ine.gov.ve · Incertidumbre ±30 %."
-                    if lang == "es" else
-                    "📊 Persons in cell: INE Venezuela 2011 census density × HAZUS "
-                    "occupancy at 18:05 VET. Source: ine.gov.ve · Uncertainty ±30 %.")
+                f"survivors alive ({n_total} cells with hope in the zone). "
+                f"Tap **📍 Open** to go to the exact point on the map.")
             st.download_button(t("descargar_csv", lang),
                                con_esperanza.to_csv(index=False).encode("utf-8"),
                                file_name=f"prioridad_{zone_id}.csv", mime="text/csv")
