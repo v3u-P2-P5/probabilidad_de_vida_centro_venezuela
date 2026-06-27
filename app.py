@@ -14,6 +14,15 @@ st.set_page_config(page_title="Probabilidad de Sobrevivientes", page_icon="🛰�
 config = load_config()
 lang = apply_chrome(config)
 
+# Páginas de zona — definidas junto al resto del layout
+ZONA_PAGES = [
+    ("pages/1_Caracas_Libertador.py",       "🔴 Libertador"),
+    ("pages/2_Caracas_Sucre_Petare.py",     "🔴 Sucre / Petare"),
+    ("pages/3_Caracas_Baruta_ElHatillo.py", "🔴 Baruta / Hatillo"),
+    ("pages/4_La_Guaira_Litoral.py",        "🔴 La Guaira"),
+    ("pages/5_Reportes_de_campo.py",        "📞 Reportes"),
+]
+
 
 @st.cache_data(ttl=110, show_spinner=True)
 def _resumen(_salt: int):
@@ -28,6 +37,12 @@ def _resumen(_salt: int):
 
 resumen, ctx = _resumen(config.get("autorefresco_segundos", 0))
 render_sources(ctx, lang)
+
+# --- Navegación rápida en sidebar ---
+st.sidebar.markdown("---")
+st.sidebar.markdown("**🗺️ Ir a zona**")
+for path, label in ZONA_PAGES:
+    st.sidebar.page_link(path, label=label)
 
 st.title("🛰️ " + t("app_title", lang))
 st.caption(t("app_subtitle", lang))
@@ -61,10 +76,9 @@ if s.get("url"):
         if a.get("url"):
             st.caption(f"🔗 [{t('sismo_secundario', lang)} M{a.get('magnitud')}]({a['url']})")
 
-# Actualización en tiempo real
 st.caption(t("actualizacion_tiempo_real", lang))
 
-# --- Reloj 72h ---
+# --- Reloj ---
 st.subheader("⏳ " + t("reloj_titulo", lang))
 hs = ctx["hours_since"]
 if hs >= 72:
@@ -76,7 +90,6 @@ cc[0].metric(t("horas_transcurridas", lang), f"{hs:.1f} h")
 cc[1].metric(t("horas_restantes", lang), f"{max(72 - hs, 0):.1f} h")
 st.progress(min(hs / 72.0, 1.0))
 
-# --- Proyecciones estadísticas activas ---
 if ctx.get("proyec_ok"):
     st.caption(t("nota_proyeccion", lang))
 
@@ -94,13 +107,22 @@ if gf:
     st.caption(f"🔗 [{config['fuentes']['usgs_ground_failure']['nombre']}]"
                f"({config['fuentes']['usgs_ground_failure']['url']})")
 
-# --- Resumen por zona ---
+# --- Resumen por zona con botones de navegación ---
 st.subheader("🗺️ " + t("resumen_zonas", lang))
+
+# Tabla
 view = resumen.rename(columns={"nombre": t("col_zona", lang),
                                "alta": t("col_celdas_alta", lang),
                                "mmi": t("kpi_mmi_max", lang)})
 st.dataframe(view, width="stretch", hide_index=True)
+
+# Botones de zona debajo de la tabla
+label_ver = "Ver mapa →" if lang == "en" else "Ver mapa →"
+cols = st.columns(len(ZONA_PAGES))
+for col, (path, label) in zip(cols, ZONA_PAGES):
+    with col:
+        st.page_link(path, label=label)
+
 reps = load_reports()
 n_rep = int((reps["estado"].fillna("") != "resuelto").sum()) if not reps.empty else 0
 st.caption(f"📞 {t('kpi_reportes', lang)}: {n_rep}  ·  {t('ultima_actualizacion', lang)}: {ctx['updated_at']}")
-st.info("⬅️ " + t("subtitulo_zona", lang) + " — " + t("nota_modelo", lang))
