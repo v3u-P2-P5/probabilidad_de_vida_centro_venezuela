@@ -439,7 +439,7 @@ def render_zone(zone_id: str) -> None:
                 lambda k: t(f"prioridad_{k}", lang) if k in ("alta", "media", "baja") else k)
             # p_vida → porcentaje legible (probabilidad absoluta de hallar con vida)
             top["p_vida_pct"] = top["p_vida"].apply(
-                lambda x: f"{x*100:.1f}%" if pd.notna(x) else "—")
+                lambda x: f"{x*100:.2f}%" if pd.notna(x) else "—")
             # Enlace directo al punto exacto de la celda (Google Maps)
             top["maps"] = top.apply(
                 lambda r: f"https://www.google.com/maps/search/?api=1"

@@ -19,7 +19,7 @@ from core.geo import make_grid
 from core.osm import _geo_sector, assign_areas, fetch_resources
 from core.population import (
     HORA_SISMO_VET, apply_occupancy, generate_zone_population,
-    get_population, population_present, zone_vuln_void,
+    get_population, load_precomputed, population_present, zone_vuln_void,
 )
 from core.reports import boost_for_grid, load_reports
 from core.sources import fmt_vet_utc, layer, parse_iso
@@ -50,11 +50,23 @@ def _build_operativo(zone, config, now, with_osm=True):
     sismo = get_sismo(config)
     grid = make_grid(zone["bbox"], config["rejilla"]["tamano_celda_m"])
     df = grid.copy()
-    # Área/sector geográfico de cada celda (mismos sectores que los recursos OSM,
-    # para que una brigada cruce "Sector Este" de celdas con recursos del mismo).
-    df["area"] = [_geo_sector(la, lo, zone["bbox"])
-                  for la, lo in zip(df["lat"].values, df["lon"].values)]
     layers, hs = [], hours_since(sismo, now)
+
+    # Población + área precomputadas (WorldPop + Nominatim reales por celda).
+    # Si existe, da variación espacial real; si no, fallback a sector geográfico.
+    precomp = load_precomputed(zone["id"])
+    if precomp is not None:
+        m = precomp.set_index("cell_id")
+        df["area"] = df["cell_id"].map(m["area"]).fillna("")
+        df["pop_precomp"] = df["cell_id"].map(m["pop"])
+    else:
+        df["area"] = ""
+        df["pop_precomp"] = None
+    # Celdas sin nombre de área (sin precómputo o bloque vacío) → sector geográfico
+    idx = df["area"].isna() | (df["area"] == "")
+    if idx.any():
+        df.loc[idx, "area"] = [_geo_sector(la, lo, zone["bbox"])
+                               for la, lo in zip(df.loc[idx, "lat"], df.loc[idx, "lon"])]
     proyec_cfg = config.get("proyecciones_estadisticas", {})
     proyec_ok = proyec_cfg.get("habilitadas", False)
 
@@ -90,19 +102,27 @@ def _build_operativo(zone, config, now, with_osm=True):
         layers.append(layer(f["usgs_shakemap"]["nombre"], f["usgs_shakemap"]["url"],
                             "no_disponible", detalle=str(e)))
 
-    # --- Capa 2: Población (local → remota → API → censo INE 2011) ---
-    pop_raw, pop_src = get_population(df["lat"].values, df["lon"].values, config, zone)
+    # --- Capa 2: Población REAL por celda ---
+    # Preferencia: precómputo WorldPop por celda (varía espacialmente) →
+    #              get_population (TIF/API/censo).
+    if precomp is not None and df["pop_precomp"].notna().any():
+        pop_raw = df["pop_precomp"].fillna(0.0).values
+        pop_src = "worldpop_precomp"
+    else:
+        pop_raw, pop_src = get_population(df["lat"].values, df["lon"].values, config, zone)
     pop_ok = pop_raw is not None
     if pop_ok:
         zone_uso = zone.get("uso", "mixto")
         pop_presente = apply_occupancy(pop_raw, zone_uso, HORA_SISMO_VET) if proyec_ok else pop_raw
-        df["pop"] = np.round(pop_presente).astype(float)
+        df["pop"] = np.round(np.asarray(pop_presente, dtype=float)).astype(float)
         df["pop_norm"] = scoring.normalize(df["pop"].values)
-        src_label = {"local": "WorldPop TIF local", "remota": "WorldPop HTTP",
+        src_label = {"worldpop_precomp": "WorldPop por celda (precomputado)",
+                     "local": "WorldPop TIF local", "remota": "WorldPop HTTP",
                      "api": "WorldPop API", "censo_ine": "Censo INE Venezuela 2011"}.get(pop_src, pop_src)
         pop_url = (f["worldpop"]["url"] if pop_src != "censo_ine"
                    else "https://www.ine.gov.ve/index.php/estadisticas-sociales/demograficas-y-vitales/censo-de-poblacion-y-vivienda")
-        layers.append(layer(src_label, pop_url, "ok" if pop_src != "censo_ine" else "proyeccion",
+        layers.append(layer(src_label, pop_url,
+                            "proyeccion" if pop_src == "censo_ine" else "ok",
                             datetime.now(timezone.utc),
                             f"{src_label} × ocupación HAZUS 18:05 VET"))
     else:
@@ -150,17 +170,27 @@ def _build_operativo(zone, config, now, with_osm=True):
         df["score_norm"] = scoring.normalize(df["score"].values)
         df["prioridad"] = scoring.priority_category(df["score_norm"].values)
 
-        # Probabilidad ABSOLUTA de hallar sobrevivientes con vida (0-1),
-        # independiente del ranking de zona. Filtra celdas sin esperanza
-        # (sin sacudimiento → sin colapso → sin atrapados): valen exactamente 0.
+        # Probabilidad de hallar sobrevivientes con vida (0-1). Combina factores
+        # que SÍ varían espacialmente: sacudimiento (USGS, por celda) y población
+        # presente (WorldPop, por celda) — donde hay más gente, más probable que
+        # haya alguien atrapado con vida. Filtra celdas sin esperanza (sin
+        # sacudimiento o sin población → 0).
         shaking = scoring.shaking_factor(df["mmi"].values)
         decay = scoring.time_decay(hs)
+        # Factor de población presente: 0-1 relativo a la celda más poblada de la
+        # zona (densidad real WorldPop). Un piso de 0.10 evita anular del todo
+        # zonas de baja densidad donde aún puede haber personas.
+        pmax = np.nanmax(df["pop"].values) if df["pop"].notna().any() else 0.0
+        if pmax > 0:
+            pop_factor = 0.10 + 0.90 * np.clip(df["pop"].values / pmax, 0.0, 1.0)
+        else:
+            pop_factor = np.ones(len(df))   # sin datos de población → neutral
         if proyec_ok and vuln_proj is not None:
             collapse = scoring.collapse_probability(df["mmi"].values, df["vuln"].values)
             surv = scoring.survivability(df["void"].values)
-            df["p_vida"] = shaking * collapse * surv * decay
+            df["p_vida"] = shaking * collapse * surv * decay * pop_factor
         else:
-            df["p_vida"] = shaking * decay
+            df["p_vida"] = shaking * decay * pop_factor
         # Reportes de campo confirmados elevan la esperanza directamente
         df["p_vida"] = np.clip(df["p_vida"].values
                                + df["boost"].values * (1.0 - df["p_vida"].values), 0.0, 1.0)

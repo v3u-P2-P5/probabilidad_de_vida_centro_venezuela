@@ -25,6 +25,27 @@ ROOT = Path(__file__).resolve().parent.parent
 # Hora local del sismo (VET = UTC-4): 22:05:11Z → 18:05 VET
 HORA_SISMO_VET = 18.083   # 18 h + 5 min / 60
 
+# Población + área precomputadas (WorldPop + Nominatim, offline). Ver
+# scripts/precompute_population.py. Pequeño y commiteado → funciona en Cloud.
+PRECOMPUTED_CSV = ROOT / "data" / "population_cells.csv"
+_PRECOMP_CACHE: dict = {}
+
+
+def load_precomputed(zone_id: str):
+    """DataFrame (cell_id, pop, area) precomputado para la zona, o None."""
+    if not PRECOMPUTED_CSV.exists():
+        return None
+    if "all" not in _PRECOMP_CACHE:
+        try:
+            _PRECOMP_CACHE["all"] = pd.read_csv(PRECOMPUTED_CSV)
+        except Exception:
+            _PRECOMP_CACHE["all"] = None
+    allrows = _PRECOMP_CACHE.get("all")
+    if allrows is None:
+        return None
+    sub = allrows[allrows["zone_id"] == zone_id]
+    return sub if not sub.empty else None
+
 
 # --- Población real (local o remota) -----------------------------------------
 
@@ -75,25 +96,34 @@ _WP_HEADERS = {"User-Agent": "ProbabilidadDeVida-SAR/1.0 (humanitarian earthquak
 
 def _worldpop_block(lon_min: float, lat_min: float,
                     lon_max: float, lat_max: float,
-                    timeout: int = 22) -> float | None:
-    """Población total en un bloque bbox vía WorldPop REST API (wpgpas VEN 2020)."""
-    geom = json.dumps({"type": "Polygon", "coordinates": [[
-        [lon_min, lat_min], [lon_max, lat_min],
-        [lon_max, lat_max], [lon_min, lat_max],
-        [lon_min, lat_min],
-    ]]})
+                    timeout: int = 30, poll_max: int = 25) -> float | None:
+    """Población total en un bloque bbox vía WorldPop Stats API (wpgppop 2020).
+
+    API asíncrona: se envía un GeoJSON y se obtiene un taskid; se sondea hasta
+    'finished'. Devuelve la población total o None si falla.
+    """
+    geojson = json.dumps({"type": "Feature", "properties": {}, "geometry": {
+        "type": "Polygon", "coordinates": [[
+            [lon_min, lat_min], [lon_max, lat_min],
+            [lon_max, lat_max], [lon_min, lat_max],
+            [lon_min, lat_min]]]}})
     try:
         r = requests.get(
             "https://api.worldpop.org/v1/services/stats",
-            params={"dataset": "wpgpas", "iso3": "VEN", "year": 2020,
-                    "runasync": "0", "geometry": geom},
-            headers=_WP_HEADERS,
-            timeout=timeout,
-        )
+            params={"dataset": "wpgppop", "year": 2020, "geojson": geojson},
+            headers=_WP_HEADERS, timeout=timeout)
         r.raise_for_status()
-        d = r.json()
-        if str(d.get("status", "")).lower() == "ok":
-            return float(d["data"]["total_population"])
+        taskid = r.json().get("taskid")
+        if not taskid:
+            return None
+        for _ in range(poll_max):
+            time.sleep(1.5)
+            t = requests.get("https://api.worldpop.org/v1/tasks/" + taskid,
+                             headers=_WP_HEADERS, timeout=timeout).json()
+            if t.get("status") == "finished":
+                if t.get("error"):
+                    return None
+                return float(t["data"]["total_population"])
     except Exception:
         pass
     return None
