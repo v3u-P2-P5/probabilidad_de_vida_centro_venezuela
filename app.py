@@ -68,7 +68,7 @@ st.caption(t("actualizacion_tiempo_real", lang))
 st.subheader("⏳ " + t("reloj_titulo", lang))
 hs = ctx["hours_since"]
 if hs >= 72:
-    st.error(t("ventana_agotada", lang))
+    st.warning(t("ventana_agotada", lang))
 else:
     st.info(t("alerta_ventana72", lang))
 cc = st.columns(2)

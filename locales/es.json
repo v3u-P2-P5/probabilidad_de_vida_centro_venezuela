@@ -13,9 +13,9 @@
   "hora_evento": "Hora del evento",
   "fuente": "Fuente",
   "n_shakemaps": "ShakeMaps combinados",
-  "reloj_titulo": "Reloj de las 72 horas de oro",
+  "reloj_titulo": "Tiempo transcurrido desde el sismo",
   "horas_transcurridas": "Horas transcurridas",
-  "horas_restantes": "Horas restantes",
+  "horas_restantes": "Horas en ventana estadística principal",
   "resumen_zonas": "Resumen por zona",
   "col_zona": "Zona",
   "col_celdas_alta": "Celdas prioridad alta",
@@ -87,8 +87,8 @@
   "exposicion_deslizamiento": "Expuestos a deslizamientos",
   "recursos_titulo": "Recursos críticos cercanos (OSM)",
   "recursos_ninguno": "Sin recursos mapeados en OSM para esta zona (verificar en terreno).",
-  "alerta_ventana72": "⏳ Ventana de las 72 horas de oro. Priorizar de inmediato las celdas de prioridad alta.",
-  "ventana_agotada": "⛔ Superadas las 72 horas. Disminuye drásticamente la probabilidad de rescate con vida; mantener esfuerzos en celdas con reportes confirmados.",
+  "alerta_ventana72": "🔍 Las primeras 72 horas son la ventana estadística de mayor probabilidad. Cada hora cuenta — priorizar las celdas de alta prioridad de inmediato.",
+  "ventana_agotada": "💪 Superadas las 72 horas estadísticas. La probabilidad disminuye pero **nunca llega a cero**. En Turquía 2023 se rescataron sobrevivientes a +200 horas; en Haití 2010 a +15 días. Continuar operaciones SAR con enfoque en celdas con reportes confirmados.",
   "actualizacion_tiempo_real": "🕒 El índice se actualiza en tiempo real: decaimiento temporal (continuo) + reportes de campo (inmediato) + ShakeMap USGS (cada 5 min). Población = estimación al momento del sismo (18:05 VET, estática).",
   "atribucion": "Datos: USGS · OpenStreetMap (© colaboradores) · WorldPop · Copernicus EMS · Maxar Open Data · UNOSAT · NASA ARIA"
 }

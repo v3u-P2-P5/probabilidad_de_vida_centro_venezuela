@@ -13,9 +13,9 @@
   "hora_evento": "Event time",
   "fuente": "Source",
   "n_shakemaps": "Combined ShakeMaps",
-  "reloj_titulo": "Golden 72-hour clock",
+  "reloj_titulo": "Time elapsed since earthquake",
   "horas_transcurridas": "Hours elapsed",
-  "horas_restantes": "Hours remaining",
+  "horas_restantes": "Hours in main statistical window",
   "resumen_zonas": "Summary by zone",
   "col_zona": "Zone",
   "col_celdas_alta": "High-priority cells",
@@ -87,8 +87,8 @@
   "exposicion_deslizamiento": "Exposed to landslides",
   "recursos_titulo": "Nearby critical resources (OSM)",
   "recursos_ninguno": "No resources mapped in OSM for this zone (verify on the ground).",
-  "alerta_ventana72": "⏳ Golden 72-hour window. Prioritize high-priority cells immediately.",
-  "ventana_agotada": "⛔ Past 72 hours. Live-rescue probability drops sharply; focus on cells with confirmed reports.",
+  "alerta_ventana72": "🔍 First 72 hours are the highest-probability statistical window. Every hour counts — prioritize high-priority cells immediately.",
+  "ventana_agotada": "💪 Past the 72-hour statistical window. Probability decreases but **never reaches zero**. Turkey 2023: survivors rescued at +200 hours; Haiti 2010: +15 days. Continue SAR operations focused on cells with confirmed reports.",
   "actualizacion_tiempo_real": "🕒 Index updates in real time: time decay (continuous) + field reports (immediate) + USGS ShakeMap (every 5 min). Population = estimate at moment of quake (18:05 VET, static).",
   "atribucion": "Data: USGS · OpenStreetMap (© contributors) · WorldPop · Copernicus EMS · Maxar Open Data · UNOSAT · NASA ARIA"
 }
