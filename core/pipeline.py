@@ -170,11 +170,11 @@ def _build_operativo(zone, config, now, with_osm=True):
         df["score_norm"] = scoring.normalize(df["score"].values)
         df["prioridad"] = scoring.priority_category(df["score_norm"].values)
 
-        # Probabilidad de hallar sobrevivientes con vida (0-1). Combina factores
-        # que SÍ varían espacialmente: sacudimiento (USGS, por celda) y población
-        # presente (WorldPop, por celda) — donde hay más gente, más probable que
-        # haya alguien atrapado con vida. Filtra celdas sin esperanza (sin
-        # sacudimiento o sin población → 0).
+        # Probabilidad de hallar sobrevivientes con vida (0-1). Solo tiene sentido
+        # donde hubo COLAPSO de edificaciones (si no se cayó nada, las personas no
+        # quedaron atrapadas y no requieren SAR). Combina factores que SÍ varían
+        # espacialmente: sacudimiento (USGS, por celda) y población (WorldPop, por
+        # celda) — más gente + más colapso = más probable que alguien esté atrapado.
         shaking = scoring.shaking_factor(df["mmi"].values)
         decay = scoring.time_decay(hs)
         # Factor de población presente: 0-1 relativo a la celda más poblada de la
@@ -185,13 +185,25 @@ def _build_operativo(zone, config, now, with_osm=True):
             pop_factor = 0.10 + 0.90 * np.clip(df["pop"].values / pmax, 0.0, 1.0)
         else:
             pop_factor = np.ones(len(df))   # sin datos de población → neutral
+
+        # Probabilidad de COLAPSO por celda (sacudimiento × vulnerabilidad).
+        vuln_cell = df["vuln"].values if "vuln" in df.columns else 0.55
+        df["colapso"] = scoring.collapse_probability(df["mmi"].values, vuln_cell)
+
         if proyec_ok and vuln_proj is not None:
-            collapse = scoring.collapse_probability(df["mmi"].values, df["vuln"].values)
             surv = scoring.survivability(df["void"].values)
-            df["p_vida"] = shaking * collapse * surv * decay * pop_factor
+            df["p_vida"] = shaking * df["colapso"].values * surv * decay * pop_factor
         else:
-            df["p_vida"] = shaking * decay * pop_factor
-        # Reportes de campo confirmados elevan la esperanza directamente
+            df["p_vida"] = shaking * df["colapso"].values * decay * pop_factor
+
+        # COMPUERTA DE COLAPSO: excluye celdas donde el colapso es implausible
+        # (edificaciones no caídas → sin personas atrapadas que rescatar).
+        umbral = float(config.get("umbral_colapso", 0.10))
+        sin_colapso = df["colapso"].values < umbral
+        df.loc[sin_colapso, "p_vida"] = 0.0
+
+        # Reportes de campo confirmados elevan la esperanza directamente (un reporte
+        # confirmado de atrapados anula la compuerta: hay evidencia de colapso real).
         df["p_vida"] = np.clip(df["p_vida"].values
                                + df["boost"].values * (1.0 - df["p_vida"].values), 0.0, 1.0)
     else:

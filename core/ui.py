@@ -440,22 +440,28 @@ def render_zone(zone_id: str) -> None:
             # p_vida → porcentaje legible (probabilidad absoluta de hallar con vida)
             top["p_vida_pct"] = top["p_vida"].apply(
                 lambda x: f"{x*100:.2f}%" if pd.notna(x) else "—")
+            # Probabilidad de colapso (por qué se incluye la celda)
+            if "colapso" in top.columns:
+                top["colapso_pct"] = top["colapso"].apply(
+                    lambda x: f"{x*100:.0f}%" if pd.notna(x) else "—")
             # Enlace directo al punto exacto de la celda (Google Maps)
             top["maps"] = top.apply(
                 lambda r: f"https://www.google.com/maps/search/?api=1"
                           f"&query={r['lat']:.5f},{r['lon']:.5f}", axis=1)
 
             col_area = "Área / sector" if lang == "es" else "Area / sector"
+            col_col  = "Prob. colapso" if lang == "es" else "Collapse prob."
             col_prob = "Prob. hallar con vida" if lang == "es" else "Prob. find alive"
             col_maps = "Ubicación" if lang == "es" else "Location"
 
-            view_cols = ["cell_id", "area", "lat", "lon", "mmi", "prioridad",
-                         "p_vida_pct", "maps"]
+            view_cols = ["cell_id", "area", "lat", "lon", "mmi", "colapso_pct",
+                         "prioridad", "p_vida_pct", "maps"]
             view_cols = [c for c in view_cols if c in top.columns]
             view = top[view_cols].rename(columns={
                 "cell_id": t("col_celda", lang), "area": col_area,
                 "lat": t("col_lat", lang), "lon": t("col_lon", lang),
-                "mmi": t("col_mmi", lang), "prioridad": t("col_prioridad", lang),
+                "mmi": t("col_mmi", lang), "colapso_pct": col_col,
+                "prioridad": t("col_prioridad", lang),
                 "p_vida_pct": col_prob, "maps": col_maps})
             st.dataframe(
                 view, width="stretch", hide_index=True,

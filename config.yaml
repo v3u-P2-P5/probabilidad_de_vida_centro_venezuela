@@ -78,6 +78,13 @@ pesos:
   decaimiento_temporal: 1.0
   factor_boost_reporte: 0.5
 
+# Umbral de colapso: solo tiene sentido buscar sobrevivientes ATRAPADOS donde
+# hubo colapso de edificaciones. Celdas con probabilidad de colapso estimada por
+# debajo de este umbral se EXCLUYEN (las personas allí no quedaron atrapadas).
+# La probabilidad de colapso = factor_sacudimiento(MMI) × vulnerabilidad(HAZUS).
+# 0.10 ≈ daño estructural plausible desde ~MMI VI-VII en construcción vulnerable.
+umbral_colapso: 0.10
+
 rejilla:
   tamano_celda_m: 150
 
