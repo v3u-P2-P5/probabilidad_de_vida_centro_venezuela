@@ -401,14 +401,31 @@ def render_zone(zone_id: str) -> None:
         top = df.nlargest(20, "score_norm").copy()
         top["prioridad"] = top["prioridad"].map(lambda k: t(f"prioridad_{k}", lang)
                                                  if k in ("alta", "media", "baja") else k)
+        # Población: formatear NaN/None como "—" para no mostrar "Non" truncado
+        if "pop" in top.columns:
+            top["pop"] = top["pop"].apply(
+                lambda x: f"{int(x):,}" if pd.notna(x) and x is not None else "—")
         view_cols = ["cell_id", "lat", "lon", "mmi", "pop", "prioridad", "score_norm"]
         view_cols = [c for c in view_cols if c in top.columns]
+        col_pop = t("col_pob_celda", lang)
+        if not ctx["pop_available"]:
+            col_pop += " ⚠️"   # indicador visual de que no hay datos
         view = top[view_cols].rename(columns={
             "cell_id": t("col_celda", lang), "lat": t("col_lat", lang),
             "lon": t("col_lon", lang), "mmi": t("col_mmi", lang),
-            "pop": t("col_pob_celda", lang), "prioridad": t("col_prioridad", lang),
+            "pop": col_pop, "prioridad": t("col_prioridad", lang),
             "score_norm": t("col_score", lang)})
         st.dataframe(view, width="stretch", hide_index=True)
+        if not ctx["pop_available"]:
+            st.caption(
+                "⚠️ Columna de población no disponible — WorldPop no descargado. "
+                "Ejecuta `python scripts/download_population.py` (477 MB). "
+                "La prioridad se calcula igualmente usando sacudimiento + tiempo."
+                if lang == "es" else
+                "⚠️ Population column unavailable — WorldPop not downloaded. "
+                "Run `python scripts/download_population.py` (477 MB). "
+                "Priority is still computed using shaking + time decay."
+            )
         st.download_button(t("descargar_csv", lang), df.to_csv(index=False).encode("utf-8"),
                            file_name=f"prioridad_{zone_id}.csv", mime="text/csv")
 
