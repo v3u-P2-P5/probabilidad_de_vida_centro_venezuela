@@ -11,6 +11,8 @@ El índice estima PROBABILIDAD DE SOBREVIVIENTES CON VIDA, no ubicación de víc
 """
 from datetime import datetime, timezone
 
+import numpy as np
+
 from core import scoring, shakemap
 from core.data_sources import get_sismo, get_sismos, synthetic_mmi
 from core.geo import make_grid
