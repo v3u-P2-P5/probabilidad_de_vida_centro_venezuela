@@ -1,0 +1,111 @@
+# ============================================================================
+#  MEMORIA DEL PROYECTO — Mapa de Probabilidad de Vida (Caracas / La Guaira)
+# ----------------------------------------------------------------------------
+#  Sistema de memoria inspirado en la cognición humana. Permite a Claude (o a
+#  cualquier colaborador) recuperar contexto si la sesión se alarga o en
+#  sesiones futuras. LÉEME PRIMERO al iniciar una sesión.
+#
+#  Modelo de memoria humana implementado:
+#   - trabajo      (working memory): foco inmediato, se sobrescribe cada sesión.
+#   - episodica    (episodic):       qué pasó y cuándo, en orden cronológico.
+#   - semantica    (semantic):       hechos y decisiones estables del proyecto.
+#   - procedimental(procedural):     cómo hacer las cosas (comandos, recetas).
+#
+#  Consolidación: al cerrar una sesión, mover lo importante de 'trabajo' y
+#  'episodica' hacia 'semantica'/'procedimental'; podar lo irrelevante
+#  (importancia 1-5; <3 y antiguo => candidato a borrar).
+#  Formato de fechas: ISO 8601. Hora Venezuela (VET, UTC-4) y UTC entre ().
+# ============================================================================
+
+meta:
+  proyecto: "Mapa de Probabilidad de Vida — Caracas y La Guaira post-terremoto"
+  creado: "2026-06-27T11:45 (VET) / 2026-06-27T15:45Z (UTC)"
+  ultima_actualizacion: "2026-06-27T12:10 (VET) / 2026-06-27T16:10Z (UTC)"
+  stack: "Python 3.12 + Streamlit; despliegue en Streamlit Community Cloud"
+  idioma_ui: "Español (principal) / Inglés (conmutable)"
+  contexto_critico: >
+    Evento REAL en curso. Objetivo: priorizar zonas de búsqueda y rescate (SAR)
+    combinando sacudimiento (USGS), daño (Copernicus EMS/Maxar), población
+    (Meta/WorldPop+OSM) y reportes de campo (la única capa en tiempo real).
+    "Probabilidad de vida" se MODELA, no se lee del satélite.
+
+# --- MEMORIA DE TRABAJO (foco actual; se sobrescribe) ----------------------
+trabajo:
+  foco_actual: "Construir el prototipo Streamlit funcional con datos sintéticos + conector USGS."
+  siguiente_paso: "Crear core/ (i18n, geo, scoring, data_sources, population), app.py y pages/."
+  bloqueos: []
+  abierto:
+    - "Confirmar hora/epicentro/magnitud reales del sismo en config.yaml."
+    - "Activar usar_datos_reales=true cuando haya event_id de USGS."
+    - "Integrar productos Copernicus EMS / Maxar cuando publiquen la activación."
+
+# --- MEMORIA EPISÓDICA (bitácora cronológica) ------------------------------
+episodica:
+  - fecha: "2026-06-27T11:45 (VET)"
+    evento: "Inicio del proyecto. Usuario pide estrategia para localizar posibles sobrevivientes."
+    importancia: 5
+  - fecha: "2026-06-27T11:50 (VET)"
+    evento: "Verificadas APIs satelitales gratuitas. Google Maps DESCARTADO (ToS prohíbe descarga masiva, óptico, de pago)."
+    importancia: 5
+  - fecha: "2026-06-27T12:00 (VET)"
+    evento: "Plan aprobado. Decisiones: evento real, Streamlit, despliegue en Community Cloud."
+    importancia: 5
+  - fecha: "2026-06-27T12:05 (VET)"
+    evento: "Montado entorno: git init, venv (python3.12) en WSL, instalación de dependencias."
+    importancia: 4
+
+# --- MEMORIA SEMÁNTICA (hechos y decisiones estables) ----------------------
+semantica:
+  decisiones:
+    - id: D1
+      decision: "Stack = Python 3 + Streamlit (multipágina, una página por zona)."
+      razon: "Cumple 'local en un puerto + fácil de publicar'; multipágina nativa evita un mapa único pesado."
+      importancia: 5
+    - id: D2
+      decision: "Google Maps NO se usa como fuente de imágenes."
+      razon: "ToS prohíbe descarga masiva; requiere facturación; óptico (inútil de noche/nubes)."
+      importancia: 5
+    - id: D3
+      decision: "Fuentes gratuitas: USGS (sacudimiento) + Copernicus EMS/Maxar (daño) + Meta/WorldPop+OSM (población) + reportes de campo (tiempo real)."
+      importancia: 5
+    - id: D4
+      decision: "P_vida = sacudimiento × colapso × poblacion_presente(hora) × supervivencia × decaimiento(72h) + boost_reportes."
+      razon: "La probabilidad de sobrevivientes se modela; el satélite solo aporta la capa de daño con latencia."
+      importancia: 5
+    - id: D5
+      decision: "La hora es crítica: a las 11:45 laborable la población está en trabajo/escuela/comercio, no en casa."
+      importancia: 4
+  hechos:
+    - "Zonas iniciales: Libertador, Sucre/Petare, Baruta-Hatillo-Chacao, La Guaira-Litoral."
+    - "La Guaira fue zona del desastre de deslaves de 1999 => alta vulnerabilidad."
+    - "Ventana de las 72 horas de oro para rescate con vida."
+    - "Latencia satelital: óptico depende de nubes; Sentinel-1 ~6-12 días; ARIA DPM 1-2 semanas."
+
+# --- MEMORIA PROCEDIMENTAL (cómo hacer las cosas) --------------------------
+procedimental:
+  entorno:
+    - "El proyecto vive en WSL (Ubuntu): ~/work_space_linux/probabilidad_de_vida"
+    - "Ejecutar comandos vía: wsl bash -lc \"cd ~/work_space_linux/probabilidad_de_vida && <cmd>\""
+  comandos:
+    crear_venv: "python3 -m venv venv"
+    activar_venv: "source venv/bin/activate"
+    instalar: "./venv/bin/python -m pip install -r requirements.txt"
+    correr_app: "./venv/bin/python -m streamlit run app.py"
+    correr_tests: "./venv/bin/python -m pytest -q"
+    url_local: "http://localhost:8501"
+  recetas:
+    actualizar_evento: "Editar config.yaml -> sismo (origen_iso, magnitud, epicentro, usgs_event_id)."
+    ajustar_modelo: "Editar config.yaml -> pesos. Recarga en caliente sin tocar código."
+    desplegar: "Push a GitHub -> conectar repo en share.streamlit.io (Community Cloud)."
+
+# --- ÍNDICE DE ARCHIVOS CLAVE (mapa mental del repo) -----------------------
+indice_archivos:
+  "config.yaml": "Zonas, pesos del modelo y datos del sismo. Editable en caliente."
+  "core/scoring.py": "Modelo P_vida (función pura, testeable)."
+  "core/i18n.py": "Traducción es/en."
+  "core/geo.py": "Rejilla y recortes por bbox."
+  "core/data_sources.py": "Conector USGS (en vivo) + fallback sintético."
+  "core/population.py": "Población ambiente ajustada por hora."
+  "app.py": "Página de inicio (KPIs, reloj 72h)."
+  "pages/": "Una página por zona + reportes de campo."
+  "data/field_reports.csv": "Reportes de campo en vivo (boost del modelo)."

@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+.streamlit/secrets.toml
+.DS_Store
+
+# Claude: versionar la memoria del proyecto, ignorar settings locales
+.claude/settings.local.json
+# (.claude/memory.yaml SÍ se versiona a propósito)

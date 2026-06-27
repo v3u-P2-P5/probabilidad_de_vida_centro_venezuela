@@ -1,0 +1,45 @@
+# Configuración del Mapa de Probabilidad de Vida
+# Editable EN CALIENTE: cambia pesos, hora del sismo o zonas sin tocar el código.
+
+# --- Evento sísmico ---
+# Ajusta estos valores al evento real (epicentro, magnitud, hora ISO con zona).
+sismo:
+  origen_iso: "2026-06-27T11:45:00-04:00"   # hora del sismo (VET, UTC-4)
+  magnitud: 6.8
+  profundidad_km: 12
+  epicentro: { lat: 10.55, lon: -66.90 }
+  usgs_event_id: ""        # opcional: id de USGS para traer ShakeMap real
+  usar_datos_reales: false # true => intenta USGS en vivo; false => datos sintéticos
+
+# --- Pesos del modelo P_vida (se normalizan internamente) ---
+# Exponentes que controlan cuánto pesa cada factor (1.0 = lineal).
+pesos:
+  sacudimiento: 1.0
+  colapso: 1.2
+  poblacion: 1.0
+  supervivencia: 0.8
+  decaimiento_temporal: 1.0
+  factor_boost_reporte: 0.5   # cuánto suma un reporte de campo confirmado
+
+# --- Resolución de la rejilla de análisis ---
+rejilla:
+  tamano_celda_m: 150
+
+# --- Zonas (una página por zona). bbox = [lon_min, lat_min, lon_max, lat_max] ---
+zonas:
+  - id: libertador
+    nombre: "Caracas — Libertador"
+    bbox: [-66.95, 10.480, -66.870, 10.520]
+    perfil_uso: oficinas      # alta densidad diurna
+  - id: sucre_petare
+    nombre: "Caracas — Sucre / Petare"
+    bbox: [-66.835, 10.470, -66.770, 10.515]
+    perfil_uso: residencial_informal  # laderas, alta vulnerabilidad
+  - id: baruta_hatillo
+    nombre: "Caracas — Baruta / El Hatillo / Chacao"
+    bbox: [-66.885, 10.400, -66.800, 10.480]
+    perfil_uso: mixto
+  - id: la_guaira
+    nombre: "La Guaira — Litoral"
+    bbox: [-66.950, 10.580, -66.850, 10.620]
+    perfil_uso: mixto         # zona del desastre de 1999
