@@ -123,6 +123,12 @@ def _build_operativo(zone, config, now, with_osm=True):
     # --- Capa 4: Reportes de campo (tiempo real) ---
     df["boost"] = boost_for_grid(df, _reports_for_zone(zone["id"]))
 
+    # Población uniforme (p. ej. fallback censal) → normalize() daría ceros y
+    # anularía todo el score. En ese caso pop_norm es neutral (1.0): no aporta
+    # variación espacial pero tampoco elimina la señal de sacudimiento/colapso.
+    if np.allclose(np.nan_to_num(df["pop_norm"].values), 0.0):
+        df["pop_norm"] = 1.0
+
     # --- Índice de prioridad de sobrevivientes ---
     if sm_ok:
         w = config["pesos"]
@@ -139,9 +145,25 @@ def _build_operativo(zone, config, now, with_osm=True):
                            + df["boost"].values * w["factor_boost_reporte"])
         df["score_norm"] = scoring.normalize(df["score"].values)
         df["prioridad"] = scoring.priority_category(df["score_norm"].values)
+
+        # Probabilidad ABSOLUTA de hallar sobrevivientes con vida (0-1),
+        # independiente del ranking de zona. Filtra celdas sin esperanza
+        # (sin sacudimiento → sin colapso → sin atrapados): valen exactamente 0.
+        shaking = scoring.shaking_factor(df["mmi"].values)
+        decay = scoring.time_decay(hs)
+        if proyec_ok and vuln_proj is not None:
+            collapse = scoring.collapse_probability(df["mmi"].values, df["vuln"].values)
+            surv = scoring.survivability(df["void"].values)
+            df["p_vida"] = shaking * collapse * surv * decay
+        else:
+            df["p_vida"] = shaking * decay
+        # Reportes de campo confirmados elevan la esperanza directamente
+        df["p_vida"] = np.clip(df["p_vida"].values
+                               + df["boost"].values * (1.0 - df["p_vida"].values), 0.0, 1.0)
     else:
         df["score"] = float("nan")
         df["score_norm"] = float("nan")
+        df["p_vida"] = float("nan")
         df["prioridad"] = "—"
 
     # --- Recursos críticos reales (OSM) ---

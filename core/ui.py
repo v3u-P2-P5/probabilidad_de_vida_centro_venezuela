@@ -401,41 +401,71 @@ def render_zone(zone_id: str) -> None:
     if ctx.get("proyec_ok"):
         st.caption(t("nota_proyeccion", lang))
 
-    # ── TABLA DE PRIORIDAD ────────────────────────────────────────────────────
+    # ── TABLA DE PRIORIDAD — solo celdas con esperanza (p_vida > 0) ───────────
     if ctx["shakemap_ok"]:
         st.subheader(t("tabla_prioridad", lang))
-        top = df.nlargest(20, "score_norm").copy()
-        top["prioridad"] = top["prioridad"].map(lambda k: t(f"prioridad_{k}", lang)
-                                                 if k in ("alta", "media", "baja") else k)
-        # Población → supervivientes estimados presentes al momento del sismo
-        if "pop" in top.columns:
-            top["pop"] = top["pop"].apply(
-                lambda x: f"~{int(x):,}" if pd.notna(x) and x is not None else "—")
-        view_cols = ["cell_id", "lat", "lon", "mmi", "pop", "prioridad", "score_norm"]
-        view_cols = [c for c in view_cols if c in top.columns]
-        pop_src = ctx.get("pop_src", "")
-        src_suffix = {"censo_ine": " (INE)", "api": " (WorldPop API)",
-                      "local": " (WorldPop)", "remota": " (WorldPop)"}.get(pop_src, "")
-        col_pop = (f"Personas en celda{src_suffix}" if lang == "es"
-                   else f"Persons in cell{src_suffix}")
-        col_score = "Prob. supervivencia" if lang == "es" else "Survival prob."
-        view = top[view_cols].rename(columns={
-            "cell_id": t("col_celda", lang), "lat": t("col_lat", lang),
-            "lon": t("col_lon", lang), "mmi": t("col_mmi", lang),
-            "pop": col_pop, "prioridad": t("col_prioridad", lang),
-            "score_norm": col_score})
-        st.dataframe(view, width="stretch", hide_index=True)
-        if pop_src == "censo_ine":
-            st.caption(
-                "📊 Personas en celda: estimación basada en densidad censal "
-                "INE Venezuela 2011 × ocupación HAZUS 18:05 VET. "
-                "Fuente: ine.gov.ve · Incertidumbre ±30 %."
+
+        # Solo lugares donde aún hay probabilidad de hallar sobrevivientes con vida.
+        con_esperanza = df[df["p_vida"] > 0].copy() if "p_vida" in df.columns else df.copy()
+
+        if con_esperanza.empty:
+            # No hay celdas con probabilidad > 0 en esta zona
+            st.info(
+                "🔍 En esta zona, el modelo no identifica celdas con probabilidad "
+                "de supervivencia mayor que cero en este momento. Esto **no descarta "
+                "sobrevivientes**: mantener la búsqueda guiada por reportes de campo "
+                "confirmados y reevaluar con cada actualización."
                 if lang == "es" else
-                "📊 Persons in cell: estimate based on INE Venezuela 2011 census density "
-                "× HAZUS occupancy at 18:05 VET. Source: ine.gov.ve · Uncertainty ±30 %."
+                "🔍 In this zone, the model finds no cells with survival probability "
+                "above zero right now. This does **not rule out survivors**: keep "
+                "search guided by confirmed field reports and reassess on each update."
             )
-        st.download_button(t("descargar_csv", lang), df.to_csv(index=False).encode("utf-8"),
-                           file_name=f"prioridad_{zone_id}.csv", mime="text/csv")
+        else:
+            top = con_esperanza.nlargest(20, "p_vida")
+            n_total = len(con_esperanza)
+            top = top.copy()
+            top["prioridad"] = top["prioridad"].map(
+                lambda k: t(f"prioridad_{k}", lang) if k in ("alta", "media", "baja") else k)
+            # p_vida → porcentaje legible (probabilidad absoluta de hallar con vida)
+            top["p_vida_pct"] = top["p_vida"].apply(
+                lambda x: f"{x*100:.1f}%" if pd.notna(x) else "—")
+            # Personas estimadas presentes al momento del sismo
+            if "pop" in top.columns:
+                top["pop"] = top["pop"].apply(
+                    lambda x: f"~{int(x):,}" if pd.notna(x) and x is not None else "—")
+
+            pop_src = ctx.get("pop_src", "")
+            src_suffix = {"censo_ine": " (INE)", "api": " (WorldPop API)",
+                          "local": " (WorldPop)", "remota": " (WorldPop)"}.get(pop_src, "")
+            col_pop = (f"Personas en celda{src_suffix}" if lang == "es"
+                       else f"Persons in cell{src_suffix}")
+            col_prob = ("Prob. hallar con vida" if lang == "es" else "Prob. find alive")
+
+            view_cols = ["cell_id", "lat", "lon", "mmi", "pop", "prioridad", "p_vida_pct"]
+            view_cols = [c for c in view_cols if c in top.columns]
+            view = top[view_cols].rename(columns={
+                "cell_id": t("col_celda", lang), "lat": t("col_lat", lang),
+                "lon": t("col_lon", lang), "mmi": t("col_mmi", lang),
+                "pop": col_pop, "prioridad": t("col_prioridad", lang),
+                "p_vida_pct": col_prob})
+            st.dataframe(view, width="stretch", hide_index=True)
+
+            st.caption(
+                f"✅ Mostrando las {len(top)} celdas con mayor probabilidad de hallar "
+                f"sobrevivientes con vida ({n_total} celdas con esperanza en la zona)."
+                if lang == "es" else
+                f"✅ Showing the {len(top)} cells with highest probability of finding "
+                f"survivors alive ({n_total} cells with hope in the zone).")
+            if pop_src == "censo_ine":
+                st.caption(
+                    "📊 Personas en celda: densidad censal INE Venezuela 2011 × "
+                    "ocupación HAZUS 18:05 VET. Fuente: ine.gov.ve · Incertidumbre ±30 %."
+                    if lang == "es" else
+                    "📊 Persons in cell: INE Venezuela 2011 census density × HAZUS "
+                    "occupancy at 18:05 VET. Source: ine.gov.ve · Uncertainty ±30 %.")
+            st.download_button(t("descargar_csv", lang),
+                               con_esperanza.to_csv(index=False).encode("utf-8"),
+                               file_name=f"prioridad_{zone_id}.csv", mime="text/csv")
 
     # ── RECURSOS CRÍTICOS agrupados por área ─────────────────────────────────
     if not ctx["resources"].empty:
