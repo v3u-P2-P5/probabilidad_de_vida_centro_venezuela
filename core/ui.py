@@ -386,9 +386,12 @@ def render_zone(zone_id: str) -> None:
         render_event_banner(ctx, lang)
 
     # ── DISPONIBILIDAD Y PROYECCIONES ─────────────────────────────────────────
+    pop_src = ctx.get("pop_src", "no_disponible")
     if not ctx["pop_available"]:
         st.warning(t("banner_sin_poblacion", lang))
-    elif ctx.get("pop_src") == "remota":
+    elif pop_src == "api":
+        st.info(t("banner_pop_api", lang))
+    elif pop_src == "remota":
         st.info(t("banner_pop_remota", lang))
     if ctx.get("proyec_ok"):
         st.caption(t("nota_proyeccion", lang))

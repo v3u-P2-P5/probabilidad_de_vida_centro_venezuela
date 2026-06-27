@@ -1,15 +1,22 @@
 """Población.
 
 - REAL local: muestrea el ráster WorldPop/Meta HRSL descargado localmente.
-- REAL remoto: lee el ráster WorldPop directamente por HTTP (GDAL VSI / rasterio
-  ≥1.3 con libcurl). Sin descarga total del TIF — solo las ventanas de cada zona.
+- REAL remoto: lee el ráster WorldPop directamente por HTTP (GDAL VSI / rasterio).
+- REAL API: WorldPop REST API por bloques ~1km, sin descargar TIF (24h caché disco).
 - PROYECCIÓN ESTADÍSTICA (HAZUS): perfiles de ocupación por hora y tipo de uso,
   aplicados a la hora del terremoto (18:05 VET). Citados y etiquetados siempre.
 - SINTÉTICO: solo modo demo, claramente rotulado.
 """
+import hashlib
+import json
+import pickle
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
+import requests
 
 from core.scoring import BUILDING_TYPES
 
@@ -63,22 +70,126 @@ def sample_population_remote(lats, lons, url: str):
         return None   # WorldPop VEN no es COG; ejecutar download_population.py
 
 
+_WP_HEADERS = {"User-Agent": "ProbabilidadDeVida-SAR/1.0 (humanitarian earthquake response VEN)"}
+
+
+def _worldpop_block(lon_min: float, lat_min: float,
+                    lon_max: float, lat_max: float,
+                    timeout: int = 22) -> float | None:
+    """Población total en un bloque bbox vía WorldPop REST API (wpgpas VEN 2020)."""
+    geom = json.dumps({"type": "Polygon", "coordinates": [[
+        [lon_min, lat_min], [lon_max, lat_min],
+        [lon_max, lat_max], [lon_min, lat_max],
+        [lon_min, lat_min],
+    ]]})
+    try:
+        r = requests.get(
+            "https://api.worldpop.org/v1/services/stats",
+            params={"dataset": "wpgpas", "iso3": "VEN", "year": 2020,
+                    "runasync": "0", "geometry": geom},
+            headers=_WP_HEADERS,
+            timeout=timeout,
+        )
+        r.raise_for_status()
+        d = r.json()
+        if str(d.get("status", "")).lower() == "ok":
+            return float(d["data"]["total_population"])
+    except Exception:
+        pass
+    return None
+
+
+def sample_population_api(lats, lons,
+                           block_deg: float = 0.012) -> np.ndarray | None:
+    """Población por celda vía WorldPop REST API — sin descargar TIF.
+
+    Divide el bbox en bloques de ~1.3 km, consulta en paralelo (8 hilos)
+    y distribuye la población uniformemente entre las celdas 150 m de cada
+    bloque. Resultados en caché de disco 24 h.
+
+    Fuente: WorldPop Population Counts 2020 (wpgpas), Venezuela, 100 m.
+    Resolución efectiva del muestreo: ~1.3 km por bloque de consulta.
+    """
+    lats = np.asarray(lats, dtype=float)
+    lons = np.asarray(lons, dtype=float)
+    lat_min, lat_max = float(lats.min()), float(lats.max())
+    lon_min, lon_max = float(lons.min()), float(lons.max())
+
+    # Caché en disco 24 h
+    cache_key = f"{lat_min:.4f}_{lat_max:.4f}_{lon_min:.4f}_{lon_max:.4f}_{block_deg}"
+    cache_dir = ROOT / "data" / "cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_file = cache_dir / f"pop_api_{hashlib.md5(cache_key.encode()).hexdigest()}.pkl"
+    if cache_file.exists() and (time.time() - cache_file.stat().st_mtime) < 86400:
+        try:
+            with open(cache_file, "rb") as f:
+                return pickle.load(f)
+        except Exception:
+            pass
+
+    # Construir bloques y sus máscaras de celdas
+    lat_edges = np.arange(lat_min, lat_max + block_deg, block_deg)
+    lon_edges = np.arange(lon_min, lon_max + block_deg, block_deg)
+    blocks = []
+    for i in range(len(lat_edges) - 1):
+        for j in range(len(lon_edges) - 1):
+            mask = ((lats >= lat_edges[i]) & (lats < lat_edges[i + 1]) &
+                    (lons >= lon_edges[j]) & (lons < lon_edges[j + 1]))
+            if mask.sum() > 0:
+                blocks.append((lon_edges[j], lat_edges[i],
+                                lon_edges[j + 1], lat_edges[i + 1], mask))
+    if not blocks:
+        return None
+
+    result = np.full(len(lats), np.nan)
+
+    def _query(args):
+        blon_min, blat_min, blon_max, blat_max, mask = args
+        pop = _worldpop_block(blon_min, blat_min, blon_max, blat_max)
+        return mask, pop
+
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        futures = {ex.submit(_query, b): b for b in blocks}
+        for fut in as_completed(futures):
+            mask, pop = fut.result()
+            if pop is not None and pop >= 0:
+                n = int(mask.sum())
+                result[mask] = pop / n if n > 0 else 0.0
+
+    if np.all(np.isnan(result)):
+        return None
+
+    result[np.isnan(result)] = 0.0   # bloques sin respuesta → 0
+
+    try:
+        with open(cache_file, "wb") as f:
+            pickle.dump(result, f)
+    except Exception:
+        pass
+
+    return result
+
+
 def get_population(lats, lons, config: dict):
-    """Intenta obtener población real: local → remota → None.
+    """Población real por orden de preferencia: local → remota → API → None.
 
     Devuelve (array_o_None, fuente_str).
     """
     raster_path = config["poblacion"]["raster_path"]
-    # 1. Local
+    # 1. TIF local
     pop = sample_population_raster(lats, lons, raster_path)
     if pop is not None:
         return pop, "local"
-    # 2. Remota (HTTP range requests)
+    # 2. TIF remoto por HTTP range (requiere COG — WorldPop VEN no lo es)
     url = config["poblacion"].get("worldpop_tif_url", "")
     if url:
         pop = sample_population_remote(lats, lons, url)
         if pop is not None:
             return pop, "remota"
+    # 3. WorldPop REST API por bloques — sin descargar TIF (caché 24 h)
+    pop = sample_population_api(lats, lons)
+    if pop is not None:
+        return pop, "api"
     return None, "no_disponible"
 
 

@@ -78,6 +78,7 @@
   "sismo_doble_banner": "⚠️ DOUBLET EARTHQUAKE: two events 38 seconds apart ({m1} M{mag1} + {m2} M{mag2}), epicenters ~5.5 km apart. The maximum-envelope of both ShakeMaps is used (combined real shaking).",
   "banner_sin_shakemap": "⛔ USGS ShakeMap is UNAVAILABLE right now. This zone's priority map cannot be computed from real data. Do NOT use for decisions until the source is restored.",
   "banner_sin_poblacion": "⚠️ Population layer UNAVAILABLE (neither local nor remote). Prioritization uses only shaking + time + reports. Run scripts/download_population.py or check connection.",
+  "banner_pop_api": "ℹ️ Population fetched via WorldPop REST API (~1.3 km blocks, 24 h cache). No TIF download needed. Source: WorldPop Population Counts 2020, Venezuela.",
   "banner_pop_remota": "ℹ️ Population loaded remotely (WorldPop via HTTP). No TIF download required.",
   "nota_poblacion": "WorldPop residential population × HAZUS occupancy at 18:05 VET. Statistical projection — uncertainty ±20%.",
   "pager_titulo": "PAGER — Estimated impact (USGS)",
