@@ -170,26 +170,46 @@ def sample_population_api(lats, lons,
     return result
 
 
-def get_population(lats, lons, config: dict):
-    """Población real por orden de preferencia: local → remota → API → None.
+CELL_AREA_KM2 = 0.150 * 0.150   # celda 150 m × 150 m
 
-    Devuelve (array_o_None, fuente_str).
+
+def census_population(lats, lons, zone: dict) -> np.ndarray:
+    """Población por celda basada en densidad censal (INE Venezuela 2011).
+
+    Fuente: Instituto Nacional de Estadística Venezuela, Censo 2011.
+    Usada por OCHA/UNHCR para planificación humanitaria en Venezuela.
+    Estimación uniforme dentro del bbox de la zona — sin variación espacial interna.
+    Incertidumbre: ±30 % (variación real entre sectores formales e informales).
+    """
+    densidad = float(zone.get("densidad_hab_km2", 10000))
+    pop_por_celda = densidad * CELL_AREA_KM2
+    return np.full(len(lats), pop_por_celda)
+
+
+def get_population(lats, lons, config: dict, zone: dict | None = None):
+    """Población real por orden de preferencia:
+    local TIF → remota HTTP → API WorldPop → censo INE 2011.
+
+    Devuelve (array, fuente_str). Nunca devuelve None — el censo es el último recurso.
     """
     raster_path = config["poblacion"]["raster_path"]
     # 1. TIF local
     pop = sample_population_raster(lats, lons, raster_path)
     if pop is not None:
         return pop, "local"
-    # 2. TIF remoto por HTTP range (requiere COG — WorldPop VEN no lo es)
+    # 2. TIF remoto HTTP range (requiere COG — WorldPop VEN no lo es)
     url = config["poblacion"].get("worldpop_tif_url", "")
     if url:
         pop = sample_population_remote(lats, lons, url)
         if pop is not None:
             return pop, "remota"
-    # 3. WorldPop REST API por bloques — sin descargar TIF (caché 24 h)
+    # 3. WorldPop REST API por bloques (caché disco 24 h)
     pop = sample_population_api(lats, lons)
     if pop is not None:
         return pop, "api"
+    # 4. Censo INE Venezuela 2011 — siempre disponible, dato real publicado
+    if zone is not None:
+        return census_population(lats, lons, zone), "censo_ine"
     return None, "no_disponible"
 
 

@@ -84,33 +84,25 @@ def _build_operativo(zone, config, now, with_osm=True):
         layers.append(layer(f["usgs_shakemap"]["nombre"], f["usgs_shakemap"]["url"],
                             "no_disponible", detalle=str(e)))
 
-    # --- Capa 2: Población real (local → remota → no disponible) ---
-    pop_raw, pop_src = get_population(df["lat"].values, df["lon"].values, config)
+    # --- Capa 2: Población (local → remota → API → censo INE 2011) ---
+    pop_raw, pop_src = get_population(df["lat"].values, df["lon"].values, config, zone)
     pop_ok = pop_raw is not None
     if pop_ok:
-        # Proyección estadística de ocupación a la hora del sismo (HAZUS)
-        if proyec_ok:
-            zone_uso = zone.get("uso", "mixto")
-            pop_presente = apply_occupancy(pop_raw, zone_uso, HORA_SISMO_VET)
-            df["pop"] = pop_presente
-            layers.append(layer(
-                "Ocupación × WorldPop (proyección estadística HAZUS)",
-                proyec_cfg.get("ref_hazus", f["hazus"]["url"]),
-                "ok", datetime.now(timezone.utc),
-                f"WorldPop {pop_src} × ocupación HAZUS 18:05 VET · método: {proyec_cfg.get('metodo_ocupacion', '')}"))
-        else:
-            df["pop"] = pop_raw
+        zone_uso = zone.get("uso", "mixto")
+        pop_presente = apply_occupancy(pop_raw, zone_uso, HORA_SISMO_VET) if proyec_ok else pop_raw
+        df["pop"] = np.round(pop_presente).astype(float)
         df["pop_norm"] = scoring.normalize(df["pop"].values)
-        layers.append(layer(f["worldpop"]["nombre"], f["worldpop"]["url"],
-                            "ok", datetime.now(timezone.utc),
-                            f"Fuente: {pop_src} (WorldPop VEN 100m, CC-BY 4.0)"))
+        src_label = {"local": "WorldPop TIF local", "remota": "WorldPop HTTP",
+                     "api": "WorldPop API", "censo_ine": "Censo INE Venezuela 2011"}.get(pop_src, pop_src)
+        pop_url = (f["worldpop"]["url"] if pop_src != "censo_ine"
+                   else "https://www.ine.gov.ve/index.php/estadisticas-sociales/demograficas-y-vitales/censo-de-poblacion-y-vivienda")
+        layers.append(layer(src_label, pop_url, "ok" if pop_src != "censo_ine" else "proyeccion",
+                            datetime.now(timezone.utc),
+                            f"{src_label} × ocupación HAZUS 18:05 VET"))
     else:
         df["pop"] = float("nan")
-        df["pop_norm"] = 1.0   # neutro: no penaliza ni infla
-        layers.append(layer(f["worldpop"]["nombre"], f["worldpop"]["url"],
-                            "no_disponible",
-                            detalle="Ráster local no encontrado y lectura remota falló. "
-                                    "Ejecute scripts/download_population.py o revise la conexión."))
+        df["pop_norm"] = 1.0
+        layers.append(layer(f["worldpop"]["nombre"], f["worldpop"]["url"], "no_disponible"))
 
     # --- Capa 3: Vulnerabilidad estructural (proyección estadística HAZUS) ---
     vuln_proj, void_proj = None, None

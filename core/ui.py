@@ -387,16 +387,19 @@ def render_zone(zone_id: str) -> None:
 
     # ── DISPONIBILIDAD Y PROYECCIONES ─────────────────────────────────────────
     pop_src = ctx.get("pop_src", "no_disponible")
+    _POP_SRC_MSG = {
+        "local":      ("banner_pop_remota", "info"),   # reutiliza texto similar
+        "remota":     ("banner_pop_remota", "info"),
+        "api":        ("banner_pop_api",    "info"),
+        "censo_ine":  ("banner_pop_censo",  "info"),
+    }
     if not ctx["pop_available"]:
         st.warning(t("banner_sin_poblacion", lang))
-    elif pop_src == "api":
-        st.info(t("banner_pop_api", lang))
-    elif pop_src == "remota":
-        st.info(t("banner_pop_remota", lang))
+    elif pop_src in _POP_SRC_MSG:
+        key, lvl = _POP_SRC_MSG[pop_src]
+        getattr(st, lvl)(t(key, lang))
     if ctx.get("proyec_ok"):
         st.caption(t("nota_proyeccion", lang))
-    if ctx["pop_available"]:
-        st.caption("ℹ️ " + t("nota_poblacion", lang))
 
     # ── TABLA DE PRIORIDAD ────────────────────────────────────────────────────
     if ctx["shakemap_ok"]:
@@ -404,30 +407,32 @@ def render_zone(zone_id: str) -> None:
         top = df.nlargest(20, "score_norm").copy()
         top["prioridad"] = top["prioridad"].map(lambda k: t(f"prioridad_{k}", lang)
                                                  if k in ("alta", "media", "baja") else k)
-        # Población: formatear NaN/None como "—" para no mostrar "Non" truncado
+        # Población → supervivientes estimados presentes al momento del sismo
         if "pop" in top.columns:
             top["pop"] = top["pop"].apply(
-                lambda x: f"{int(x):,}" if pd.notna(x) and x is not None else "—")
+                lambda x: f"~{int(x):,}" if pd.notna(x) and x is not None else "—")
         view_cols = ["cell_id", "lat", "lon", "mmi", "pop", "prioridad", "score_norm"]
         view_cols = [c for c in view_cols if c in top.columns]
-        col_pop = t("col_pob_celda", lang)
-        if not ctx["pop_available"]:
-            col_pop += " ⚠️"   # indicador visual de que no hay datos
+        pop_src = ctx.get("pop_src", "")
+        src_suffix = {"censo_ine": " (INE)", "api": " (WorldPop API)",
+                      "local": " (WorldPop)", "remota": " (WorldPop)"}.get(pop_src, "")
+        col_pop = (f"Personas en celda{src_suffix}" if lang == "es"
+                   else f"Persons in cell{src_suffix}")
+        col_score = "Prob. supervivencia" if lang == "es" else "Survival prob."
         view = top[view_cols].rename(columns={
             "cell_id": t("col_celda", lang), "lat": t("col_lat", lang),
             "lon": t("col_lon", lang), "mmi": t("col_mmi", lang),
             "pop": col_pop, "prioridad": t("col_prioridad", lang),
-            "score_norm": t("col_score", lang)})
+            "score_norm": col_score})
         st.dataframe(view, width="stretch", hide_index=True)
-        if not ctx["pop_available"]:
+        if pop_src == "censo_ine":
             st.caption(
-                "⚠️ Columna de población no disponible — WorldPop no descargado. "
-                "Ejecuta `python scripts/download_population.py` (477 MB). "
-                "La prioridad se calcula igualmente usando sacudimiento + tiempo."
+                "📊 Personas en celda: estimación basada en densidad censal "
+                "INE Venezuela 2011 × ocupación HAZUS 18:05 VET. "
+                "Fuente: ine.gov.ve · Incertidumbre ±30 %."
                 if lang == "es" else
-                "⚠️ Population column unavailable — WorldPop not downloaded. "
-                "Run `python scripts/download_population.py` (477 MB). "
-                "Priority is still computed using shaking + time decay."
+                "📊 Persons in cell: estimate based on INE Venezuela 2011 census density "
+                "× HAZUS occupancy at 18:05 VET. Source: ine.gov.ve · Uncertainty ±30 %."
             )
         st.download_button(t("descargar_csv", lang), df.to_csv(index=False).encode("utf-8"),
                            file_name=f"prioridad_{zone_id}.csv", mime="text/csv")

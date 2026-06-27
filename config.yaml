@@ -148,12 +148,20 @@ zonas:
   - id: libertador
     nombre: "Caracas — Libertador"
     bbox: [-66.95, 10.480, -66.870, 10.520]
+    # Densidad poblacional: INE Venezuela Censo 2011 — Municipio Libertador (~2,094,000 hab, ~76 km²)
+    densidad_hab_km2: 19000
   - id: sucre_petare
     nombre: "Caracas — Sucre / Petare"
     bbox: [-66.835, 10.470, -66.770, 10.515]
+    # Municipio Sucre (~573,000 hab, ~40 km²) — zona alta densidad informal
+    densidad_hab_km2: 14400
   - id: baruta_hatillo
     nombre: "Caracas — Baruta / El Hatillo / Chacao"
     bbox: [-66.885, 10.400, -66.800, 10.480]
+    # Municipios Baruta + El Hatillo + Chacao (~600,000 hab, ~76 km²)
+    densidad_hab_km2: 7800
   - id: la_guaira
     nombre: "La Guaira — Litoral"
     bbox: [-66.950, 10.580, -66.850, 10.620]
+    # Estado Vargas / La Guaira (~352,000 hab, ~74 km² zona costera)
+    densidad_hab_km2: 4800

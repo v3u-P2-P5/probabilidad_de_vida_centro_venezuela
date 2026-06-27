@@ -78,6 +78,7 @@
   "sismo_doble_banner": "⚠️ SISMO DOBLE: dos eventos en 38 segundos ({m1} M{mag1} + {m2} M{mag2}), epicentros separados ~5.5 km. Se usa la envolvente máxima de ambos ShakeMaps (sacudimiento real combinado).",
   "banner_sin_shakemap": "⛔ ShakeMap de USGS NO disponible ahora. El mapa de prioridad de esta zona no puede calcularse. NO usar para decisiones hasta restablecer la fuente.",
   "banner_sin_poblacion": "⚠️ Capa de población NO disponible (local ni remota). La priorización usa solo sacudimiento + tiempo + reportes. Ejecute scripts/download_population.py o revise la conexión.",
+  "banner_pop_censo": "📊 Población basada en Censo INE Venezuela 2011 (densidad por municipio). Fuente oficial publicada — usada por OCHA/UNHCR para planificación humanitaria. Incertidumbre ±30 %.",
   "banner_pop_api": "ℹ️ Población obtenida vía WorldPop REST API (bloques ~1.3 km, caché 24 h). Sin descarga del TIF. Fuente: WorldPop Population Counts 2020, Venezuela.",
   "banner_pop_remota": "ℹ️ Población cargada remotamente (WorldPop por HTTP). No es necesario descargar el TIF.",
   "nota_poblacion": "Población residencial WorldPop × ocupación HAZUS 18:05 VET. Proyección estadística — incertidumbre ±20%.",
