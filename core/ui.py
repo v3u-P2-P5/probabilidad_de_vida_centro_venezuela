@@ -20,6 +20,15 @@ RESOURCE_COLORS = {"hospital": "#1a9850", "clinic": "#66bd63", "fire_station": "
 ALERT_COLORS = {"red": "🔴", "orange": "🟠", "yellow": "🟡", "green": "🟢"}
 
 
+def _render_construction_banner(lang: str) -> None:
+    st.warning(
+        "🚧 **App en construcción** — Los datos presentados son reales (USGS/OSM) pero el sistema aún "
+        "está siendo validado. **Voluntarios programadores trabajamos para terminarla lo antes posible.** "
+        "No usar como única fuente de decisión; complementar con información de campo. "
+        "— *App under construction: real data, still being validated by volunteer developers.*"
+    )
+
+
 def apply_chrome(config: dict) -> str:
     """Idioma, auto-refresco en tiempo real y botón de actualizar. Devuelve lang."""
     if "lang" not in st.session_state:
@@ -28,6 +37,7 @@ def apply_chrome(config: dict) -> str:
     if secs > 0:
         st_autorefresh(interval=secs * 1000, key="auto")
     codes = list(IDIOMAS.keys())
+    _render_construction_banner(st.session_state.lang)
     lang = st.sidebar.selectbox(t("idioma", st.session_state.lang), codes,
                                 index=codes.index(st.session_state.lang),
                                 format_func=lambda c: IDIOMAS[c])
