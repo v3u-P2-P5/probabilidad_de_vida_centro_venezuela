@@ -88,6 +88,7 @@
   "recursos_titulo": "Recursos críticos cercanos (OSM)",
   "recursos_ninguno": "Sin recursos mapeados en OSM para esta zona (verificar en terreno).",
   "alerta_ventana72": "🔍 Las primeras 72 horas son la ventana estadística de mayor probabilidad. Cada hora cuenta — priorizar las celdas de alta prioridad de inmediato.",
+  "ventana_secundaria_aviso": "🟡 **Ventana estadística secundaria (72–120 h).** Probabilidad reducida pero documentada: con acceso a aire y agua la supervivencia se extiende. INSARAG mantiene operaciones activas. Turquía 2023: rescates a +100 h. Foco en reportes confirmados y espacios confinados.",
   "ventana_agotada": "💪 Superadas las 72 horas estadísticas. La probabilidad disminuye pero **nunca llega a cero**. En Turquía 2023 se rescataron sobrevivientes a +200 horas; en Haití 2010 a +15 días. Continuar operaciones SAR con enfoque en celdas con reportes confirmados.",
   "actualizacion_tiempo_real": "🕒 El índice se actualiza en tiempo real: decaimiento temporal (continuo) + reportes de campo (inmediato) + ShakeMap USGS (cada 5 min). Población = estimación al momento del sismo (18:05 VET, estática).",
   "atribucion": "Datos: USGS · OpenStreetMap (© colaboradores) · WorldPop · Copernicus EMS · Maxar Open Data · UNOSAT · NASA ARIA"

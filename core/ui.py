@@ -103,14 +103,19 @@ def render_event_banner(ctx: dict, lang: str) -> None:
     # --- Actualización en tiempo real ---
     st.caption(t("actualizacion_tiempo_real", lang))
 
-    if hs >= 72:
-        st.warning(t("ventana_agotada", lang))
-    else:
+    V1, V2 = 72, 120
+    if hs < V1:
         st.info(t("alerta_ventana72", lang))
+    elif hs < V2:
+        st.warning(t("ventana_secundaria_aviso", lang))
+    else:
+        st.warning(t("ventana_agotada", lang))
 
     cols = st.columns(4)
     cols[0].metric(t("horas_transcurridas", lang), f"{hs:.1f} h")
-    cols[1].metric(t("horas_restantes", lang), f"{max(72 - hs, 0):.1f} h")
+    cols[1].metric(t("horas_restantes", lang),
+                   f"{max(V1 - hs, 0):.1f} h" if hs < V1
+                   else f"{max(V2 - hs, 0):.1f} h " + ("(vent. secundaria)" if lang == "es" else "(sec.window)"))
     if ctx.get("alert_pager"):
         cols[2].metric(t("pager_nivel", lang),
                        f"{ALERT_COLORS.get(ctx['alert_pager'], '')} {ctx['alert_pager'].upper()}")

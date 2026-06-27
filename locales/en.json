@@ -88,6 +88,7 @@
   "recursos_titulo": "Nearby critical resources (OSM)",
   "recursos_ninguno": "No resources mapped in OSM for this zone (verify on the ground).",
   "alerta_ventana72": "🔍 First 72 hours are the highest-probability statistical window. Every hour counts — prioritize high-priority cells immediately.",
+  "ventana_secundaria_aviso": "🟡 **Secondary statistical window (72–120 h).** Probability is reduced but documented: with air and water access, survival extends. INSARAG maintains active operations. Turkey 2023: rescues at +100 h. Focus on confirmed reports and confined spaces.",
   "ventana_agotada": "💪 Past the 72-hour statistical window. Probability decreases but **never reaches zero**. Turkey 2023: survivors rescued at +200 hours; Haiti 2010: +15 days. Continue SAR operations focused on cells with confirmed reports.",
   "actualizacion_tiempo_real": "🕒 Index updates in real time: time decay (continuous) + field reports (immediate) + USGS ShakeMap (every 5 min). Population = estimate at moment of quake (18:05 VET, static).",
   "atribucion": "Data: USGS · OpenStreetMap (© contributors) · WorldPop · Copernicus EMS · Maxar Open Data · UNOSAT · NASA ARIA"
