@@ -72,7 +72,7 @@
   "no_disponible": "UNAVAILABLE",
   "estado_ok": "online",
   "proyeccion_estadistica": "statistical projection",
-  "modo_operativo_label": "OPERATIONAL MODE — real data + cited statistical projections",
+  "modo_operativo_label": "✅ OPERATIONAL MODE — real USGS/OSM data + cited statistical projections (HAZUS/FEMA)",
   "modo_demo_label": "DEMO MODE — synthetic data",
   "evento_real": "Real event (USGS)",
   "sismo_doble_banner": "⚠️ DOUBLET EARTHQUAKE: two events 38 seconds apart ({m1} M{mag1} + {m2} M{mag2}), epicenters ~5.5 km apart. The maximum-envelope of both ShakeMaps is used (combined real shaking).",

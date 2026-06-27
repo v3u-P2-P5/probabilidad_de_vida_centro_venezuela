@@ -72,7 +72,7 @@
   "no_disponible": "NO DISPONIBLE",
   "estado_ok": "en línea",
   "proyeccion_estadistica": "proyección estadística",
-  "modo_operativo_label": "MODO OPERATIVO — solo datos reales + proyecciones estadísticas citadas",
+  "modo_operativo_label": "✅ MODO OPERATIVO — datos reales USGS/OSM + proyecciones estadísticas citadas (HAZUS/FEMA)",
   "modo_demo_label": "MODO DEMOSTRACIÓN — datos sintéticos",
   "evento_real": "Evento real (USGS)",
   "sismo_doble_banner": "⚠️ SISMO DOBLE: dos eventos en 38 segundos ({m1} M{mag1} + {m2} M{mag2}), epicentros separados ~5.5 km. Se usa la envolvente máxima de ambos ShakeMaps (sacudimiento real combinado).",

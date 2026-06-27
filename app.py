@@ -93,10 +93,15 @@ for i in range(0, len(pairs), 2):
 
 st.markdown("---")
 
-# ── MODO + INTRO (debajo de los mapas) ───────────────────────────────────────
-(st.error if ctx["modo"] == "operativo" else st.warning)(
-    t("modo_operativo_label" if ctx["modo"] == "operativo" else "modo_demo_label", lang))
-st.caption(t("intro", lang))
+# ── MODO + INTRO ─────────────────────────────────────────────────────────────
+if ctx["modo"] == "operativo":
+    st.success(t("modo_operativo_label", lang))
+else:
+    st.warning(t("modo_demo_label", lang))
+
+with st.expander("ℹ️ " + ("¿Qué hace esta herramienta?" if lang == "es"
+                           else "What does this tool do?"), expanded=False):
+    st.markdown(t("intro", lang))
 
 # ── SECUENCIA SÍSMICA (compacta) ─────────────────────────────────────────────
 s = ctx["sismo"]

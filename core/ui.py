@@ -273,11 +273,7 @@ def render_sources(ctx: dict, lang: str) -> None:
 
 
 def render_event_banner(ctx: dict, lang: str) -> None:
-    """Modo, sismo doble, reloj 72h, PAGER y peligros secundarios."""
-    modo = ctx["modo"]
-    (st.error if modo == "operativo" else st.warning)(
-        t("modo_operativo_label" if modo == "operativo" else "modo_demo_label", lang))
-
+    """Sismo doble, reloj ventanas, PAGER y peligros secundarios."""
     s = ctx["sismo"]
     hs = ctx["hours_since"]
     place = s.get("lugar", "")
@@ -359,8 +355,12 @@ def render_zone(zone_id: str) -> None:
     df, ctx = _cached_zone(zone_id, config.get("autorefresco_segundos", 0))
     render_sources(ctx, lang)
 
-    # ── TÍTULO + alerta crítica (mínimo antes del mapa) ──────────────────────
+    # ── TÍTULO + modo + alerta crítica (mínimo antes del mapa) ──────────────
     st.title(zone["nombre"])
+    if ctx["modo"] == "operativo":
+        st.success(t("modo_operativo_label", lang))
+    else:
+        st.warning(t("modo_demo_label", lang))
     if not ctx["shakemap_ok"]:
         st.error(t("banner_sin_shakemap", lang))
 
