@@ -33,14 +33,14 @@ meta:
 
 # --- MEMORIA DE TRABAJO (foco actual; se sobrescribe) ----------------------
 trabajo:
-  foco_actual: "DATOS REALES integrados y verificados: USGS ShakeMap(MMI)+PAGER+ground-failure, OSM Overpass(recursos), procedencia con enlaces, auto-refresco, última actualización VET/UTC. Modo operativo (sin datos falsos)."
-  siguiente_paso: "Descargar población WorldPop (scripts/download_population.py) y desplegar en Streamlit Community Cloud. Integrar Copernicus EMS (código EMSR) y Maxar STAC cuando se activen."
-  bloqueos: []
+  foco_actual: "Sismo doble integrado (M7.5+M7.2), ShakeMaps combinados, proyecciones estadísticas HAZUS habilitadas, URL WorldPop corregida. Commit f721d72."
+  siguiente_paso: "Descargar población WorldPop (scripts/download_population.py, 477MB, URL corregida) y desplegar en Streamlit Community Cloud."
+  bloqueos:
+    - "WorldPop TIF (477MB) no descargado. Servidor no soporta range requests (no es COG). Solo descarga completa con scripts/download_population.py."
   abierto:
-    - "Ejecutar scripts/download_population.py para activar la capa de población (hoy NO cargada)."
-    - "Rellenar fuentes.copernicus_ems.activacion_emsr cuando exista activación EMSR###."
-    - "Integrar rásters de ground-failure de USGS (godt_2008/zhu_2017) por celda."
+    - "Ejecutar scripts/download_population.py (URL correcta: Global_2000_2020/2020/VEN/ven_ppp_2020.tif, 477MB)."
     - "Desplegar en Streamlit Community Cloud (push a GitHub + share.streamlit.io)."
+    - "Rellenar fuentes.copernicus_ems.activacion_emsr cuando exista activación EMSR###."
 
 # --- MEMORIA EPISÓDICA (bitácora cronológica) ------------------------------
 episodica:
@@ -67,6 +67,9 @@ episodica:
     importancia: 5
   - fecha: "2026-06-27T13:00 (VET)"
     evento: "Integrados datos reales: parser ShakeMap grid.xml (MMI real VII en Caracas), PAGER, ground-failure (licuef. 160k rojo), OSM Overpass recursos (Libertador 114, etc.). Fix: Overpass requiere User-Agent (si no, 406) + reintentos/espejos. Tests 7/7, 6 páginas OK."
+    importancia: 5
+  - fecha: "2026-06-27T14:30 (VET)"
+    evento: "SISMO DOBLE confirmado vía USGS: M7.5 (us6000t7zp) + M7.2 (us6000t7zc) 38s de diferencia, ~5.5km separación. Ambos ShakeMaps combinados (envolvente MMI máx). Proyecciones estadísticas HAZUS habilitadas (vulnerabilidad+ocupación). URL WorldPop corregida (no es 'Constrained' que es África, sino Global_2000_2020/2020/VEN). Servidor WorldPop no soporta range requests. Commit f721d72, 7/7 tests."
     importancia: 5
 
 # --- MEMORIA SEMÁNTICA (hechos y decisiones estables) ----------------------
