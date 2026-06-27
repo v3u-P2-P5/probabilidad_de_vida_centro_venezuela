@@ -412,11 +412,31 @@ def render_zone(zone_id: str) -> None:
         st.download_button(t("descargar_csv", lang), df.to_csv(index=False).encode("utf-8"),
                            file_name=f"prioridad_{zone_id}.csv", mime="text/csv")
 
-    # ── RECURSOS CRÍTICOS (plegados) ──────────────────────────────────────────
+    # ── RECURSOS CRÍTICOS (tarjetas con teléfono y dirección) ────────────────
     if not ctx["resources"].empty:
-        with st.expander("🏥 " + t("recursos_titulo", lang)):
-            st.dataframe(ctx["resources"][["etiqueta", "nombre", "lat", "lon"]],
-                         width="stretch", hide_index=True)
+        with st.expander(f"🏥 {t('recursos_titulo', lang)} ({len(ctx['resources'])})",
+                         expanded=True):
+            for _, r in ctx["resources"].iterrows():
+                tel   = r.get("telefono", "")
+                addr  = r.get("direccion", "")
+                web   = r.get("web", "")
+                maps_url = (f"https://www.google.com/maps/search/?api=1"
+                            f"&query={r['lat']},{r['lon']}")
+
+                tel_line  = f"📞 [{tel}](tel:{tel.replace(' ','')})" if tel else ""
+                addr_line = f"📍 {addr}" if addr else ""
+                web_line  = f"🌐 [{web}]({web})" if web else ""
+                detail    = "  \n".join(x for x in [tel_line, addr_line, web_line] if x)
+                if not detail:
+                    detail = f"📍 [Ver en mapa]({maps_url})"
+                else:
+                    detail += f"  \n📍 [Ver en mapa]({maps_url})"
+
+                st.markdown(
+                    f"**{r['etiqueta']}** — {r['nombre']}  \n{detail}",
+                    unsafe_allow_html=False,
+                )
+                st.divider()
 
 
 @st.cache_data(ttl=110, show_spinner=False)

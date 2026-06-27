@@ -69,18 +69,46 @@ def fetch_resources(bbox, endpoint: str, ttl: float = 1800.0,
             lon = el.get("lon") or el.get("center", {}).get("lon")
             if lat is None or lon is None:
                 continue
+
+            # Teléfono: varios tags alternativos en OSM
+            phone = (tags.get("phone")
+                     or tags.get("contact:phone")
+                     or tags.get("contact:mobile")
+                     or tags.get("telephone")
+                     or "")
+
+            # Dirección: addr:full > construida desde partes
+            addr_full = tags.get("addr:full", "")
+            if not addr_full:
+                parts = [tags.get("addr:street", ""),
+                         tags.get("addr:housenumber", ""),
+                         tags.get("addr:city", ""),
+                         tags.get("addr:state", "")]
+                addr_full = ", ".join(p for p in parts if p)
+
+            web = (tags.get("website")
+                   or tags.get("contact:website")
+                   or tags.get("url")
+                   or "")
+
             rows.append({
-                "nombre": tags.get("name", "—"),
-                "tipo": kind,
+                "nombre":   tags.get("name", "—"),
+                "tipo":     kind,
                 "etiqueta": KIND_LABELS.get(kind, kind),
-                "lat": lat, "lon": lon,
+                "lat":      lat,
+                "lon":      lon,
+                "telefono": phone,
+                "direccion": addr_full,
+                "web":      web,
             })
     except Exception:
-        df = pd.DataFrame(columns=["nombre", "tipo", "etiqueta", "lat", "lon"])
+        df = pd.DataFrame(columns=["nombre", "tipo", "etiqueta", "lat", "lon",
+                                   "telefono", "direccion", "web"])
         df.attrs["error"] = True
         return df
 
-    df = pd.DataFrame(rows, columns=["nombre", "tipo", "etiqueta", "lat", "lon"])
+    df = pd.DataFrame(rows, columns=["nombre", "tipo", "etiqueta", "lat", "lon",
+                                     "telefono", "direccion", "web"])
     df.attrs["error"] = False
     _CACHE[key] = (time.time(), df)
     return df
