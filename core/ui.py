@@ -359,34 +359,43 @@ def render_zone(zone_id: str) -> None:
     df, ctx = _cached_zone(zone_id, config.get("autorefresco_segundos", 0))
     render_sources(ctx, lang)
 
+    # ── TÍTULO + alerta crítica (mínimo antes del mapa) ──────────────────────
     st.title(zone["nombre"])
-    st.caption(t("subtitulo_zona", lang))
-    render_event_banner(ctx, lang)
-
-    # --- Banderas de disponibilidad ---
     if not ctx["shakemap_ok"]:
         st.error(t("banner_sin_shakemap", lang))
-    if not ctx["pop_available"]:
-        st.warning(t("banner_sin_poblacion", lang))
-    elif ctx.get("pop_src") == "remota":
-        st.info(t("banner_pop_remota", lang))
-    if ctx.get("proyec_ok"):
-        st.caption(t("nota_proyeccion", lang))
 
+    # ── MAPA — primero, sin scroll ────────────────────────────────────────────
+    st_folium(_build_map(df, zone, ctx, lang), height=520, width="stretch",
+              returned_objects=[], key=f"map_{zone_id}")
+    st.caption(f"{t('leyenda', lang)}: 🔴 {t('prioridad_alta', lang)} · "
+               f"🟠 {t('prioridad_media', lang)} · 🔵 {t('prioridad_baja', lang)} — "
+               f"{t('nota_modelo', lang)}")
+
+    # ── KPIs compactos justo debajo del mapa ─────────────────────────────────
     n_alta = int((df["prioridad"] == "alta").sum())
     c1, c2, c3 = st.columns(3)
     c1.metric(t("kpi_mmi_max", lang), f"{df['mmi'].max():.1f}" if ctx["shakemap_ok"] else "—")
     c2.metric(t("kpi_celdas_alta", lang), f"{n_alta}")
     c3.metric(t("recursos_titulo", lang), f"{len(ctx['resources'])}")
 
-    st_folium(_build_map(df, zone, ctx, lang), height=520, width="stretch",
-              returned_objects=[], key=f"map_{zone_id}")
-    st.caption(f"{t('leyenda', lang)}: 🔴 {t('prioridad_alta', lang)} · "
-               f"🟠 {t('prioridad_media', lang)} · 🔵 {t('prioridad_baja', lang)} — "
-               f"{t('nota_modelo', lang)}")
+    st.markdown("---")
+
+    # ── BANNER DE EVENTO (plegado por defecto, accesible) ────────────────────
+    with st.expander("📍 " + t("sismo_titulo", lang) + " · ⏳ " + t("reloj_titulo", lang),
+                     expanded=False):
+        render_event_banner(ctx, lang)
+
+    # ── DISPONIBILIDAD Y PROYECCIONES ─────────────────────────────────────────
+    if not ctx["pop_available"]:
+        st.warning(t("banner_sin_poblacion", lang))
+    elif ctx.get("pop_src") == "remota":
+        st.info(t("banner_pop_remota", lang))
+    if ctx.get("proyec_ok"):
+        st.caption(t("nota_proyeccion", lang))
     if ctx["pop_available"]:
         st.caption("ℹ️ " + t("nota_poblacion", lang))
 
+    # ── TABLA DE PRIORIDAD ────────────────────────────────────────────────────
     if ctx["shakemap_ok"]:
         st.subheader(t("tabla_prioridad", lang))
         top = df.nlargest(20, "score_norm").copy()
@@ -403,6 +412,7 @@ def render_zone(zone_id: str) -> None:
         st.download_button(t("descargar_csv", lang), df.to_csv(index=False).encode("utf-8"),
                            file_name=f"prioridad_{zone_id}.csv", mime="text/csv")
 
+    # ── RECURSOS CRÍTICOS (plegados) ──────────────────────────────────────────
     if not ctx["resources"].empty:
         with st.expander("🏥 " + t("recursos_titulo", lang)):
             st.dataframe(ctx["resources"][["etiqueta", "nombre", "lat", "lon"]],
