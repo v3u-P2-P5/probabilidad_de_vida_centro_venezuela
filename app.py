@@ -148,16 +148,23 @@ if gf:
     st.caption(f"🔗 [{config['fuentes']['usgs_ground_failure']['nombre']}]"
                f"({config['fuentes']['usgs_ground_failure']['url']})")
 
-# --- Resumen por zona ---
+# --- Resumen por zona (con links navegables en cada fila) ---
 st.subheader("🗺️ " + t("resumen_zonas", lang))
-view = resumen.rename(columns={"nombre": t("col_zona", lang),
-                               "alta": t("col_celdas_alta", lang),
-                               "mmi": t("kpi_mmi_max", lang)})
-st.dataframe(view, width="stretch", hide_index=True)
 
-cols = st.columns(len(ZONA_PAGES))
-for col, (path, label) in zip(cols, ZONA_PAGES):
-    with col:
-        st.page_link(path, label=label)
+# Cabecera
+h0, h1, h2 = st.columns([3, 1, 1])
+h0.markdown(f"**{t('col_zona', lang)}**")
+h1.markdown(f"**{t('col_celdas_alta', lang)}**")
+h2.markdown(f"**{t('kpi_mmi_max', lang)}**")
+st.divider()
+
+# Fila por zona: link navegable + métricas
+zona_rows = resumen.to_dict("records")
+for row, (path, label) in zip(zona_rows, ZONA_PAGES):
+    c0, c1, c2 = st.columns([3, 1, 1])
+    with c0:
+        st.page_link(path, label=f"🗺️ {row['nombre']}")
+    c1.write(f"**{int(row['alta'])}**")
+    c2.write(f"{row['mmi']:.3f}" if not pd.isna(row["mmi"]) else "—")
 
 st.caption(f"🕒 {t('ultima_actualizacion', lang)}: {ctx['updated_at']}")
