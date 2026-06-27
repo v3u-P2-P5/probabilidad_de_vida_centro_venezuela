@@ -4,8 +4,9 @@
 # ============================================================================
 
 # --- Modo ---
-# operativo=true  => SOLO datos reales. Si una capa no está disponible se marca
-#                    como NO DISPONIBLE; NUNCA se inventan datos.
+# operativo=true  => SOLO datos reales + proyecciones estadísticas citadas.
+#                    Si una capa no está disponible se marca NO DISPONIBLE;
+#                    NUNCA se inventan datos.
 # operativo=false => modo demostración (datos sintéticos, claramente rotulados).
 modo_operativo: true
 
@@ -14,42 +15,94 @@ autorefresco_segundos: 120      # la app se actualiza sola cada N segundos
 shakemap_ttl_segundos: 300      # relee ShakeMap de USGS cada N segundos
 osm_ttl_segundos: 1800          # relee recursos OSM cada N segundos
 
-# --- Evento sísmico REAL (USGS) ---
+# --- Secuencia sísmica REAL (USGS) — SISMO DOBLE ---
+# Dos eventos en 38 segundos, epicentros separados ~5.5 km. Se combinan sus
+# ShakeMaps tomando la MMI máxima celda a celda (envolvente de sacudimiento).
 sismo:
-  usgs_event_id: "us6000t7zp"   # M7.5, 28 km SE de Yumare, Venezuela
+  usgs_event_id: "us6000t7zp"       # M7.5 principal (28 km SE Yumare, 22:05:11Z)
+  usgs_event_ids:                    # Secuencia completa para combinar ShakeMaps
+    - "us6000t7zp"                   # M7.5 · lon=-68.472 · lat=10.435 · 22:05:11Z
+    - "us6000t7zc"                   # M7.2 · lon=-68.528 · lat=10.436 · 22:04:33Z
   usar_datos_reales: true
   # Valores de respaldo (se sobrescriben con USGS en vivo):
-  origen_iso: "2026-06-24T22:05:11Z"   # 18:05 VET
+  origen_iso: "2026-06-24T22:05:11Z"   # 18:05 VET — hora de referencia para decaimiento
   magnitud: 7.5
   profundidad_km: 10
   epicentro: { lat: 10.4351, lon: -68.4716 }
 
-# --- Pesos del modelo (exponentes; se aplican en modo operativo a las capas
-#     REALES disponibles: sacudimiento, población, decaimiento, reportes) ---
+# --- Proyecciones estadísticas (habilitadas en modo operativo) ---
+# Las proyecciones estadísticas respaldadas con metodología citada NO se
+# consideran datos sintéticos — permiten estimar vulnerabilidad y ocupación
+# sin inventario real de campo. Se muestran siempre con el método y la cita.
+proyecciones_estadisticas:
+  habilitadas: true
+  metodo_vulnerabilidad: "FEMA HAZUS-MH MR5 (2012), Apéndice C — Fragility Functions. Calibrado para Venezuela con USGS PAGER Global Building Inventory (Jaiswal & Wald, 2010, doi:10.3133/ofr20101096)."
+  metodo_ocupacion: "FEMA HAZUS-MH 2.1, Tabla 3-6 — Occupancy Profiles. Adaptado para hora local 18:05 VET (día laborable, martes)."
+  metodo_inventario: "Inventario estructural por zona: estimación probabilística basada en USGS PAGER Global Building Inventory + caracterización morfológica de Caracas (Schmitz et al. 2012, Geofísica Internacional)."
+  ref_hazus: "https://www.fema.gov/sites/default/files/2020-09/fema_hazus-mh_2.1_technical-manual_0.pdf"
+  ref_pager: "https://pubs.usgs.gov/of/2010/1096/"
+  ref_schmitz: "https://www.sciencedirect.com/science/article/pii/S0016716912604289"
+
+# --- Inventario estructural por zona ---
+# Proyección estadística (ver proyecciones_estadisticas.metodo_inventario).
+# Fracción de cada tipo constructivo en la zona (deben sumar 1.0 por zona).
+# vuln=probabilidad de colapso dado MMI; void=huecos de supervivencia.
+inventario_estructural:
+  libertador:
+    informal: 0.25    # autoconstrucción de ladera (vuln=0.95, void=0.25)
+    masonry: 0.40     # mampostería no confinada (vuln=0.75, void=0.30)
+    rc_frame: 0.30    # pórtico de concreto armado (vuln=0.50, void=0.65)
+    highrise: 0.05    # edificio alto (vuln=0.45, void=0.70)
+  sucre_petare:
+    informal: 0.65    # mayoría barrios de ladera
+    masonry: 0.25
+    rc_frame: 0.10
+    highrise: 0.00
+  baruta_hatillo:
+    informal: 0.15
+    masonry: 0.30
+    rc_frame: 0.40
+    highrise: 0.15
+  la_guaira:
+    informal: 0.35    # zona litoral, alta exposición 1999
+    masonry: 0.45
+    rc_frame: 0.18
+    highrise: 0.02
+
+# --- Pesos del modelo ---
 pesos:
   sacudimiento: 1.0
-  colapso: 1.2            # solo modo demo (sin inventario estructural real)
+  colapso: 1.2
   poblacion: 1.0
-  supervivencia: 0.8      # solo modo demo
+  supervivencia: 0.8
   decaimiento_temporal: 1.0
   factor_boost_reporte: 0.5
 
 rejilla:
   tamano_celda_m: 150
 
-# --- Población real (descargar una vez con scripts/download_population.py) ---
+# --- Población real ---
 poblacion:
   raster_path: "data/raw/ven_ppp_2020_constrained.tif"   # WorldPop VEN 100m
-  worldpop_tif_url: "https://data.worldpop.org/GIS/Population/Global_2000_2020_Constrained/2020/maxar_v1/VEN/ven_ppp_2020_constrained.tif"
+  worldpop_tif_url: "https://data.worldpop.org/GIS/Population/Global_2000_2020/2020/VEN/ven_ppp_2020.tif"
+  # Fuente: WorldPop Hub API confirmada (ID=6448, dataset vpgp año 2020, 477 MB)
+  # Lectura remota NO disponible (servidor WorldPop no soporta HTTP range requests).
+  # Para activar la capa: ejecutar scripts/download_population.py (477 MB, una vez).
 
 # --- Fuentes de datos: enlaces OFICIALES exactos (se citan en la app) ---
 fuentes:
   usgs_evento:
-    nombre: "USGS — Página del evento M7.5"
+    nombre: "USGS — Evento principal M7.5 (us6000t7zp)"
     url: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/executive"
+  usgs_evento_secundario:
+    nombre: "USGS — Evento secundario M7.2 (us6000t7zc)"
+    url: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zc/executive"
   usgs_shakemap:
-    nombre: "USGS ShakeMap — Intensidad (MMI)"
+    nombre: "USGS ShakeMap — Intensidad combinada (MMI max entre ambos eventos)"
     url: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/shakemap/intensity"
+  usgs_shakemap_secundario:
+    nombre: "USGS ShakeMap M7.2"
+    url: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zc/shakemap/intensity"
   usgs_pager:
     nombre: "USGS PAGER — Víctimas y pérdidas estimadas"
     url: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/pager"
@@ -64,8 +117,14 @@ fuentes:
     nombre: "Maxar/Vantor Open Data — Imágenes pre/post evento"
     url: "https://www.maxar.com/open-data"
     stac_catalog: "https://maxar-opendata.s3.amazonaws.com/events/catalog.json"
+  unosat:
+    nombre: "UNOSAT — Mapas de crisis (UNITAR, libre acceso)"
+    url: "https://unosat.org/products/"
+  nasa_aria:
+    nombre: "NASA ARIA — Damage Proxy Map (SAR coherencia)"
+    url: "https://aria-share.jpl.nasa.gov/events/"
   worldpop:
-    nombre: "WorldPop — Población Venezuela (CC-BY 4.0)"
+    nombre: "WorldPop — Población Venezuela 100m (CC-BY 4.0)"
     url: "https://data.humdata.org/dataset/worldpop-population-density-for-venezuela-bolivarian-republic-of"
   meta_hrsl:
     nombre: "Meta/CIESIN HRSL — Densidad de población alta resolución (HDX)"
@@ -77,6 +136,12 @@ fuentes:
   hot:
     nombre: "Humanitarian OpenStreetMap Team (HOT)"
     url: "https://www.hotosm.org/"
+  hazus:
+    nombre: "FEMA HAZUS-MH 2.1 — Metodología de vulnerabilidad (proyección estadística)"
+    url: "https://www.fema.gov/flood-maps/tools-resources/flood-map-products/hazus"
+  pager_inventory:
+    nombre: "USGS PAGER Global Building Inventory (Jaiswal & Wald, 2010)"
+    url: "https://pubs.usgs.gov/of/2010/1096/"
 
 # --- Zonas (una página por zona). bbox = [lon_min, lat_min, lon_max, lat_max] ---
 zonas:

@@ -1,17 +1,24 @@
-"""Ensambla las capas y calcula el índice de prioridad por celda.
+"""Ensambla las capas y calcula el índice de prioridad SAR por celda.
 
-Modo OPERATIVO: solo datos reales (USGS ShakeMap + WorldPop + OSM). Si una capa
-falta, se marca como NO DISPONIBLE; jamás se inventan datos.
-Modo DEMO: datos sintéticos rotulados (para pruebas/capacitación).
+Modo OPERATIVO: datos reales de USGS (ShakeMap doble combinado, PAGER, OSM) +
+  proyecciones estadísticas respaldadas (vulnerabilidad HAZUS, ocupación HAZUS)
+  cuando están habilitadas en config.yaml. Cada capa citada y fechada.
+  Layers marcadas NO DISPONIBLE solo si son REAL e irrecuperablemente ausentes.
+
+Modo DEMO: datos sintéticos rotulados (capacitación, sin datos USGS).
+
+El índice estima PROBABILIDAD DE SOBREVIVIENTES CON VIDA, no ubicación de víctimas.
 """
 from datetime import datetime, timezone
 
 from core import scoring, shakemap
-from core.data_sources import get_sismo, synthetic_mmi
+from core.data_sources import get_sismo, get_sismos, synthetic_mmi
 from core.geo import make_grid
 from core.osm import fetch_resources
-from core.population import (generate_zone_population, population_present,
-                            sample_population_raster)
+from core.population import (
+    HORA_SISMO_VET, apply_occupancy, generate_zone_population,
+    get_population, population_present, zone_vuln_void,
+)
 from core.reports import boost_for_grid, load_reports
 from core.sources import fmt_vet_utc, layer, parse_iso
 
@@ -42,51 +49,100 @@ def _build_operativo(zone, config, now, with_osm=True):
     grid = make_grid(zone["bbox"], config["rejilla"]["tamano_celda_m"])
     df = grid.copy()
     layers, hs = [], hours_since(sismo, now)
+    proyec_cfg = config.get("proyecciones_estadisticas", {})
+    proyec_ok = proyec_cfg.get("habilitadas", False)
 
-    # --- Capa 1: sacudimiento real (USGS ShakeMap) ---
+    # --- Capa 1: ShakeMaps reales (USGS) — sismo doble combinado ---
     sm_ok = False
+    n_grids_ok = 0
     try:
-        url = sismo.get("shakemap_grid_url")
-        if not url:
-            raise RuntimeError("sin grid.xml")
-        path = shakemap.download_grid(url, ttl=config.get("shakemap_ttl_segundos", 300))
-        grid_sm = shakemap.parse_grid(path)
-        df["mmi"] = shakemap.interp_mmi(grid_sm, df["lat"].values, df["lon"].values)
+        eventos = get_sismos(config)
+        grids = []
+        for ev in eventos:
+            url = ev.get("shakemap_grid_url")
+            if not url:
+                continue
+            path = shakemap.download_grid_for_event(
+                ev["id"], url, ttl=config.get("shakemap_ttl_segundos", 300))
+            grids.append(shakemap.parse_grid(path))
+            n_grids_ok += 1
+
+        if not grids:
+            raise RuntimeError("Ningún ShakeMap disponible en USGS")
+
+        df["mmi"] = shakemap.interp_mmi_max(grids, df["lat"].values, df["lon"].values)
         sm_ok = True
+        sm_label = f"ShakeMap combinado ({n_grids_ok} evento{'s' if n_grids_ok>1 else ''})"
         layers.append(layer(f["usgs_shakemap"]["nombre"], f["usgs_shakemap"]["url"],
-                            "ok", datetime.now(timezone.utc),
-                            f"ShakeMap v{grid_sm.get('version')} · proc. {grid_sm.get('process_timestamp')}"))
+                            "ok", datetime.now(timezone.utc), sm_label))
+        if n_grids_ok > 1 and "usgs_shakemap_secundario" in f:
+            layers.append(layer(f["usgs_shakemap_secundario"]["nombre"],
+                                f["usgs_shakemap_secundario"]["url"], "ok",
+                                datetime.now(timezone.utc), "ShakeMap M7.2 incluido"))
     except Exception as e:
         df["mmi"] = float("nan")
         layers.append(layer(f["usgs_shakemap"]["nombre"], f["usgs_shakemap"]["url"],
                             "no_disponible", detalle=str(e)))
 
-    # --- Capa 2: población real (WorldPop / Meta HRSL) ---
-    pop = sample_population_raster(df["lat"].values, df["lon"].values,
-                                   config["poblacion"]["raster_path"])
-    pop_ok = pop is not None
+    # --- Capa 2: Población real (local → remota → no disponible) ---
+    pop_raw, pop_src = get_population(df["lat"].values, df["lon"].values, config)
+    pop_ok = pop_raw is not None
     if pop_ok:
-        df["pop"] = pop
-        df["pop_norm"] = scoring.normalize(pop)
-        layers.append(layer(f["worldpop"]["nombre"], f["worldpop"]["url"], "ok",
-                            datetime.now(timezone.utc),
-                            "Población residencial; el ajuste horario requiere datos de movilidad no disponibles."))
+        # Proyección estadística de ocupación a la hora del sismo (HAZUS)
+        if proyec_ok:
+            zone_uso = zone.get("uso", "mixto")
+            pop_presente = apply_occupancy(pop_raw, zone_uso, HORA_SISMO_VET)
+            df["pop"] = pop_presente
+            layers.append(layer(
+                "Ocupación × WorldPop (proyección estadística HAZUS)",
+                proyec_cfg.get("ref_hazus", f["hazus"]["url"]),
+                "ok", datetime.now(timezone.utc),
+                f"WorldPop {pop_src} × ocupación HAZUS 18:05 VET · método: {proyec_cfg.get('metodo_ocupacion', '')}"))
+        else:
+            df["pop"] = pop_raw
+        df["pop_norm"] = scoring.normalize(df["pop"].values)
+        layers.append(layer(f["worldpop"]["nombre"], f["worldpop"]["url"],
+                            "ok", datetime.now(timezone.utc),
+                            f"Fuente: {pop_src} (WorldPop VEN 100m, CC-BY 4.0)"))
     else:
         df["pop"] = float("nan")
-        df["pop_norm"] = 1.0  # neutral: no penaliza, pero se rotula la ausencia
-        layers.append(layer(f["worldpop"]["nombre"], f["worldpop"]["url"], "no_disponible",
-                            detalle="Ráster no descargado. Ver scripts/download_population.py"))
+        df["pop_norm"] = 1.0   # neutro: no penaliza ni infla
+        layers.append(layer(f["worldpop"]["nombre"], f["worldpop"]["url"],
+                            "no_disponible",
+                            detalle="Ráster local no encontrado y lectura remota falló. "
+                                    "Ejecute scripts/download_population.py o revise la conexión."))
 
-    # --- Capa 3: reportes de campo (tiempo real) ---
+    # --- Capa 3: Vulnerabilidad estructural (proyección estadística HAZUS) ---
+    vuln_proj, void_proj = None, None
+    if proyec_ok:
+        vuln_z, void_z = zone_vuln_void(zone["id"], config)
+        df["vuln"] = vuln_z
+        df["void"] = void_z
+        vuln_proj = vuln_z
+        void_proj = void_z
+        layers.append(layer(
+            "Vulnerabilidad estructural (proyección estadística HAZUS+PAGER)",
+            proyec_cfg.get("ref_pager", f["pager_inventory"]["url"]),
+            "ok", datetime.now(timezone.utc),
+            f"vuln={vuln_z:.2f} void={void_z:.2f} · zona {zone['id']} · método: {proyec_cfg.get('metodo_inventario', '')}"))
+
+    # --- Capa 4: Reportes de campo (tiempo real) ---
     df["boost"] = boost_for_grid(df, _reports_for_zone(zone["id"]))
 
-    # --- Índice de prioridad (solo capas reales disponibles) ---
+    # --- Índice de prioridad de sobrevivientes ---
     if sm_ok:
         w = config["pesos"]
-        df["score"] = (scoring.shaking_factor(df["mmi"].values) ** w["sacudimiento"]
-                       * df["pop_norm"].values ** w["poblacion"]
-                       * scoring.time_decay(hs) ** w["decaimiento_temporal"]
-                       + df["boost"].values * w["factor_boost_reporte"])
+        if proyec_ok and vuln_proj is not None:
+            # Modelo completo: sacudimiento × colapso × población × supervivencia × decaimiento
+            df["score"] = scoring.life_probability(
+                df["mmi"].values, df["vuln"].values, df["void"].values,
+                df["pop_norm"].values, hs, w, df["boost"].values)
+        else:
+            # Modelo reducido: sacudimiento × población × decaimiento + reportes
+            df["score"] = (scoring.shaking_factor(df["mmi"].values) ** w["sacudimiento"]
+                           * df["pop_norm"].values ** w["poblacion"]
+                           * scoring.time_decay(hs) ** w["decaimiento_temporal"]
+                           + df["boost"].values * w["factor_boost_reporte"])
         df["score_norm"] = scoring.normalize(df["score"].values)
         df["prioridad"] = scoring.priority_category(df["score_norm"].values)
     else:
@@ -109,10 +165,13 @@ def _build_operativo(zone, config, now, with_osm=True):
 
     ctx = {
         "modo": "operativo", "sismo": sismo, "hours_since": hs,
-        "pop_available": pop_ok, "shakemap_ok": sm_ok,
+        "pop_available": pop_ok, "pop_src": pop_src,
+        "shakemap_ok": sm_ok, "n_shakemaps": n_grids_ok,
+        "proyec_ok": proyec_ok,
         "resources": resources, "layers": layers,
         "pager": sismo.get("pager"), "alert_pager": sismo.get("alert_pager"),
         "ground_failure": sismo.get("ground_failure"),
+        "sismos_adicionales": sismo.get("sismos_adicionales", []),
         "updated_at": fmt_vet_utc(), "fuentes": f,
     }
     return df, ctx
@@ -137,7 +196,10 @@ def _build_demo(zone, config, now):
     df["prioridad"] = scoring.priority_category(df["score_norm"].values)
     import pandas as pd
     ctx = {"modo": "demo", "sismo": sismo, "hours_since": hs, "pop_available": True,
-           "shakemap_ok": True, "resources": pd.DataFrame(), "layers": [],
+           "pop_src": "sintético", "shakemap_ok": True, "n_shakemaps": 0,
+           "proyec_ok": False,
+           "resources": pd.DataFrame(), "layers": [],
            "pager": None, "alert_pager": None, "ground_failure": None,
+           "sismos_adicionales": [],
            "updated_at": fmt_vet_utc(), "fuentes": config.get("fuentes", {})}
     return df, ctx

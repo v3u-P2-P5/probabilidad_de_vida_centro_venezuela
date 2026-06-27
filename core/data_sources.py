@@ -1,8 +1,10 @@
 """Cliente USGS: evento, ShakeMap, PAGER (víctimas) y ground-failure.
 
-Datos OFICIALES y en vivo (FDSN event API). Una sola consulta estructura todo.
+Soporta secuencia sísmica (sismo doble): get_sismos() devuelve todos los eventos
+principales; get_sismo() devuelve el de mayor magnitud como referencia.
+Datos OFICIALES y en vivo (FDSN event API).
 """
-from datetime import datetime
+from datetime import datetime, timezone
 import numpy as np
 import requests
 
@@ -31,7 +33,7 @@ def get_event(event_id: str, timeout: float = 12.0) -> dict | None:
         "magnitud": p.get("mag"),
         "profundidad_km": depth,
         "epicentro": {"lat": lat, "lon": lon},
-        "origen_iso": datetime.utcfromtimestamp(p["time"] / 1000).isoformat() + "Z",
+        "origen_iso": datetime.fromtimestamp(p["time"] / 1000, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "lugar": p.get("place"),
         "url": p.get("url"),
         "alert_pager": p.get("alert"),
@@ -63,13 +65,33 @@ def get_event(event_id: str, timeout: float = 12.0) -> dict | None:
     return out
 
 
+def get_sismos(config: dict, timeout: float = 12.0) -> list:
+    """Devuelve todos los eventos de la secuencia sísmica (para combinar ShakeMaps)."""
+    sismo_cfg = config["sismo"]
+    if not sismo_cfg.get("usar_datos_reales"):
+        return []
+    ids = sismo_cfg.get("usgs_event_ids") or [sismo_cfg.get("usgs_event_id")]
+    eventos = []
+    for eid in ids:
+        if not eid:
+            continue
+        e = get_event(eid, timeout=timeout)
+        if e:
+            eventos.append(e)
+    return eventos
+
+
 def get_sismo(config: dict) -> dict:
-    """Parámetros del sismo: reales (USGS) si es posible, si no los de respaldo."""
+    """Parámetros del sismo principal (mayor magnitud): reales si posible, respaldo si no."""
     sismo = dict(config["sismo"])
-    if sismo.get("usar_datos_reales") and sismo.get("usgs_event_id"):
-        real = get_event(sismo["usgs_event_id"])
-        if real:
-            sismo.update({k: v for k, v in real.items() if v is not None})
+    if sismo.get("usar_datos_reales"):
+        eventos = get_sismos(config)
+        if eventos:
+            principal = max(eventos, key=lambda e: e.get("magnitud") or 0)
+            secundarios = [e for e in eventos if e["id"] != principal["id"]]
+            sismo.update({k: v for k, v in principal.items() if v is not None})
+            if secundarios:
+                sismo["sismos_adicionales"] = secundarios
             return sismo
     sismo.setdefault("fuente", "respaldo (config)")
     return sismo

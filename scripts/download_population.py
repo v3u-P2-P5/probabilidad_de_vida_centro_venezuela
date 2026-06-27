@@ -4,8 +4,14 @@
 Uso:
     python scripts/download_population.py
 
-Fuente oficial (citar): WorldPop — https://www.worldpop.org/
-Página del país (HDX): https://data.humdata.org/dataset/worldpop-population-density-for-venezuela-bolivarian-republic-of
+Fuente oficial (citar):
+  WorldPop Hub — https://hub.worldpop.org/geodata/listing?id=6448
+  WorldPop — https://www.worldpop.org/
+  Página del país (HDX):
+    https://data.humdata.org/dataset/worldpop-population-density-for-venezuela-bolivarian-republic-of
+
+Nota: El archivo pesa ~477 MB. La lectura remota no es posible porque el servidor
+WorldPop no soporta HTTP range requests (no es COG). Se descarga una sola vez.
 
 Alternativa de mayor resolución (30 m): Meta/CIESIN HRSL en HDX
 https://data.humdata.org/dataset/kontur-population-venezuela-bolivarian-republic-of

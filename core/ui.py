@@ -1,4 +1,7 @@
-"""Componentes de interfaz reutilizables (Streamlit + Folium)."""
+"""Componentes de interfaz reutilizables (Streamlit + Folium).
+
+Framing: el mapa muestra PROBABILIDAD DE SOBREVIVIENTES CON VIDA, no víctimas.
+"""
 import folium
 import pandas as pd
 import streamlit as st
@@ -37,7 +40,7 @@ def apply_chrome(config: dict) -> str:
 
 
 def _status_icon(status: str) -> str:
-    return {"ok": "🟢", "no_disponible": "🔴"}.get(status, "⚪")
+    return {"ok": "🟢", "no_disponible": "🔴", "proyeccion": "🔵"}.get(status, "⚪")
 
 
 def render_sources(ctx: dict, lang: str) -> None:
@@ -45,20 +48,26 @@ def render_sources(ctx: dict, lang: str) -> None:
     f = ctx.get("fuentes", {})
     with st.sidebar.expander("📚 " + t("fuentes_titulo", lang), expanded=False):
         for ly in ctx.get("layers", []):
-            estado = t("estado_ok", lang) if ly["status"] == "ok" else t("no_disponible", lang)
+            estado = (t("estado_ok", lang) if ly["status"] == "ok"
+                      else t("proyeccion_estadistica", lang) if ly["status"] == "proyeccion"
+                      else t("no_disponible", lang))
             st.markdown(f"{_status_icon(ly['status'])} **{ly['nombre']}** — {estado}  \n"
                         f"[{t('ver_fuente', lang)}]({ly['url']})"
                         + (f"  \n_{ly['fetched']}_" if ly.get("fetched") else "")
                         + (f"  \n_{ly['detalle']}_" if ly.get("detalle") else ""))
-        for key in ("usgs_evento", "usgs_pager", "usgs_ground_failure",
-                    "copernicus_ems", "maxar_open_data", "meta_hrsl", "hot"):
+
+        st.markdown("---")
+        for key in ("usgs_evento", "usgs_evento_secundario", "usgs_pager",
+                    "usgs_ground_failure", "copernicus_ems", "maxar_open_data",
+                    "unosat", "nasa_aria", "meta_hrsl", "hot",
+                    "hazus", "pager_inventory"):
             if key in f:
                 st.markdown(f"🔗 [{f[key]['nombre']}]({f[key]['url']})")
     st.sidebar.caption(t("atribucion", lang))
 
 
 def render_event_banner(ctx: dict, lang: str) -> None:
-    """Modo, evento real, reloj 72h, PAGER y peligros secundarios."""
+    """Modo, sismo doble, reloj 72h, PAGER y peligros secundarios."""
     modo = ctx["modo"]
     (st.error if modo == "operativo" else st.warning)(
         t("modo_operativo_label" if modo == "operativo" else "modo_demo_label", lang))
@@ -68,6 +77,21 @@ def render_event_banner(ctx: dict, lang: str) -> None:
     place = s.get("lugar", "")
     st.markdown(f"**{t('evento_real', lang)}:** M{s.get('magnitud')} · {place} · "
                 f"{t('hora_evento', lang)}: {fmt_vet_utc(parse_iso(s['origen_iso']))}")
+
+    # --- Sismo doble ---
+    adicionales = ctx.get("sismos_adicionales", [])
+    n_sm = ctx.get("n_shakemaps", 1)
+    if adicionales or n_sm > 1:
+        a = adicionales[0] if adicionales else {}
+        mag1 = s.get("magnitud", "?")
+        mag2 = a.get("magnitud", "?")
+        st.warning(t("sismo_doble_banner", lang,
+                     m1=s.get("id", ""), mag1=mag1,
+                     m2=a.get("id", ""), mag2=mag2))
+        st.caption(f"ShakeMaps combinados (MMI máx): {n_sm} eventos")
+
+    # --- Actualización en tiempo real ---
+    st.caption(t("actualizacion_tiempo_real", lang))
 
     if hs >= 72:
         st.error(t("ventana_agotada", lang))
@@ -83,7 +107,8 @@ def render_event_banner(ctx: dict, lang: str) -> None:
     gf = ctx.get("ground_failure") or {}
     if gf.get("liquefaction_pop"):
         cols[3].metric(t("exposicion_licuefaccion", lang),
-                       f"{ALERT_COLORS.get(gf.get('liquefaction_alert'),'')} {int(gf['liquefaction_pop']):,}")
+                       f"{ALERT_COLORS.get(gf.get('liquefaction_alert'),'')} "
+                       f"{int(gf['liquefaction_pop']):,}")
 
 
 def _build_map(df, zone, ctx, lang):
@@ -127,10 +152,15 @@ def render_zone(zone_id: str) -> None:
     st.caption(t("subtitulo_zona", lang))
     render_event_banner(ctx, lang)
 
+    # --- Banderas de disponibilidad ---
     if not ctx["shakemap_ok"]:
         st.error(t("banner_sin_shakemap", lang))
     if not ctx["pop_available"]:
         st.warning(t("banner_sin_poblacion", lang))
+    elif ctx.get("pop_src") == "remota":
+        st.info(t("banner_pop_remota", lang))
+    if ctx.get("proyec_ok"):
+        st.caption(t("nota_proyeccion", lang))
 
     n_alta = int((df["prioridad"] == "alta").sum())
     c1, c2, c3 = st.columns(3)
@@ -138,7 +168,7 @@ def render_zone(zone_id: str) -> None:
     c2.metric(t("kpi_celdas_alta", lang), f"{n_alta}")
     c3.metric(t("recursos_titulo", lang), f"{len(ctx['resources'])}")
 
-    st_folium(_build_map(df, zone, ctx, lang), height=520, use_container_width=True,
+    st_folium(_build_map(df, zone, ctx, lang), height=520, width="stretch",
               returned_objects=[], key=f"map_{zone_id}")
     st.caption(f"{t('leyenda', lang)}: 🔴 {t('prioridad_alta', lang)} · "
                f"🟠 {t('prioridad_media', lang)} · 🔵 {t('prioridad_baja', lang)} — "
@@ -151,11 +181,13 @@ def render_zone(zone_id: str) -> None:
         top = df.nlargest(20, "score_norm").copy()
         top["prioridad"] = top["prioridad"].map(lambda k: t(f"prioridad_{k}", lang)
                                                  if k in ("alta", "media", "baja") else k)
-        view = top[["cell_id", "lat", "lon", "mmi", "pop", "prioridad", "score_norm"]].rename(
-            columns={"cell_id": t("col_celda", lang), "lat": t("col_lat", lang),
-                     "lon": t("col_lon", lang), "mmi": t("col_mmi", lang),
-                     "pop": t("col_pob_celda", lang), "prioridad": t("col_prioridad", lang),
-                     "score_norm": t("col_score", lang)})
+        view_cols = ["cell_id", "lat", "lon", "mmi", "pop", "prioridad", "score_norm"]
+        view_cols = [c for c in view_cols if c in top.columns]
+        view = top[view_cols].rename(columns={
+            "cell_id": t("col_celda", lang), "lat": t("col_lat", lang),
+            "lon": t("col_lon", lang), "mmi": t("col_mmi", lang),
+            "pop": t("col_pob_celda", lang), "prioridad": t("col_prioridad", lang),
+            "score_norm": t("col_score", lang)})
         st.dataframe(view, width="stretch", hide_index=True)
         st.download_button(t("descargar_csv", lang), df.to_csv(index=False).encode("utf-8"),
                            file_name=f"prioridad_{zone_id}.csv", mime="text/csv")

@@ -1,4 +1,4 @@
-"""Página de inicio — Mapa de Probabilidad de Vida (Caracas y La Guaira)."""
+"""Página de inicio — Mapa de Probabilidad de Sobrevivientes (Caracas y La Guaira)."""
 import pandas as pd
 import streamlit as st
 
@@ -9,7 +9,7 @@ from core.reports import load_reports
 from core.sources import fmt_vet_utc, parse_iso
 from core.ui import ALERT_COLORS, apply_chrome, render_sources
 
-st.set_page_config(page_title="Probabilidad de Vida", page_icon="🛰️", layout="wide")
+st.set_page_config(page_title="Probabilidad de Sobrevivientes", page_icon="🛰️", layout="wide")
 
 config = load_config()
 lang = apply_chrome(config)
@@ -35,11 +35,19 @@ st.caption(t("app_subtitle", lang))
     t("modo_operativo_label" if ctx["modo"] == "operativo" else "modo_demo_label", lang))
 st.markdown(t("intro", lang))
 
-# --- Evento real ---
+# --- Secuencia sísmica (sismo doble) ---
 s = ctx["sismo"]
 st.subheader("📍 " + t("sismo_titulo", lang))
+
+adicionales = ctx.get("sismos_adicionales", [])
+if adicionales:
+    a = adicionales[0]
+    st.warning(t("sismo_doble_banner", lang,
+                 m1=s.get("id", "us6000t7zp"), mag1=s.get("magnitud", 7.5),
+                 m2=a.get("id", "us6000t7zc"), mag2=a.get("magnitud", 7.2)))
+
 c = st.columns(4)
-c[0].metric(t("magnitud", lang), f"{s.get('magnitud')}")
+c[0].metric(t("magnitud", lang), f"M{s.get('magnitud')}")
 c[1].metric(t("profundidad", lang), f"{s.get('profundidad_km','?')} km")
 c[2].metric(t("epicentro", lang), f"{s['epicentro']['lat']:.3f}, {s['epicentro']['lon']:.3f}")
 if ctx.get("alert_pager"):
@@ -48,6 +56,13 @@ if ctx.get("alert_pager"):
 st.caption(f"📌 {s.get('lugar','')} · 🕒 {t('hora_evento', lang)}: {fmt_vet_utc(parse_iso(s['origen_iso']))}")
 if s.get("url"):
     st.caption(f"🔗 [{t('evento_real', lang)}]({s['url']})")
+    if adicionales:
+        a = adicionales[0]
+        if a.get("url"):
+            st.caption(f"🔗 [{t('sismo_secundario', lang)} M{a.get('magnitud')}]({a['url']})")
+
+# Actualización en tiempo real
+st.caption(t("actualizacion_tiempo_real", lang))
 
 # --- Reloj 72h ---
 st.subheader("⏳ " + t("reloj_titulo", lang))
@@ -60,6 +75,10 @@ cc = st.columns(2)
 cc[0].metric(t("horas_transcurridas", lang), f"{hs:.1f} h")
 cc[1].metric(t("horas_restantes", lang), f"{max(72 - hs, 0):.1f} h")
 st.progress(min(hs / 72.0, 1.0))
+
+# --- Proyecciones estadísticas activas ---
+if ctx.get("proyec_ok"):
+    st.caption(t("nota_proyeccion", lang))
 
 # --- Peligros secundarios (USGS ground-failure) ---
 gf = ctx.get("ground_failure") or {}

@@ -1,8 +1,8 @@
 """Descarga y parseo del ShakeMap real de USGS (grid.xml).
 
-El grid.xml es una malla regular lat/lon con MMI/PGA/PGV por punto. Aquí se
-interpola la MMI MEDIDA sobre la rejilla de análisis de cada zona. Esto NO es
-un modelo: es la intensidad oficial publicada por USGS.
+Soporta secuencia sísmica (sismo doble): descarga un grid.xml por evento y
+devuelve la MMI envolvente (máxima celda a celda). Ambas grillas son reales y
+publicadas por USGS; la combinación refleja el sacudimiento real acumulado.
 """
 import re
 import time
@@ -25,6 +25,13 @@ def download_grid(url: str, dest: Path = CACHE, ttl: float = 300.0,
         r.raise_for_status()
         dest.write_bytes(r.content)
     return dest
+
+
+def download_grid_for_event(event_id: str, url: str, ttl: float = 300.0,
+                             timeout: float = 30.0) -> Path:
+    """Descarga el grid.xml de un evento específico en caché propia."""
+    dest = ROOT / "data" / "raw" / f"shakemap_{event_id}.xml"
+    return download_grid(url, dest=dest, ttl=ttl, timeout=timeout)
 
 
 def parse_grid(path: Path = CACHE) -> dict:
@@ -68,3 +75,17 @@ def interp_mmi(grid: dict, lats, lons) -> np.ndarray:
     top = m[r0, c0] * (1 - wc) + m[r0, c1] * wc
     bot = m[r1, c0] * (1 - wc) + m[r1, c1] * wc
     return top * (1 - wr) + bot * wr
+
+
+def interp_mmi_max(grids: list, lats, lons) -> np.ndarray:
+    """MMI máxima en cada punto entre múltiples ShakeMaps (secuencia sísmica).
+
+    La envolvente máxima refleja el peor sacudimiento real acumulado cuando
+    ocurren dos eventos en secuencia (p.ej. M7.2 seguido de M7.5 a 38 s).
+    """
+    if not grids:
+        raise ValueError("Lista de grids vacía")
+    if len(grids) == 1:
+        return interp_mmi(grids[0], lats, lons)
+    arrays = [interp_mmi(g, lats, lons) for g in grids]
+    return np.max(np.stack(arrays, axis=0), axis=0)
