@@ -39,6 +39,41 @@ KIND_LABELS = {
     "shelter": "⛺ Refugio",
 }
 
+# Orden de presentación por tipo (prioridad SAR)
+KIND_ORDER = ["hospital", "ambulance_station", "clinic", "fire_station", "shelter"]
+
+
+def _geo_sector(lat: float, lon: float, bbox: list) -> str:
+    """Sector geográfico dentro del bbox usando el eje más largo."""
+    lon_min, lat_min, lon_max, lat_max = bbox
+    lon_span = lon_max - lon_min
+    lat_span = lat_max - lat_min
+    if lon_span >= lat_span:          # zona más ancha que alta → dividir E-W
+        frac = (lon - lon_min) / lon_span if lon_span else 0.5
+        if frac < 0.34:  return "Sector Oeste"
+        if frac < 0.67:  return "Sector Centro"
+        return "Sector Este"
+    else:                              # zona más alta que ancha → dividir N-S
+        frac = (lat - lat_min) / lat_span if lat_span else 0.5
+        if frac < 0.34:  return "Sector Sur"
+        if frac < 0.67:  return "Sector Centro"
+        return "Sector Norte"
+
+
+def assign_areas(df: pd.DataFrame, bbox: list) -> pd.DataFrame:
+    """Llena columna 'area' usando tags OSM; fallback a sector geográfico."""
+    def _area(row):
+        # Tags OSM de barrio/sector, de más a menos específico
+        for tag in ("neighbourhood", "suburb", "quarter", "district"):
+            val = row.get(tag, "")
+            if val:
+                return val.strip().title()
+        return _geo_sector(row["lat"], row["lon"], bbox)
+
+    df = df.copy()
+    df["area"] = df.apply(_area, axis=1)
+    return df
+
 
 def fetch_resources(bbox, endpoint: str, ttl: float = 1800.0,
                     timeout: float = 30.0) -> pd.DataFrame:
@@ -92,23 +127,28 @@ def fetch_resources(bbox, endpoint: str, ttl: float = 1800.0,
                    or "")
 
             rows.append({
-                "nombre":   tags.get("name", "—"),
-                "tipo":     kind,
-                "etiqueta": KIND_LABELS.get(kind, kind),
-                "lat":      lat,
-                "lon":      lon,
-                "telefono": phone,
-                "direccion": addr_full,
-                "web":      web,
+                "nombre":        tags.get("name", "—"),
+                "tipo":          kind,
+                "etiqueta":      KIND_LABELS.get(kind, kind),
+                "lat":           lat,
+                "lon":           lon,
+                "telefono":      phone,
+                "direccion":     addr_full,
+                "web":           web,
+                # Tags OSM de área/barrio para clasificación geográfica
+                "neighbourhood": tags.get("addr:neighbourhood", ""),
+                "suburb":        tags.get("addr:suburb", ""),
+                "quarter":       tags.get("addr:quarter", ""),
+                "district":      tags.get("addr:district", ""),
             })
     except Exception:
         df = pd.DataFrame(columns=["nombre", "tipo", "etiqueta", "lat", "lon",
-                                   "telefono", "direccion", "web"])
+                                   "telefono", "direccion", "web",
+                                   "neighbourhood", "suburb", "quarter", "district"])
         df.attrs["error"] = True
         return df
 
-    df = pd.DataFrame(rows, columns=["nombre", "tipo", "etiqueta", "lat", "lon",
-                                     "telefono", "direccion", "web"])
+    df = pd.DataFrame(rows)
     df.attrs["error"] = False
     _CACHE[key] = (time.time(), df)
     return df

@@ -412,31 +412,39 @@ def render_zone(zone_id: str) -> None:
         st.download_button(t("descargar_csv", lang), df.to_csv(index=False).encode("utf-8"),
                            file_name=f"prioridad_{zone_id}.csv", mime="text/csv")
 
-    # ── RECURSOS CRÍTICOS (tarjetas con teléfono y dirección) ────────────────
+    # ── RECURSOS CRÍTICOS agrupados por área ─────────────────────────────────
     if not ctx["resources"].empty:
-        with st.expander(f"🏥 {t('recursos_titulo', lang)} ({len(ctx['resources'])})",
-                         expanded=True):
-            for _, r in ctx["resources"].iterrows():
-                tel   = r.get("telefono", "")
-                addr  = r.get("direccion", "")
-                web   = r.get("web", "")
-                maps_url = (f"https://www.google.com/maps/search/?api=1"
-                            f"&query={r['lat']},{r['lon']}")
+        res = ctx["resources"]
+        has_area = "area" in res.columns
+        titulo = f"🏥 {t('recursos_titulo', lang)} ({len(res)})"
+        with st.expander(titulo, expanded=True):
+            if has_area:
+                areas = sorted(res["area"].unique())
+            else:
+                areas = [None]
 
-                tel_line  = f"📞 [{tel}](tel:{tel.replace(' ','')})" if tel else ""
-                addr_line = f"📍 {addr}" if addr else ""
-                web_line  = f"🌐 [{web}]({web})" if web else ""
-                detail    = "  \n".join(x for x in [tel_line, addr_line, web_line] if x)
-                if not detail:
-                    detail = f"📍 [Ver en mapa]({maps_url})"
-                else:
-                    detail += f"  \n📍 [Ver en mapa]({maps_url})"
+            for area in areas:
+                group = res[res["area"] == area] if has_area and area else res
+                if group.empty:
+                    continue
+                if has_area and area:
+                    st.markdown(f"#### 📌 {area}")
 
-                st.markdown(
-                    f"**{r['etiqueta']}** — {r['nombre']}  \n{detail}",
-                    unsafe_allow_html=False,
-                )
-                st.divider()
+                for _, r in group.sort_values("tipo").iterrows():
+                    tel      = r.get("telefono", "") or ""
+                    addr     = r.get("direccion", "") or ""
+                    web      = r.get("web", "") or ""
+                    maps_url = (f"https://www.google.com/maps/search/?api=1"
+                                f"&query={r['lat']},{r['lon']}")
+
+                    tel_line  = f"📞 [{tel}](tel:{tel.replace(' ','')})" if tel else ""
+                    addr_line = f"📍 {addr}" if addr else ""
+                    web_line  = f"🌐 [{web}]({web})" if web else ""
+                    detail    = "  \n".join(x for x in [tel_line, addr_line, web_line] if x)
+                    detail   += ("  \n" if detail else "") + f"[📍 Ver en mapa]({maps_url})"
+
+                    st.markdown(f"**{r['etiqueta']}** — {r['nombre']}  \n{detail}")
+                    st.divider()
 
 
 @st.cache_data(ttl=110, show_spinner=False)

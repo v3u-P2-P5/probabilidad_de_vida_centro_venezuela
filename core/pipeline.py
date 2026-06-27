@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from core import scoring, shakemap
 from core.data_sources import get_sismo, get_sismos, synthetic_mmi
 from core.geo import make_grid
-from core.osm import fetch_resources
+from core.osm import assign_areas, fetch_resources
 from core.population import (
     HORA_SISMO_VET, apply_occupancy, generate_zone_population,
     get_population, population_present, zone_vuln_void,
@@ -154,6 +154,8 @@ def _build_operativo(zone, config, now, with_osm=True):
     if with_osm:
         resources = fetch_resources(zone["bbox"], f["osm"]["overpass"],
                                     ttl=config.get("osm_ttl_segundos", 1800))
+        if not resources.empty and not resources.attrs.get("error"):
+            resources = assign_areas(resources, zone["bbox"])
         layers.append(layer(
             f["osm"]["nombre"], f["osm"]["url"],
             "no_disponible" if resources.attrs.get("error") else "ok",
