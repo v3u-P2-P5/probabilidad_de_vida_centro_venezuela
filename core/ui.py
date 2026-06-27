@@ -323,7 +323,10 @@ def _build_map(df, zone, ctx, lang):
     m = folium.Map(location=[(lat_min + lat_max) / 2, (lon_min + lon_max) / 2],
                    zoom_start=14, tiles="CartoDB positron", control_scale=True)
     if ctx["shakemap_ok"]:
-        HeatMap(df[["lat", "lon", "score_norm"]].dropna().values.tolist(),
+        # Heatmap solo con celdas que tienen esperanza (p_vida > 0): menos puntos
+        # → payload más liviano y coherente con "solo lugares con probabilidad".
+        heat = df[df["p_vida"] > 0] if "p_vida" in df.columns else df
+        HeatMap(heat[["lat", "lon", "score_norm"]].dropna().values.tolist(),
                 radius=18, blur=14, min_opacity=0.25).add_to(m)
         for _, r in df.nlargest(15, "score_norm").iterrows():
             pop_txt = "—" if pd.isna(r.get("pop")) else f"{int(r['pop'])}"
@@ -502,7 +505,7 @@ def render_zone(zone_id: str) -> None:
                     st.divider()
 
 
-@st.cache_data(ttl=110, show_spinner=False)
+@st.cache_data(ttl=300, show_spinner=False)
 def _cached_zone(zone_id: str, _refresh_salt: int):
     config = load_config()
     return build_zone(get_zone(config, zone_id), config)

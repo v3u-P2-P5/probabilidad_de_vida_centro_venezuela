@@ -24,7 +24,7 @@ V1 = 72
 V2 = 120
 
 
-@st.cache_data(ttl=110, show_spinner=True)
+@st.cache_data(ttl=300, show_spinner=True)
 def _resumen(_salt: int):
     rows, ctx = [], None
     for z in config["zonas"]:

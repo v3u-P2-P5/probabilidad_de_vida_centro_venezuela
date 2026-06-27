@@ -88,6 +88,8 @@ poblacion:
   # Fuente: WorldPop Hub API confirmada (ID=6448, dataset vpgp año 2020, 477 MB)
   # Lectura remota NO disponible (servidor WorldPop no soporta HTTP range requests).
   # Para activar la capa: ejecutar scripts/download_population.py (477 MB, una vez).
+  usar_api_remota: false   # API REST WorldPop por bloques: lenta (~30s/zona) bajo
+                           # carga. OFF → usa censo INE (instantáneo) si no hay TIF.
 
 # --- Fuentes de datos: enlaces OFICIALES exactos (se citan en la app) ---
 fuentes:

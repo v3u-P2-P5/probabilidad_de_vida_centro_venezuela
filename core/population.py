@@ -203,10 +203,13 @@ def get_population(lats, lons, config: dict, zone: dict | None = None):
         pop = sample_population_remote(lats, lons, url)
         if pop is not None:
             return pop, "remota"
-    # 3. WorldPop REST API por bloques (caché disco 24 h)
-    pop = sample_population_api(lats, lons)
-    if pop is not None:
-        return pop, "api"
+    # 3. WorldPop REST API por bloques (caché disco 24 h) — solo si está activada.
+    #    Es lenta (~30 s/zona) y satura el servidor bajo concurrencia; por defecto
+    #    se prefiere el censo INE (instantáneo). Activar con poblacion.usar_api_remota.
+    if config["poblacion"].get("usar_api_remota", False):
+        pop = sample_population_api(lats, lons)
+        if pop is not None:
+            return pop, "api"
     # 4. Censo INE Venezuela 2011 — siempre disponible, dato real publicado
     if zone is not None:
         return census_population(lats, lons, zone), "censo_ine"
