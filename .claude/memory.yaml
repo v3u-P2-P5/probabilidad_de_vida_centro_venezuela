@@ -20,7 +20,7 @@
 meta:
   proyecto: "Mapa de Probabilidad de Vida — Caracas y La Guaira post-terremoto"
   creado: "2026-06-27T11:45 (VET) / 2026-06-27T15:45Z (UTC)"
-  ultima_actualizacion: "2026-06-27T12:10 (VET) / 2026-06-27T16:10Z (UTC)"
+  ultima_actualizacion: "2026-06-27T12:20 (VET) / 2026-06-27T16:20Z (UTC)"
   stack: "Python 3.12 + Streamlit; despliegue en Streamlit Community Cloud"
   idioma_ui: "Español (principal) / Inglés (conmutable)"
   contexto_critico: >
@@ -31,13 +31,15 @@ meta:
 
 # --- MEMORIA DE TRABAJO (foco actual; se sobrescribe) ----------------------
 trabajo:
-  foco_actual: "Construir el prototipo Streamlit funcional con datos sintéticos + conector USGS."
-  siguiente_paso: "Crear core/ (i18n, geo, scoring, data_sources, population), app.py y pages/."
+  foco_actual: "Prototipo funcional COMPLETO y verificado (tests OK, 6 páginas renderizan, boost OK). Commit inicial hecho."
+  siguiente_paso: "Integrar datos REALES: ShakeMap raster de USGS, Copernicus EMS/Maxar, población Meta HRSL/WorldPop, edificios OSM."
   bloqueos: []
   abierto:
-    - "Confirmar hora/epicentro/magnitud reales del sismo en config.yaml."
+    - "Confirmar hora/epicentro/magnitud reales del sismo en config.yaml (hoy son sintéticos)."
     - "Activar usar_datos_reales=true cuando haya event_id de USGS."
     - "Integrar productos Copernicus EMS / Maxar cuando publiquen la activación."
+    - "Parsear raster ShakeMap (grid.xml) para MMI real por punto (hoy: IPE modelada)."
+    - "Desplegar en Streamlit Community Cloud (push a GitHub + share.streamlit.io)."
 
 # --- MEMORIA EPISÓDICA (bitácora cronológica) ------------------------------
 episodica:
@@ -53,6 +55,12 @@ episodica:
   - fecha: "2026-06-27T12:05 (VET)"
     evento: "Montado entorno: git init, venv (python3.12) en WSL, instalación de dependencias."
     importancia: 4
+  - fecha: "2026-06-27T12:20 (VET)"
+    evento: "Prototipo completo: core/ + app.py + 5 páginas + i18n + tests. 7 tests OK; 6 páginas renderizan sin excepción; boost de reportes verificado. Commit inicial dc94ae3 (31 archivos)."
+    importancia: 5
+  - fecha: "2026-06-27T12:18 (VET)"
+    evento: "Servidor Streamlit corriendo headless en :8501 (health 200). Datos aún SINTÉTICOS."
+    importancia: 3
 
 # --- MEMORIA SEMÁNTICA (hechos y decisiones estables) ----------------------
 semantica:
