@@ -42,7 +42,7 @@
   "prioridad_media": "Medium",
   "prioridad_baja": "Low",
   "nota_modelo": "Index = shaking × collapse(HAZUS) × population(WorldPop) × survivability × decay(72h) + field reports. Target: living survivors, NOT fatalities.",
-  "nota_proyeccion": "ℹ️ Statistical projections (HAZUS/FEMA) with cited methodology — not observed data. Estimated uncertainty ±20%. See sources in sidebar.",
+  "nota_proyeccion": "ℹ️ Statistical projections (HAZUS/FEMA) with cited methodology. Estimated uncertainty ±20%. See sources in sidebar.",
   "tipo_informal": "Informal build",
   "tipo_masonry": "Masonry",
   "tipo_rc_frame": "RC frame",

@@ -42,7 +42,7 @@
   "prioridad_media": "Media",
   "prioridad_baja": "Baja",
   "nota_modelo": "Índice = sacudimiento × colapso(HAZUS) × población(WorldPop) × supervivencia × decaimiento(72h) + reportes de campo. Objetivo: sobrevivientes con vida, no víctimas fatales.",
-  "nota_proyeccion": "ℹ️ Proyecciones estadísticas (HAZUS/FEMA) respaldadas con metodología citada — no son datos observados. Incertidumbre estimada ±20%. Ver fuentes en la barra lateral.",
+  "nota_proyeccion": "ℹ️ Proyecciones estadísticas (HAZUS/FEMA) respaldadas con metodología citada. Incertidumbre estimada ±20%. Ver fuentes en la barra lateral.",
   "tipo_informal": "Autoconstrucción",
   "tipo_masonry": "Mampostería",
   "tipo_rc_frame": "Concreto armado",
