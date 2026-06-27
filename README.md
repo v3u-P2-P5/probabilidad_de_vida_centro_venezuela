@@ -3,8 +3,19 @@
 Dashboard para **priorizar búsqueda y rescate (SAR)** tras un terremoto, estimando
 por celda la *probabilidad relativa de encontrar personas con vida*.
 
+> **Evento activo:** USGS `us6000t7zp` — **M7.5**, 28 km SE de Yumare, Venezuela
+> (origen 2026-06-24T18:05 VET / 22:05Z UTC). PAGER en **alerta ROJA**.
+> Exposición a licuefacción ~160.000 personas (rojo); a deslizamientos ~7.300 (naranja).
+
 > ⚠️ La probabilidad de sobrevivientes **no se observa desde el satélite: se modela**.
 > El satélite aporta la capa de daño (con latencia); el tiempo real lo dan los reportes de campo.
+
+## Principio operativo (modo_operativo: true)
+
+**Solo datos reales.** Si una capa no está disponible, la app la marca como
+**NO DISPONIBLE** y lo advierte — **nunca** inventa datos ni muestra cifras sintéticas
+como si fueran reales. El modo demostración (`modo_operativo: false`) usa datos
+sintéticos siempre rotulados, para capacitación.
 
 ## Modelo
 
@@ -18,13 +29,15 @@ oficinas/escuelas/comercios, no en viviendas. La ocupación se ajusta por hora.
 
 ## Fuentes de datos (todas gratuitas)
 
-| Capa | Fuente | Estado |
-|------|--------|--------|
-| Sacudimiento (MMI) | USGS ShakeMap / PAGER | Conector de metadatos USGS (`core/data_sources.py`); raster ShakeMap = TODO |
-| Daño | Copernicus EMS Rapid Mapping · Maxar/Vantor Open Data | A integrar tras activación |
-| Población | Meta HRSL · WorldPop · GHSL | Sintético por ahora (`core/population.py`) |
-| Edificios / recursos | OpenStreetMap / HOT | A integrar |
-| Tiempo real | Reportes de campo | ✅ `data/field_reports.csv` |
+| Capa | Fuente | Estado | Enlace oficial |
+|------|--------|--------|----------------|
+| Sacudimiento (MMI) | USGS ShakeMap (grid.xml real, interpolado) | ✅ **en vivo** | [ShakeMap](https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/shakemap/intensity) |
+| Impacto / víctimas | USGS PAGER | ✅ **en vivo** | [PAGER](https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/pager) |
+| Deslizamientos / licuefacción | USGS Ground Failure | ✅ **en vivo** | [Ground failure](https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/ground-failure) |
+| Recursos (hospitales, bomberos, refugios) | OpenStreetMap (Overpass) | ✅ **en vivo** | [© OSM](https://www.openstreetmap.org/copyright) |
+| Población | WorldPop / Meta HRSL | ⬇️ descargar una vez (`scripts/download_population.py`) | [WorldPop VEN](https://data.humdata.org/dataset/worldpop-population-density-for-venezuela-bolivarian-republic-of) |
+| Daño (imágenes) | Copernicus EMS · Maxar Open Data | 🔗 enlaces + ranura de activación EMSR en `config.yaml` | [Copernicus EMS](https://rapidmapping.emergency.copernicus.eu/) · [Maxar](https://www.maxar.com/open-data) |
+| Tiempo real (terreno) | Reportes de campo | ✅ `data/field_reports.csv` | — |
 
 > **Google Maps queda descartado** como fuente: sus Términos de Servicio prohíben la
 > descarga masiva de tiles/imágenes, requiere facturación y es óptico (inútil de noche/nubes).
@@ -58,11 +71,20 @@ data/field_reports.csv Reportes de campo en vivo
 .claude/memory.yaml    Memoria del proyecto (contexto multisesión)
 ```
 
-## Configurar el evento real
+## Cargar la población real (recomendado)
 
-Editar `config.yaml → sismo`: `origen_iso`, `magnitud`, `epicentro`, y opcionalmente
-`usgs_event_id` con `usar_datos_reales: true` para traer metadatos de USGS.
-Ajustar `pesos` recalibra el modelo sin tocar código (recarga en caliente).
+```bash
+python scripts/download_population.py     # WorldPop VEN 100m (CC-BY 4.0)
+```
+Sin este paso la app funciona con sacudimiento + tiempo + reportes, y advierte que
+la capa de población no está cargada (no inventa población).
+
+## Configurar el evento
+
+Editar `config.yaml → sismo.usgs_event_id` (actual: `us6000t7zp`) con
+`usar_datos_reales: true`. La app trae en vivo de USGS la magnitud, epicentro,
+hora, ShakeMap, PAGER y ground-failure. `autorefresco_segundos` controla el
+refresco en tiempo real; `pesos` recalibra el modelo sin tocar código.
 
 ## Despliegue público (Streamlit Community Cloud)
 

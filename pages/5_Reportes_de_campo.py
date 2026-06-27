@@ -4,12 +4,12 @@ import streamlit as st
 from core.config import load_config
 from core.i18n import t
 from core.reports import append_report, load_reports
-from core.ui import sidebar_language
+from core.ui import apply_chrome
 
 st.set_page_config(page_title="Reportes de campo", page_icon="📞", layout="wide")
 
-lang = sidebar_language()
 config = load_config()
+lang = apply_chrome(config)
 zonas = {z["id"]: z["nombre"] for z in config["zonas"]}
 
 st.title("📞 " + t("reportes_titulo", lang))

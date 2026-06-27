@@ -20,25 +20,26 @@
 meta:
   proyecto: "Mapa de Probabilidad de Vida — Caracas y La Guaira post-terremoto"
   creado: "2026-06-27T11:45 (VET) / 2026-06-27T15:45Z (UTC)"
-  ultima_actualizacion: "2026-06-27T12:20 (VET) / 2026-06-27T16:20Z (UTC)"
+  ultima_actualizacion: "2026-06-27T13:05 (VET) / 2026-06-27T17:05Z (UTC)"
   stack: "Python 3.12 + Streamlit; despliegue en Streamlit Community Cloud"
   idioma_ui: "Español (principal) / Inglés (conmutable)"
   contexto_critico: >
-    Evento REAL en curso. Objetivo: priorizar zonas de búsqueda y rescate (SAR)
-    combinando sacudimiento (USGS), daño (Copernicus EMS/Maxar), población
-    (Meta/WorldPop+OSM) y reportes de campo (la única capa en tiempo real).
-    "Probabilidad de vida" se MODELA, no se lee del satélite.
+    Evento REAL en curso (USGS us6000t7zp, M7.5 SE de Yumare, 2026-06-24T22:05Z;
+    PAGER ROJO). Objetivo: priorizar zonas de búsqueda y rescate (SAR) combinando
+    sacudimiento (USGS ShakeMap real), población (WorldPop), recursos (OSM) y
+    reportes de campo (tiempo real). "Probabilidad de vida" se MODELA, no se lee
+    del satélite. PRINCIPIO: solo datos reales; si falta una capa se marca NO
+    DISPONIBLE, jamás se inventan datos (modo_operativo=true).
 
 # --- MEMORIA DE TRABAJO (foco actual; se sobrescribe) ----------------------
 trabajo:
-  foco_actual: "Prototipo funcional COMPLETO y verificado (tests OK, 6 páginas renderizan, boost OK). Commit inicial hecho."
-  siguiente_paso: "Integrar datos REALES: ShakeMap raster de USGS, Copernicus EMS/Maxar, población Meta HRSL/WorldPop, edificios OSM."
+  foco_actual: "DATOS REALES integrados y verificados: USGS ShakeMap(MMI)+PAGER+ground-failure, OSM Overpass(recursos), procedencia con enlaces, auto-refresco, última actualización VET/UTC. Modo operativo (sin datos falsos)."
+  siguiente_paso: "Descargar población WorldPop (scripts/download_population.py) y desplegar en Streamlit Community Cloud. Integrar Copernicus EMS (código EMSR) y Maxar STAC cuando se activen."
   bloqueos: []
   abierto:
-    - "Confirmar hora/epicentro/magnitud reales del sismo en config.yaml (hoy son sintéticos)."
-    - "Activar usar_datos_reales=true cuando haya event_id de USGS."
-    - "Integrar productos Copernicus EMS / Maxar cuando publiquen la activación."
-    - "Parsear raster ShakeMap (grid.xml) para MMI real por punto (hoy: IPE modelada)."
+    - "Ejecutar scripts/download_population.py para activar la capa de población (hoy NO cargada)."
+    - "Rellenar fuentes.copernicus_ems.activacion_emsr cuando exista activación EMSR###."
+    - "Integrar rásters de ground-failure de USGS (godt_2008/zhu_2017) por celda."
     - "Desplegar en Streamlit Community Cloud (push a GitHub + share.streamlit.io)."
 
 # --- MEMORIA EPISÓDICA (bitácora cronológica) ------------------------------
@@ -61,6 +62,12 @@ episodica:
   - fecha: "2026-06-27T12:18 (VET)"
     evento: "Servidor Streamlit corriendo headless en :8501 (health 200). Datos aún SINTÉTICOS."
     importancia: 3
+  - fecha: "2026-06-27T12:50 (VET)"
+    evento: "Confirmado evento REAL vía USGS: us6000t7zp M7.5 (y M7.2) SE de Yumare, réplicas en Caucagüito/Guatire. PAGER ROJO, MMI máx 9. ~66h desde el sismo."
+    importancia: 5
+  - fecha: "2026-06-27T13:00 (VET)"
+    evento: "Integrados datos reales: parser ShakeMap grid.xml (MMI real VII en Caracas), PAGER, ground-failure (licuef. 160k rojo), OSM Overpass recursos (Libertador 114, etc.). Fix: Overpass requiere User-Agent (si no, 406) + reintentos/espejos. Tests 7/7, 6 páginas OK."
+    importancia: 5
 
 # --- MEMORIA SEMÁNTICA (hechos y decisiones estables) ----------------------
 semantica:
@@ -82,6 +89,23 @@ semantica:
       importancia: 5
     - id: D5
       decision: "La hora es crítica: a las 11:45 laborable la población está en trabajo/escuela/comercio, no en casa."
+      importancia: 4
+    - id: D6
+      decision: "Modo operativo = SOLO datos reales; capa faltante => NO DISPONIBLE, nunca datos inventados."
+      razon: "Mostrar cifras falsas como reales en una emergencia cuesta vidas."
+      importancia: 5
+    - id: D7
+      decision: "MMI real desde ShakeMap grid.xml (malla regular, interpolación bilineal). En operativo NO se usa la IPE sintética."
+      importancia: 5
+    - id: D8
+      decision: "En operativo NO se modela vulnerabilidad/colapso por edificio (no hay inventario estructural abierto). Score = sacudimiento × población × decaimiento + reportes."
+      razon: "El colapso por tipo de edificio era sintético; en real solo se usan capas medibles."
+      importancia: 4
+    - id: D9
+      decision: "Overpass exige User-Agent descriptivo (sin él: HTTP 406). Usar reintentos + espejos."
+      importancia: 4
+    - id: D10
+      decision: "Toda métrica cita su fuente con enlace oficial exacto y hora de obtención (VET/UTC ISO)."
       importancia: 4
   hechos:
     - "Zonas iniciales: Libertador, Sucre/Petare, Baruta-Hatillo-Chacao, La Guaira-Litoral."
@@ -108,12 +132,16 @@ procedimental:
 
 # --- ÍNDICE DE ARCHIVOS CLAVE (mapa mental del repo) -----------------------
 indice_archivos:
-  "config.yaml": "Zonas, pesos del modelo y datos del sismo. Editable en caliente."
+  "config.yaml": "Zonas, pesos, evento USGS, fuentes con enlaces, modo_operativo, auto-refresco. Editable en caliente."
   "core/scoring.py": "Modelo P_vida (función pura, testeable)."
-  "core/i18n.py": "Traducción es/en."
-  "core/geo.py": "Rejilla y recortes por bbox."
-  "core/data_sources.py": "Conector USGS (en vivo) + fallback sintético."
-  "core/population.py": "Población ambiente ajustada por hora."
-  "app.py": "Página de inicio (KPIs, reloj 72h)."
+  "core/shakemap.py": "Descarga+parseo de grid.xml de USGS e interpolación bilineal de MMI real."
+  "core/data_sources.py": "Cliente USGS: evento+PAGER+ground-failure. synthetic_mmi solo demo."
+  "core/osm.py": "Overpass: recursos críticos reales (User-Agent + reintentos/espejos)."
+  "core/population.py": "Ráster WorldPop (rasterio, lazy) + sintético solo demo."
+  "core/sources.py": "Procedencia y tiempo VET/UTC (fmt_vet_utc, layer())."
+  "core/pipeline.py": "Ensamble operativo (real) vs demo; devuelve (df, ctx con procedencia)."
+  "core/ui.py": "apply_chrome (idioma+auto-refresco), render_sources, mapa con recursos, banderas NO DISPONIBLE."
+  "scripts/download_population.py": "Descarga WorldPop VEN 100m."
+  "app.py": "Inicio: evento real, PAGER, ground-failure, reloj 72h, resumen, fuentes."
   "pages/": "Una página por zona + reportes de campo."
   "data/field_reports.csv": "Reportes de campo en vivo (boost del modelo)."
