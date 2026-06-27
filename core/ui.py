@@ -179,6 +179,37 @@ def _inject_responsive_css() -> None:
   padding-left: 0.5rem;
   margin-bottom: 0.25rem;
 }
+
+/* En móvil: cards de zona a ancho completo (override del 47% genérico) */
+@media (max-width: 640px) {
+  /* El grid 2x2 de mapas va a 1 columna en móvil */
+  [data-testid="stHorizontalBlock"]:has([data-testid="stPageLink"]) [data-testid="column"] {
+    min-width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+}
+
+/* Botón "Abrir mapa" — estilo prominente en todos los tamaños */
+[data-testid="stPageLink"] a {
+  background: rgba(183,28,28,0.06) !important;
+  border: 1.5px solid rgba(183,28,28,0.3) !important;
+  border-radius: 8px !important;
+  padding: 0.55rem 1rem !important;
+  font-weight: 600 !important;
+  color: #b71c1c !important;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 44px !important;
+  width: 100% !important;
+  justify-content: center !important;
+}
+[data-testid="stPageLink"] a:hover {
+  background: rgba(183,28,28,0.14) !important;
+  border-color: #b71c1c !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(183,28,28,0.18) !important;
+}
 </style>
 """, unsafe_allow_html=True)
 

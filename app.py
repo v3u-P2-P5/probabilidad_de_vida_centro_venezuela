@@ -148,20 +148,61 @@ if gf:
     st.caption(f"🔗 [{config['fuentes']['usgs_ground_failure']['nombre']}]"
                f"({config['fuentes']['usgs_ground_failure']['url']})")
 
-# --- Resumen por zona (cards responsivos con links) ---
-st.subheader("🗺️ " + t("resumen_zonas", lang))
+# --- Acceso a mapas (elemento principal) ---
+st.markdown("---")
+lbl_mapas = "## 🗺️ Mapas por zona — acceso directo" if lang == "es" else "## 🗺️ Zone maps — direct access"
+st.markdown(lbl_mapas)
+lbl_cta = "Selecciona una zona para ver el mapa de sobrevivientes en tiempo real:" if lang == "es" \
+          else "Select a zone to open the live survivor-probability map:"
+st.markdown(f"**{lbl_cta}**")
+st.markdown("")
 
 zona_rows = resumen.to_dict("records")
-col_alta = t("col_celdas_alta", lang)
-col_mmi  = t("kpi_mmi_max", lang)
+col_alta  = t("col_celdas_alta", lang)
 
-for row, (path, _) in zip(zona_rows, ZONA_PAGES):
-    alta    = int(row["alta"])
-    mmi_val = f"{row['mmi']:.2f}" if not pd.isna(row["mmi"]) else "—"
-    st.markdown('<div class="zona-card">', unsafe_allow_html=True)
-    st.page_link(path, label=f"🗺️  {row['nombre']}")
-    st.caption(f"{col_alta}: **{alta}** &nbsp;·&nbsp; {col_mmi}: **{mmi_val}**")
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.divider()
+# Grid 2×2 — cada par en una fila de columnas
+pairs = list(zip(zona_rows, ZONA_PAGES))
+for i in range(0, len(pairs), 2):
+    cols = st.columns(2, gap="medium")
+    for j, col in enumerate(cols):
+        if i + j >= len(pairs):
+            break
+        row, (path, _) = pairs[i + j]
+        alta    = int(row["alta"])
+        mmi_val = f"{row['mmi']:.1f}" if not pd.isna(row["mmi"]) else "—"
 
+        # Urgency color: rojo intenso si muchas celdas críticas
+        if alta > 200:
+            border, bg, badge = "#b71c1c", "rgba(183,28,28,0.07)", "🔴"
+        elif alta > 50:
+            border, bg, badge = "#e65100", "rgba(230,81,0,0.07)", "🟠"
+        else:
+            border, bg, badge = "#1565c0", "rgba(21,101,192,0.06)", "🔵"
+
+        with col:
+            st.markdown(f"""
+<div style="
+  border:2px solid {border};
+  border-radius:12px;
+  padding:14px 16px 10px;
+  background:{bg};
+  margin-bottom:4px;
+">
+  <div style="font-size:1.05rem;font-weight:700;color:{border};margin-bottom:6px;">
+    {badge} {row['nombre']}
+  </div>
+  <div style="font-size:0.85rem;color:#444;margin-bottom:2px;">
+    ⚠️ <b>{alta}</b> {col_alta.lower()}
+  </div>
+  <div style="font-size:0.82rem;color:#666;">
+    📳 MMI máx: <b>{mmi_val}</b>
+  </div>
+</div>""", unsafe_allow_html=True)
+            st.page_link(
+                path,
+                label="📍 Abrir mapa en tiempo real →" if lang == "es"
+                      else "📍 Open live map →",
+            )
+
+st.markdown("---")
 st.caption(f"🕒 {t('ultima_actualizacion', lang)}: {ctx['updated_at']}")
