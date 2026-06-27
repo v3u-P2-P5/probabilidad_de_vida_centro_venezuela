@@ -148,23 +148,20 @@ if gf:
     st.caption(f"🔗 [{config['fuentes']['usgs_ground_failure']['nombre']}]"
                f"({config['fuentes']['usgs_ground_failure']['url']})")
 
-# --- Resumen por zona (con links navegables en cada fila) ---
+# --- Resumen por zona (cards responsivos con links) ---
 st.subheader("🗺️ " + t("resumen_zonas", lang))
 
-# Cabecera
-h0, h1, h2 = st.columns([3, 1, 1])
-h0.markdown(f"**{t('col_zona', lang)}**")
-h1.markdown(f"**{t('col_celdas_alta', lang)}**")
-h2.markdown(f"**{t('kpi_mmi_max', lang)}**")
-st.divider()
-
-# Fila por zona: link navegable + métricas
 zona_rows = resumen.to_dict("records")
-for row, (path, label) in zip(zona_rows, ZONA_PAGES):
-    c0, c1, c2 = st.columns([3, 1, 1])
-    with c0:
-        st.page_link(path, label=f"🗺️ {row['nombre']}")
-    c1.write(f"**{int(row['alta'])}**")
-    c2.write(f"{row['mmi']:.3f}" if not pd.isna(row["mmi"]) else "—")
+col_alta = t("col_celdas_alta", lang)
+col_mmi  = t("kpi_mmi_max", lang)
+
+for row, (path, _) in zip(zona_rows, ZONA_PAGES):
+    alta    = int(row["alta"])
+    mmi_val = f"{row['mmi']:.2f}" if not pd.isna(row["mmi"]) else "—"
+    st.markdown('<div class="zona-card">', unsafe_allow_html=True)
+    st.page_link(path, label=f"🗺️  {row['nombre']}")
+    st.caption(f"{col_alta}: **{alta}** &nbsp;·&nbsp; {col_mmi}: **{mmi_val}**")
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.divider()
 
 st.caption(f"🕒 {t('ultima_actualizacion', lang)}: {ctx['updated_at']}")

@@ -28,135 +28,156 @@ def _inject_responsive_css() -> None:
 
   /* Márgenes del contenedor principal */
   .block-container {
-    padding: 0.75rem 0.75rem 2rem !important;
+    padding: 0.6rem 0.6rem 2rem !important;
     max-width: 100% !important;
   }
 
-  /* Columnas: apilar verticalmente */
+  /* Columnas: 2 por fila (wrap) — mejor que apilar todo en 1 */
   [data-testid="stHorizontalBlock"] {
-    flex-direction: column !important;
-    gap: 0.4rem !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem 0.5rem !important;
   }
   [data-testid="column"] {
-    width: 100% !important;
-    min-width: 100% !important;
-    flex: 1 1 100% !important;
+    min-width: 47% !important;
+    flex: 1 1 47% !important;
   }
 
-  /* Métricas: más grandes y fáciles de tocar */
+  /* Métricas: legibles y con fondo sutil */
   [data-testid="stMetric"] {
     background: rgba(0,0,0,0.04);
     border-radius: 8px;
-    padding: 0.5rem 0.75rem !important;
+    padding: 0.45rem 0.6rem !important;
   }
   [data-testid="stMetricLabel"] > div {
-    font-size: 0.78rem !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
   }
   [data-testid="stMetricValue"] > div {
-    font-size: 1.4rem !important;
+    font-size: 1.3rem !important;
     font-weight: 700 !important;
   }
 
-  /* Botones y page_links: full width, tacto fácil */
+  /* Page links: full-width, área de toque 48px */
+  [data-testid="stPageLink"] {
+    width: 100% !important;
+  }
   [data-testid="stPageLink"] a,
   [data-testid="stPageLink"] button {
     width: 100% !important;
     min-height: 48px !important;
-    font-size: 1rem !important;
-    padding: 0.6rem 1rem !important;
+    font-size: 0.95rem !important;
+    padding: 0.6rem 0.8rem !important;
+    display: flex !important;
+    align-items: center !important;
   }
+
+  /* Botones: full-width, táctiles */
   .stButton > button {
     width: 100% !important;
     min-height: 48px !important;
-    font-size: 0.95rem !important;
+    font-size: 0.9rem !important;
   }
 
-  /* Alertas/banners: texto más compacto */
+  /* Alertas: compactas */
   [data-testid="stAlert"] {
-    font-size: 0.85rem !important;
-    padding: 0.6rem 0.8rem !important;
+    font-size: 0.82rem !important;
+    padding: 0.5rem 0.7rem !important;
+    line-height: 1.4 !important;
   }
 
-  /* Mapa: altura reducida para no dominar la pantalla */
-  iframe[title="streamlit_folium.st_folium"] {
-    height: 320px !important;
+  /* Mapa: altura cómoda en móvil */
+  iframe[title="streamlit_folium.st_folium"],
+  .leaflet-container {
+    height: 300px !important;
+    min-height: 300px !important;
   }
 
-  /* Tabla dataframe: scroll horizontal sin desborde */
+  /* Dataframe: scroll horizontal sin desborde */
   [data-testid="stDataFrame"] {
     overflow-x: auto !important;
-  }
-  [data-testid="stDataFrame"] > div {
-    font-size: 0.78rem !important;
+    font-size: 0.75rem !important;
   }
 
-  /* Subheaders y títulos más ajustados */
-  h1 { font-size: 1.4rem !important; }
-  h2 { font-size: 1.15rem !important; }
-  h3 { font-size: 1rem !important; }
+  /* Títulos ajustados */
+  h1 { font-size: 1.35rem !important; line-height: 1.25 !important; }
+  h2 { font-size: 1.1rem !important; }
+  h3 { font-size: 0.95rem !important; }
 
-  /* Progress bars: altura mínima legible */
+  /* Captions y textos pequeños */
+  .stCaption, [data-testid="stCaptionContainer"] {
+    font-size: 0.72rem !important;
+  }
+
+  /* Progress bars */
   .stProgress > div > div > div {
     height: 10px !important;
     border-radius: 5px !important;
   }
 
-  /* Sidebar: texto y controles más grandes al abrirlo */
-  [data-testid="stSidebar"] {
-    font-size: 0.9rem !important;
-  }
-  [data-testid="stSidebar"] button {
-    min-height: 44px !important;
-  }
+  /* Sidebar */
+  [data-testid="stSidebar"] { font-size: 0.88rem !important; }
+  [data-testid="stSidebar"] button { min-height: 44px !important; }
+
+  /* Ocultar header de tabla de zonas en móvil (ya no tiene sentido con cards) */
+  .zona-table-header { display: none !important; }
 }
 
 /* ── TABLET (641px – 1024px) ─────────────────────────────────────── */
 @media (min-width: 641px) and (max-width: 1024px) {
 
   .block-container {
-    padding: 1rem 1.5rem 2rem !important;
+    padding: 1rem 1.2rem 2rem !important;
     max-width: 100% !important;
   }
 
-  /* Columnas de 4: reducir a 2 filas de 2 */
+  /* Columnas de 4: 2×2 */
+  [data-testid="stHorizontalBlock"] {
+    flex-wrap: wrap !important;
+    gap: 0.4rem !important;
+  }
   [data-testid="column"] {
-    min-width: 48% !important;
-    flex: 1 1 48% !important;
+    min-width: 46% !important;
+    flex: 1 1 46% !important;
   }
 
-  [data-testid="stMetricValue"] > div {
-    font-size: 1.25rem !important;
-  }
+  [data-testid="stMetricValue"] > div { font-size: 1.2rem !important; }
 
   [data-testid="stPageLink"] a,
   [data-testid="stPageLink"] button {
     min-height: 44px !important;
-    font-size: 0.95rem !important;
+    font-size: 0.92rem !important;
   }
 
-  /* Mapa a altura razonable */
   iframe[title="streamlit_folium.st_folium"] {
-    height: 420px !important;
+    height: 400px !important;
   }
 
-  h1 { font-size: 1.6rem !important; }
+  h1 { font-size: 1.55rem !important; }
 }
 
 /* ── MEJORAS GENERALES (todos los tamaños) ───────────────────────── */
 
-/* Barras de progreso más suaves */
+/* Progress bars suaves */
 .stProgress > div > div > div {
   border-radius: 4px !important;
-  transition: width 0.5s ease !important;
+  transition: width 0.6s ease !important;
 }
 
-/* Page links como tarjetas tocables */
+/* Page links: hover suave rojo-rescate */
 [data-testid="stPageLink"] a {
   border-radius: 8px !important;
-  transition: background 0.15s !important;
+  transition: background 0.15s, transform 0.1s !important;
 }
 [data-testid="stPageLink"] a:hover {
   background: rgba(183,28,28,0.08) !important;
+  transform: translateX(2px) !important;
+}
+
+/* Zona cards: separación visual entre zonas */
+.zona-card {
+  border-left: 3px solid #b71c1c;
+  padding-left: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 </style>
 """, unsafe_allow_html=True)
