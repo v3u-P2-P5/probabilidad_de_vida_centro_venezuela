@@ -20,19 +20,163 @@ RESOURCE_COLORS = {"hospital": "#1a9850", "clinic": "#66bd63", "fire_station": "
 ALERT_COLORS = {"red": "🔴", "orange": "🟠", "yellow": "🟡", "green": "🟢"}
 
 
+def _inject_responsive_css() -> None:
+    st.markdown("""
+<style>
+/* ── MÓVIL (≤640px) ──────────────────────────────────────────────── */
+@media (max-width: 640px) {
+
+  /* Márgenes del contenedor principal */
+  .block-container {
+    padding: 0.75rem 0.75rem 2rem !important;
+    max-width: 100% !important;
+  }
+
+  /* Columnas: apilar verticalmente */
+  [data-testid="stHorizontalBlock"] {
+    flex-direction: column !important;
+    gap: 0.4rem !important;
+  }
+  [data-testid="column"] {
+    width: 100% !important;
+    min-width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+
+  /* Métricas: más grandes y fáciles de tocar */
+  [data-testid="stMetric"] {
+    background: rgba(0,0,0,0.04);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem !important;
+  }
+  [data-testid="stMetricLabel"] > div {
+    font-size: 0.78rem !important;
+  }
+  [data-testid="stMetricValue"] > div {
+    font-size: 1.4rem !important;
+    font-weight: 700 !important;
+  }
+
+  /* Botones y page_links: full width, tacto fácil */
+  [data-testid="stPageLink"] a,
+  [data-testid="stPageLink"] button {
+    width: 100% !important;
+    min-height: 48px !important;
+    font-size: 1rem !important;
+    padding: 0.6rem 1rem !important;
+  }
+  .stButton > button {
+    width: 100% !important;
+    min-height: 48px !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Alertas/banners: texto más compacto */
+  [data-testid="stAlert"] {
+    font-size: 0.85rem !important;
+    padding: 0.6rem 0.8rem !important;
+  }
+
+  /* Mapa: altura reducida para no dominar la pantalla */
+  iframe[title="streamlit_folium.st_folium"] {
+    height: 320px !important;
+  }
+
+  /* Tabla dataframe: scroll horizontal sin desborde */
+  [data-testid="stDataFrame"] {
+    overflow-x: auto !important;
+  }
+  [data-testid="stDataFrame"] > div {
+    font-size: 0.78rem !important;
+  }
+
+  /* Subheaders y títulos más ajustados */
+  h1 { font-size: 1.4rem !important; }
+  h2 { font-size: 1.15rem !important; }
+  h3 { font-size: 1rem !important; }
+
+  /* Progress bars: altura mínima legible */
+  .stProgress > div > div > div {
+    height: 10px !important;
+    border-radius: 5px !important;
+  }
+
+  /* Sidebar: texto y controles más grandes al abrirlo */
+  [data-testid="stSidebar"] {
+    font-size: 0.9rem !important;
+  }
+  [data-testid="stSidebar"] button {
+    min-height: 44px !important;
+  }
+}
+
+/* ── TABLET (641px – 1024px) ─────────────────────────────────────── */
+@media (min-width: 641px) and (max-width: 1024px) {
+
+  .block-container {
+    padding: 1rem 1.5rem 2rem !important;
+    max-width: 100% !important;
+  }
+
+  /* Columnas de 4: reducir a 2 filas de 2 */
+  [data-testid="column"] {
+    min-width: 48% !important;
+    flex: 1 1 48% !important;
+  }
+
+  [data-testid="stMetricValue"] > div {
+    font-size: 1.25rem !important;
+  }
+
+  [data-testid="stPageLink"] a,
+  [data-testid="stPageLink"] button {
+    min-height: 44px !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Mapa a altura razonable */
+  iframe[title="streamlit_folium.st_folium"] {
+    height: 420px !important;
+  }
+
+  h1 { font-size: 1.6rem !important; }
+}
+
+/* ── MEJORAS GENERALES (todos los tamaños) ───────────────────────── */
+
+/* Barras de progreso más suaves */
+.stProgress > div > div > div {
+  border-radius: 4px !important;
+  transition: width 0.5s ease !important;
+}
+
+/* Page links como tarjetas tocables */
+[data-testid="stPageLink"] a {
+  border-radius: 8px !important;
+  transition: background 0.15s !important;
+}
+[data-testid="stPageLink"] a:hover {
+  background: rgba(183,28,28,0.08) !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 def _render_construction_banner(lang: str) -> None:
-    st.warning(
-        "🚧 **App en construcción** — Los datos presentados son reales (USGS/OSM) pero el sistema aún "
-        "está siendo validado. **Voluntarios programadores trabajamos para terminarla lo antes posible.** "
-        "No usar como única fuente de decisión; complementar con información de campo. "
-        "— *App under construction: real data, still being validated by volunteer developers.*"
-    )
+    if lang == "en":
+        msg = ("🚧 **Under construction** — Real data (USGS/OSM), still being validated. "
+               "Complement with field information.")
+    else:
+        msg = ("🚧 **App en construcción** — Datos reales (USGS/OSM), aún en validación. "
+               "Complementar con información de campo.")
+    st.warning(msg)
 
 
 def apply_chrome(config: dict) -> str:
     """Idioma, auto-refresco en tiempo real y botón de actualizar. Devuelve lang."""
     if "lang" not in st.session_state:
         st.session_state.lang = "es"
+    _inject_responsive_css()
     secs = int(config.get("autorefresco_segundos", 0) or 0)
     if secs > 0:
         st_autorefresh(interval=secs * 1000, key="auto")
