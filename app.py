@@ -7,6 +7,7 @@ import pandas as pd
 import streamlit as st
 
 from core.config import load_config
+from core.geo import haversine_m
 from core.i18n import t
 from core.pipeline import build_zone
 from core.relief import get_gdacs, get_reliefweb_reports
@@ -14,6 +15,24 @@ from core.sources import fmt_vet_utc, parse_iso
 from core.ui import apply_chrome, render_sources
 
 st.set_page_config(page_title="Doble Sismo Venezuela 2026", page_icon="🌍", layout="wide")
+
+# Ciudades grandes y conocidas para dar referencia geográfica al público (el
+# epicentro real, cerca de Yumare, no le dice nada a la mayoría de la gente).
+CIUDADES_REF = {
+    "Puerto Cabello": (10.4731, -68.0125),
+    "Valencia":       (10.1620, -68.0077),
+    "Maracay":        (10.2469, -67.5958),
+    "Barquisimeto":   (10.0647, -69.3301),
+    "Caracas":        (10.4806, -66.9036),
+}
+
+
+def _ref_ciudad(lat: float, lon: float) -> str:
+    """Devuelve 'a ~50 km de Puerto Cabello' usando la gran ciudad más cercana."""
+    nombre, dist = min(
+        ((n, haversine_m(lat, lon, la, lo) / 1000.0) for n, (la, lo) in CIUDADES_REF.items()),
+        key=lambda x: x[1])
+    return f"a ~{dist:.0f} km de {nombre}"
 
 config = load_config()
 
@@ -54,36 +73,48 @@ def home():
                      m1=s.get("id", "us6000t7zp"), mag1=s.get("magnitud", 7.5),
                      m2=a.get("id", "us6000t7zc"), mag2=a.get("magnitud", 7.2)))
     def _ciudad(lugar: str) -> str:
-        """Extrae ciudad de 'X km DIR of Ciudad, Venezuela' → 'Ciudad'."""
+        """Convierte descripción USGS a español legible.
+        '28 km SE of Yumare, Venezuela' → '28 km SE de Yumare'
+        """
         if not lugar:
             return ""
         if " of " in lugar:
-            return lugar.split(" of ", 1)[1].replace(", Venezuela", "").strip()
-        return lugar
+            direction_part, city_part = lugar.split(" of ", 1)
+            city = city_part.replace(", Venezuela", "").strip()
+            return f"{direction_part} de {city}"
+        return lugar.replace(", Venezuela", "").strip()
+
+    def _km(v) -> str:
+        """Profundidad redondeada (USGS a veces da 20.294 → '20 km')."""
+        try:
+            return f"{float(v):.0f} km"
+        except (TypeError, ValueError):
+            return "? km"
+
+    def _epicentro_linea(ev: dict) -> None:
+        """Epicentro a ancho completo (texto descriptivo que no cabe en un st.metric)."""
+        ciudad = _ciudad(ev.get("lugar", ""))
+        ref = _ref_ciudad(ev["epicentro"]["lat"], ev["epicentro"]["lon"])
+        coords = f"{ev['epicentro']['lat']:.2f}, {ev['epicentro']['lon']:.2f}"
+        st.markdown(f"**📍 {t('epicentro', lang)}:** {ciudad} · {ref} · ({coords})")
+        st.caption(f"🕒 {fmt_vet_utc(parse_iso(ev['origen_iso']))}"
+                   + (f" · 🔗 [{t('evento_real', lang)}]({ev['url']})" if ev.get("url") else ""))
 
     hs = ctx["hours_since"]
-    c = st.columns(4)
-    # Fila 1: sismo principal M7.5
-    ciudad_p = _ciudad(s.get("lugar", ""))
+    # Fila 1: sismo principal M7.5 — métricas cortas (no se truncan) + epicentro aparte
+    c = st.columns(3)
     c[0].metric(t("magnitud", lang), f"M{s.get('magnitud')}")
-    c[1].metric(t("profundidad", lang), f"{s.get('profundidad_km','?')} km")
-    c[2].metric(t("epicentro", lang),
-                f"{ciudad_p}  \n{s['epicentro']['lat']:.2f}, {s['epicentro']['lon']:.2f}")
-    c[3].metric(t("horas_transcurridas", lang), f"{hs:.0f} h")
-    st.caption(f"📌 {s.get('lugar','')} · 🕒 {fmt_vet_utc(parse_iso(s['origen_iso']))}"
-               + (f" · 🔗 [{t('evento_real', lang)}]({s['url']})" if s.get("url") else ""))
+    c[1].metric(t("profundidad", lang), _km(s.get("profundidad_km")))
+    c[2].metric(t("horas_transcurridas", lang), f"{hs:.0f} h")
+    _epicentro_linea(s)
     # Fila 2: sismo secundario M7.2
     if adic:
         a = adic[0]
-        ciudad_s = _ciudad(a.get("lugar", ""))
-        c2 = st.columns(4)
+        c2 = st.columns(3)
         c2[0].metric(t("magnitud", lang), f"M{a.get('magnitud')}")
-        c2[1].metric(t("profundidad", lang), f"{a.get('profundidad_km','?')} km")
-        c2[2].metric(t("epicentro", lang),
-                     f"{ciudad_s}  \n{a['epicentro']['lat']:.2f}, {a['epicentro']['lon']:.2f}")
-        c2[3].metric("", "")
-        st.caption(f"📌 {a.get('lugar','')} · 🕒 {fmt_vet_utc(parse_iso(a['origen_iso']))}"
-                   + (f" · 🔗 [{t('evento_real', lang)}]({a['url']})" if a.get("url") else ""))
+        c2[1].metric(t("profundidad", lang), _km(a.get("profundidad_km")))
+        c2[2].metric("", "")
+        _epicentro_linea(a)
 
     # ── IMPACTO Y CIFRAS ──────────────────────────────────────────────────────
     st.subheader("📊 " + t("impacto_titulo", lang))
