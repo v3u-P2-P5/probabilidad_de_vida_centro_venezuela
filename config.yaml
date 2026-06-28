@@ -147,9 +147,9 @@ fuentes:
   cruz_roja_venezolana:
     nombre: "Cruz Roja Venezolana — Ayuda y reunificación familiar"
     url: "https://cruzroja.ve/"
-  centros_acopio_vzla:
-    nombre: "Centros de Acopio Venezuela — Dónde llevar donaciones"
-    url: "https://www.centrosdeacopiovzla.com/"
+  centros_ayuda_vzla:
+    nombre: "Centros de Ayuda Venezuela — Directorio de puntos de acopio"
+    url: "https://centrosayudavenezuela.org/"
   caritas_venezuela:
     nombre: "Cáritas Venezuela — Ayuda y donaciones (ONG)"
     url: "https://caritasvenezuela.org/"
@@ -159,6 +159,9 @@ fuentes:
   localiza_pacientes:
     nombre: "Localiza Pacientes — Búsqueda de personas hospitalizadas"
     url: "https://localizapacientes.com/"
+  pacientes_terremoto_vzla:
+    nombre: "Pacientes Terremoto VZla — Listas de hospitales (plataforma ciudadana)"
+    url: "https://pacientesterremotovzla.lovable.app/"
   maxar_open_data:
     nombre: "Maxar/Vantor Open Data — Imágenes pre/post evento"
     url: "https://www.maxar.com/open-data"

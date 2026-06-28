@@ -155,13 +155,14 @@ def home():
     # ── PERSONAS DESAPARECIDAS ────────────────────────────────────────────────
     st.subheader("🔎 " + t("desaparecidos_titulo", lang))
     st.markdown(t("desaparecidos_texto", lang))
-    dcols = st.columns(3)
-    if "desaparecidos_terremoto_ve" in cofu:
-        dcols[0].markdown(f"🔗 [{cofu['desaparecidos_terremoto_ve']['nombre']}]({cofu['desaparecidos_terremoto_ve']['url']})")
-    if "localiza_pacientes" in cofu:
-        dcols[1].markdown(f"🔗 [{cofu['localiza_pacientes']['nombre']}]({cofu['localiza_pacientes']['url']})")
-    if "cruz_roja_venezolana" in cofu:
-        dcols[2].markdown(f"🔗 [{cofu['cruz_roja_venezolana']['nombre']}]({cofu['cruz_roja_venezolana']['url']})")
+    dcols = st.columns(2)
+    for key, col in zip(
+        ("desaparecidos_terremoto_ve", "localiza_pacientes",
+         "pacientes_terremoto_vzla",   "cruz_roja_venezolana"),
+        (dcols[0], dcols[1], dcols[0], dcols[1]),
+    ):
+        if key in cofu:
+            col.markdown(f"🔗 [{cofu[key]['nombre']}]({cofu[key]['url']})")
 
     # ── ENCUENTRA AYUDA EN TU ZONA (color por intensidad) ─────────────────────
     st.subheader("🆘 " + t("ayuda_zona_titulo", lang))
@@ -202,8 +203,8 @@ def home():
     # ── CÓMO AYUDAR (donaciones) ──────────────────────────────────────────────
     if "centros_acopio_vzla" in cofu or "caritas_venezuela" in cofu:
         st.subheader("💚 " + t("ayudar_titulo", lang))
-        if "centros_acopio_vzla" in cofu:
-            st.markdown(f"🔗 [{cofu['centros_acopio_vzla']['nombre']}]({cofu['centros_acopio_vzla']['url']})")
+        if "centros_ayuda_vzla" in cofu:
+            st.markdown(f"🔗 [{cofu['centros_ayuda_vzla']['nombre']}]({cofu['centros_ayuda_vzla']['url']})")
         if "caritas_venezuela" in cofu:
             st.markdown(f"🔗 [{cofu['caritas_venezuela']['nombre']}]({cofu['caritas_venezuela']['url']})")
 
