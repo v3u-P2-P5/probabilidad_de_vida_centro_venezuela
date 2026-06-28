@@ -200,9 +200,12 @@ def home():
     st.caption(t("leyenda_zonas", lang))
 
     # ── CÓMO AYUDAR (donaciones) ──────────────────────────────────────────────
-    if "caritas_venezuela" in cofu:
+    if "centros_acopio_vzla" in cofu or "caritas_venezuela" in cofu:
         st.subheader("💚 " + t("ayudar_titulo", lang))
-        st.markdown(f"🔗 [{cofu['caritas_venezuela']['nombre']}]({cofu['caritas_venezuela']['url']})")
+        if "centros_acopio_vzla" in cofu:
+            st.markdown(f"🔗 [{cofu['centros_acopio_vzla']['nombre']}]({cofu['centros_acopio_vzla']['url']})")
+        if "caritas_venezuela" in cofu:
+            st.markdown(f"🔗 [{cofu['caritas_venezuela']['nombre']}]({cofu['caritas_venezuela']['url']})")
 
     # ── CONSEJOS POST-TERREMOTO (página aparte) ───────────────────────────────
     st.subheader("🧭 " + t("consejos_titulo", lang))

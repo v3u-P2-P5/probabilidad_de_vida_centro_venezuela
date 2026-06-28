@@ -147,6 +147,9 @@ fuentes:
   cruz_roja_venezolana:
     nombre: "Cruz Roja Venezolana — Ayuda y reunificación familiar"
     url: "https://cruzroja.ve/"
+  centros_acopio_vzla:
+    nombre: "Centros de Acopio Venezuela — Dónde llevar donaciones"
+    url: "https://www.centrosdeacopiovzla.com/"
   caritas_venezuela:
     nombre: "Cáritas Venezuela — Ayuda y donaciones (ONG)"
     url: "https://caritasvenezuela.org/"
