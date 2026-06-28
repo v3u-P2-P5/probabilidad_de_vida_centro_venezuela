@@ -46,11 +46,10 @@ oficinas/escuelas/comercios, no en viviendas. La ocupación se ajusta por hora.
 
 ```bash
 cd ~/work_space_linux/probabilidad_de_vida
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-streamlit run app.py        # http://localhost:8501
+./run_app        # crea el venv si falta, instala deps y abre http://localhost:8501
 ```
+
+`run_app` pasa cualquier flag extra a Streamlit (p. ej. `./run_app --server.port 8600`).
 
 ## Tests
 

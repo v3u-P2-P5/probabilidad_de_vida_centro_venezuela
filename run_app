@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Arranca la app localmente: activa el venv (lo crea si falta) y lanza Streamlit.
+#   ./run_app            → http://localhost:8501
+#   ./run_app --port 8600  (cualquier flag extra se pasa a streamlit)
+set -euo pipefail
+cd "$(dirname "$0")"
+
+if [ ! -d venv ]; then
+  echo "→ Creando entorno virtual (venv) e instalando dependencias…"
+  python3 -m venv venv
+  ./venv/bin/pip install --quiet --upgrade pip
+  ./venv/bin/pip install --quiet -r requirements.txt
+fi
+
+exec ./venv/bin/streamlit run app.py "$@"
