@@ -347,9 +347,11 @@ def _build_map(df, zone, ctx, lang):
     # Recursos de ayuda (OSM): dónde acudir — siempre visibles
     for _, r in ctx["resources"].iterrows():
         maps_url = f"https://www.google.com/maps/search/?api=1&query={r['lat']},{r['lon']}"
+        area = r.get("area", "") or ""
         popup_html = (
             f"<b>{r['etiqueta']}</b>: {r['nombre']}"
-            f'<br><a href="{maps_url}" target="_blank">📍 Google Maps</a>'
+            + (f"<br>📌 {area}" if area else "")
+            + f'<br><a href="{maps_url}" target="_blank">📍 Google Maps</a>'
         )
         folium.Marker(
             [r["lat"], r["lon"]],
@@ -455,13 +457,15 @@ def render_zone(zone_id: str) -> None:
                     tel      = r.get("telefono", "") or ""
                     addr     = r.get("direccion", "") or ""
                     web      = r.get("web", "") or ""
+                    area_r   = r.get("area", "") or ""
                     maps_url = (f"https://www.google.com/maps/search/?api=1"
                                 f"&query={r['lat']},{r['lon']}")
 
+                    area_line = f"📌 {area_r}" if area_r else ""
                     tel_line  = f"📞 [{tel}](tel:{tel.replace(' ','')})" if tel else ""
                     addr_line = f"📍 {addr}" if addr else ""
                     web_line  = f"🌐 [{web}]({web})" if web else ""
-                    detail    = "  \n".join(x for x in [tel_line, addr_line, web_line] if x)
+                    detail    = "  \n".join(x for x in [area_line, tel_line, addr_line, web_line] if x)
                     detail   += ("  \n" if detail else "") + f"[📍 Ver en mapa]({maps_url})"
 
                     st.markdown(f"**{r['etiqueta']}** — {r['nombre']}  \n{detail}")
