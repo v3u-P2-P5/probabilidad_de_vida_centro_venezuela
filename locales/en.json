@@ -74,7 +74,7 @@
 
   "subtitulo_zona": "Felt intensity, hazards and where to get help",
   "banner_sin_shakemap": "⛔ USGS ShakeMap is unavailable right now. This area's intensity cannot be shown until the source is restored.",
-  "leyenda_intensidad": "Heatmap = felt intensity (USGS ShakeMap, MMI). Markers = help resources (OSM). It does not locate trapped people.",
+  "leyenda_intensidad": "🔴 Heatmap = most affected areas (USGS shaking × exposed population): where to focus help. 🏥 Markers = hospitals, fire stations and shelters (OSM). It does not locate trapped people.",
   "recursos_titulo": "Nearby resources (OSM)",
   "ayuda_titulo": "Where to get help",
   "recursos_ninguno": "No resources mapped in OSM for this area. Contact Civil Protection (171).",

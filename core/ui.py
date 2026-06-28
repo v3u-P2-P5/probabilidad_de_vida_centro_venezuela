@@ -4,12 +4,14 @@ El mapa muestra INTENSIDAD SENTIDA (MMI) y recursos de ayuda. NO localiza
 personas atrapadas ni modela probabilidad de sobrevivientes.
 """
 import folium
+import numpy as np
 import pandas as pd
 import streamlit as st
 from folium.plugins import HeatMap
 from streamlit_autorefresh import st_autorefresh
 from streamlit_folium import st_folium
 
+from core import scoring
 from core.config import get_zone, load_config
 from core.i18n import IDIOMAS, t
 from core.pipeline import build_zone
@@ -208,6 +210,33 @@ def _inject_responsive_css() -> None:
   transform: translateY(-1px) !important;
   box-shadow: 0 2px 8px rgba(183,28,28,0.18) !important;
 }
+
+/* ── Indicador de carga: Zunami 🐕 (sustituye al "running man" de Streamlit) ── */
+[data-testid="stStatusWidgetRunningManIcon"] {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+[data-testid="stStatusWidgetRunningManIcon"] svg,
+[data-testid="stStatusWidgetRunningManIcon"] img {
+  display: none !important;
+}
+[data-testid="stStatusWidgetRunningManIcon"]::after {
+  content: "🐕";
+  font-size: 1.1rem;
+  line-height: 1;
+  display: inline-block;
+  transform-origin: bottom center;
+  animation: zunami-corre 0.45s steps(1) infinite;
+}
+@keyframes zunami-corre {
+  0%   { transform: translateY(0)    rotate(-4deg); }
+  25%  { transform: translateY(-3px) rotate(2deg); }
+  50%  { transform: translateY(0)    rotate(4deg); }
+  75%  { transform: translateY(-2px) rotate(-2deg); }
+  100% { transform: translateY(0)    rotate(-4deg); }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -303,20 +332,34 @@ def _build_map(df, zone, ctx, lang):
                    zoom_start=14, tiles="CartoDB positron", control_scale=True)
     if ctx["shakemap_ok"] and "mmi" in df.columns:
         heat = df.dropna(subset=["mmi"]).copy()
-        mlo, mhi = float(heat["mmi"].min()), float(heat["mmi"].max())
-        # Peso normalizado por zona → gradiente real (no un bloque uniforme).
-        heat["w"] = ((heat["mmi"] - mlo) / (mhi - mlo)) if (mhi - mlo) > 1e-9 else 0.5
-        HeatMap(heat[["lat", "lon", "w"]].values.tolist(),
-                radius=18, blur=14, min_opacity=0.30).add_to(m)
-        # Marcadores de las celdas de MAYOR intensidad (referencia)
-        for _, r in heat.nlargest(12, "mmi").iterrows():
-            folium.CircleMarker(
-                [r["lat"], r["lon"]], radius=6, weight=1, color="#bd0026",
-                fill=True, fill_opacity=0.85,
-                popup=folium.Popup(
-                    f"{t('col_mmi', lang)}: {r['mmi']:.1f}"
-                    + (f"<br>{t('col_area', lang)}: {r['area']}" if "area" in r else ""),
-                    max_width=200)).add_to(m)
+        # Índice de AFECTACIÓN probable: sacudimiento × población expuesta (+ realce
+        # por fallo de terreno). La población es el discriminador real dentro de una
+        # zona pequeña (la MMI apenas varía a esta escala). Así el rojo marca las
+        # zonas más afectadas (a dónde ir a ayudar) y el mar/parques quedan fuera.
+        liq = heat["liquefaccion"].values if "liquefaccion" in heat.columns else None
+        desl = heat["deslizamiento"].values if "deslizamiento" in heat.columns else None
+        pop = heat["pop"].values if "pop" in heat.columns else np.ones(len(heat))
+        heat["score"] = scoring.impact_exposure(heat["mmi"].values, pop, liq, desl)
+        heat = heat[heat["score"] > 0]
+        if not heat.empty:
+            # Normalización robusta por percentiles (una celda atípica no aplana el resto).
+            # sqrt suaviza el degradado para que las zonas intermedias se vean (no solo
+            # los picos): rojo = más afectada → naranja/amarillo → frío = menos.
+            s = heat["score"].values
+            lo, hi = float(np.nanpercentile(s, 5)), float(np.nanpercentile(s, 99))
+            heat["w"] = (np.sqrt(np.clip((s - lo) / (hi - lo), 0.0, 1.0))
+                         if hi - lo > 1e-9 else 0.5)
+            HeatMap(heat[["lat", "lon", "w"]].values.tolist(),
+                    radius=18, blur=14, min_opacity=0.30).add_to(m)
+            # Marcadores de las celdas MÁS afectadas (referencia para rescatistas)
+            for _, r in heat.nlargest(12, "score").iterrows():
+                folium.CircleMarker(
+                    [r["lat"], r["lon"]], radius=6, weight=1, color="#bd0026",
+                    fill=True, fill_opacity=0.85,
+                    popup=folium.Popup(
+                        f"{t('col_mmi', lang)}: {r['mmi']:.1f}"
+                        + (f"<br>{t('col_area', lang)}: {r['area']}" if "area" in r else ""),
+                        max_width=200)).add_to(m)
     # Recursos de ayuda (OSM): dónde acudir — siempre visibles
     for _, r in ctx["resources"].iterrows():
         folium.Marker(
