@@ -197,24 +197,6 @@ def home():
                 st.page_link(path, label="🆘 " + t("ver_ayuda_zona", lang))
     st.caption(t("leyenda_zonas", lang))
 
-    # ── DAÑOS MATERIALES Y MAPAS OFICIALES (sección unificada) ────────────────
-    st.subheader("🛰️ " + t("danos_titulo", lang))
-    danos = config.get("danos_materiales", [])
-    if danos:
-        drows = [{
-            t("col_descripcion", lang): d.get("texto", ""),
-            t("col_fuente", lang): d.get("fuente", ""),
-            t("col_actualizado", lang): d.get("fecha", ""),
-            t("col_enlace", lang): d.get("url", ""),
-        } for d in danos]
-        st.dataframe(pd.DataFrame(drows), width="stretch", hide_index=True,
-                     column_config={t("col_enlace", lang): st.column_config.LinkColumn(
-                         t("col_enlace", lang), display_text="🔗 " + t("abrir", lang))})
-    st.markdown(t("danos_texto", lang))
-    for k in ("copernicus_emsr884", "unosat", "maxar_open_data"):
-        if k in cofu:
-            st.markdown(f"🔗 [{cofu[k]['nombre']}]({cofu[k]['url']})")
-
     # ── CÓMO AYUDAR (donaciones) ──────────────────────────────────────────────
     if "caritas_venezuela" in cofu:
         st.subheader("💚 " + t("ayudar_titulo", lang))
