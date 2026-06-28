@@ -16,6 +16,7 @@ from core.config import get_zone, load_config
 from core.i18n import IDIOMAS, t
 from core.pipeline import build_zone
 from core.sources import fmt_vet_utc, parse_iso
+from core.weather import get_weather
 from core.zunami import running_indicator_css
 
 ALERT_COLORS = {"red": "🔴", "orange": "🟠", "yellow": "🟡", "green": "🟢"}
@@ -376,6 +377,18 @@ def render_zone(zone_id: str) -> None:
     st_folium(_build_map(df, zone, ctx, lang), height=480, width="stretch",
               returned_objects=[], key=f"map_{zone_id}")
     st.caption(t("leyenda_intensidad", lang))
+
+    # ── CLIMA ACTUAL ──────────────────────────────────────────────────────────
+    lat_c = (zone["bbox"][1] + zone["bbox"][3]) / 2
+    lon_c = (zone["bbox"][0] + zone["bbox"][2]) / 2
+    w = get_weather(lat_c, lon_c)
+    if w:
+        wc = st.columns(4)
+        wc[0].metric("🌡️ Temperatura",  f"{w['temp']:.0f} °C")
+        wc[1].metric("🌧️ Lluvia (1 h)", f"{w['precip']:.1f} mm")
+        wc[2].metric("💨 Viento",        f"{w['wind']:.0f} km/h")
+        wc[3].metric(w["icon"] + " Cielo", w["condition"])
+        st.caption(f"🕒 Clima: {w['fetched_at']} · [Open-Meteo](https://open-meteo.com) (CC BY 4.0)")
 
     # ── KPIs informativos ─────────────────────────────────────────────────────
     c1, c2, c3 = st.columns(3)
