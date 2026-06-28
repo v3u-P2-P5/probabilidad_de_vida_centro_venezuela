@@ -378,17 +378,45 @@ def render_zone(zone_id: str) -> None:
               returned_objects=[], key=f"map_{zone_id}")
     st.caption(t("leyenda_intensidad", lang))
 
-    # ── CLIMA ACTUAL ──────────────────────────────────────────────────────────
+    # ── CLIMA: actual + pronóstico ────────────────────────────────────────────
     lat_c = (zone["bbox"][1] + zone["bbox"][3]) / 2
     lon_c = (zone["bbox"][0] + zone["bbox"][2]) / 2
-    w = get_weather(lat_c, lon_c)
-    if w:
+    wx = get_weather(lat_c, lon_c)
+    if wx:
+        cur = wx["current"]
+        # Condiciones actuales (siempre visibles)
         wc = st.columns(4)
-        wc[0].metric("🌡️ Temperatura",  f"{w['temp']:.0f} °C")
-        wc[1].metric("🌧️ Lluvia (1 h)", f"{w['precip']:.1f} mm")
-        wc[2].metric("💨 Viento",        f"{w['wind']:.0f} km/h")
-        wc[3].metric(w["icon"] + " Cielo", w["condition"])
-        st.caption(f"🕒 Clima: {w['fetched_at']} · [Open-Meteo](https://open-meteo.com) (CC BY 4.0)")
+        wc[0].metric("🌡️ Temperatura",   f"{cur['temp']:.0f} °C")
+        wc[1].metric("🌧️ Lluvia (1 h)",  f"{cur['precip']:.1f} mm")
+        wc[2].metric("💨 Viento",          f"{cur['wind']:.0f} km/h")
+        wc[3].metric(cur["icon"] + " Cielo", cur["condition"])
+
+        # Pronóstico próximas horas + 2 días (desplegable)
+        with st.expander("📅 Pronóstico próximas horas y 2 días", expanded=False):
+            # Próximas 12 h
+            if wx["hourly"]:
+                st.markdown("**Próximas horas**")
+                rows = [{
+                    "Hora (VET)": f"{h['icon']} {h['hora']}",
+                    "Temp (°C)":  f"{h['temp']:.0f}",
+                    "💧 Prob.":   f"{int(h['precip_prob'] or 0)} %",
+                    "Lluvia mm":  f"{h['precip']:.1f}",
+                } for h in wx["hourly"]]
+                st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+
+            # Próximos 2 días
+            if wx["daily"]:
+                st.markdown("**Próximos 2 días**")
+                dc = st.columns(len(wx["daily"]))
+                for col, d in zip(dc, wx["daily"]):
+                    col.markdown(
+                        f"**{d['dia']}**  \n"
+                        f"{d['icon']} {d['condition']}  \n"
+                        f"🌡️ {d['tmax']:.0f}° / {d['tmin']:.0f}°  \n"
+                        f"🌧️ {d['precip']:.1f} mm · {int(d['precip_prob'] or 0)} % prob."
+                    )
+
+        st.caption(f"🕒 Clima: {cur['fetched_at']} · [Open-Meteo](https://open-meteo.com) (CC BY 4.0)")
 
     # ── KPIs informativos ─────────────────────────────────────────────────────
     c1, c2, c3 = st.columns(3)
