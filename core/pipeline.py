@@ -113,7 +113,7 @@ def build_zone(zone: dict, config: dict, now: datetime | None = None, with_osm: 
 
     # --- Recursos críticos reales (OSM) ---
     if with_osm:
-        resources = fetch_resources(zone["bbox"], f["osm"]["overpass"],
+        resources = fetch_resources(tuple(zone["bbox"]), f["osm"]["overpass"],
                                     ttl=config.get("osm_ttl_segundos", 1800))
         if not resources.empty and not resources.attrs.get("error"):
             resources = assign_areas(resources, zone["bbox"])

@@ -10,40 +10,23 @@
 Diseño: SOLO datos reales y atribuidos. Nunca se fabrica un número propio.
 Tolerante a fallos: si una fuente cae, se omite (no rompe la app).
 """
-import time
 from datetime import datetime, timezone
 
 import requests
+import streamlit as st
 
 _HEADERS = {"User-Agent": "ProbabilidadDeVida/1.0 "
                          "(informacion humanitaria post-terremoto Venezuela)"}
-_CACHE: dict = {}   # key -> (timestamp, value)
-
-
-def _cached(key: str, ttl: float):
-    hit = _CACHE.get(key)
-    if hit and (time.time() - hit[0]) < ttl:
-        return hit[1]
-    return None
-
-
-def _store(key: str, value):
-    _CACHE[key] = (time.time(), value)
-    return value
 
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
 
+@st.cache_data(ttl=600, show_spinner=False)
 def get_gdacs(config: dict) -> dict:
     """Alerta y severidad GDACS. Devuelve dict tolerante a fallos."""
     rcfg = config.get("relief", {})
-    ttl = float(rcfg.get("ttl_segundos", 600))
-    cached = _cached("gdacs", ttl)
-    if cached is not None:
-        return cached
-
     eventid = rcfg.get("gdacs_eventid")
     episodeid = rcfg.get("gdacs_episodeid")
     page = (f"https://www.gdacs.org/report.aspx?eventid={eventid}"
@@ -51,7 +34,7 @@ def get_gdacs(config: dict) -> dict:
     out = {"alertlevel": None, "severity": None, "summary": None,
            "datemodified": None, "fetched_at": _now_iso(), "url": page}
     if not eventid:
-        return _store("gdacs", out)
+        return out
     try:
         r = requests.get(
             "https://www.gdacs.org/gdacsapi/api/events/geteventdata",
@@ -71,9 +54,10 @@ def get_gdacs(config: dict) -> dict:
             out["datemodified"] = props.get("datemodified")
     except Exception:
         pass
-    return _store("gdacs", out)
+    return out
 
 
+@st.cache_data(ttl=600, show_spinner=False)
 def get_reliefweb_reports(config: dict, limit: int = 6) -> dict:
     """Últimos reportes de situación de ReliefWeb (OCHA) para el desastre.
 
@@ -82,12 +66,6 @@ def get_reliefweb_reports(config: dict, limit: int = 6) -> dict:
     aprobado u otra causa), 'reports' va vacío y se usa el enlace al desastre.
     """
     rcfg = config.get("relief", {})
-    ttl = float(rcfg.get("ttl_segundos", 600))
-    key = f"reliefweb_{limit}"
-    cached = _cached(key, ttl)
-    if cached is not None:
-        return cached
-
     disaster = rcfg.get("reliefweb_disaster", "")
     appname = rcfg.get("appname", "")
     page_url = (f"https://reliefweb.int/disaster/{disaster}" if disaster
@@ -97,7 +75,7 @@ def get_reliefweb_reports(config: dict, limit: int = 6) -> dict:
 
     if not appname:
         out["needs_appname"] = True
-        return _store(key, out)
+        return out
 
     params = [
         ("appname", appname),
@@ -115,8 +93,8 @@ def get_reliefweb_reports(config: dict, limit: int = 6) -> dict:
         r = requests.get("https://api.reliefweb.int/v2/reports",
                          params=params, headers=_HEADERS, timeout=15)
         if r.status_code == 403:
-            out["needs_appname"] = True   # appname no aprobado
-            return _store(key, out)
+            out["needs_appname"] = True
+            return out
         r.raise_for_status()
         for item in r.json().get("data", []):
             f = item.get("fields", {})
@@ -131,4 +109,4 @@ def get_reliefweb_reports(config: dict, limit: int = 6) -> dict:
             })
     except Exception:
         pass
-    return _store(key, out)
+    return out

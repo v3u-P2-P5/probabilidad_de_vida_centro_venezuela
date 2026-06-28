@@ -9,10 +9,9 @@ import streamlit as st
 from core.config import load_config
 from core.geo import haversine_m
 from core.i18n import t
-from core.pipeline import build_zone
 from core.relief import get_gdacs, get_reliefweb_reports
 from core.sources import fmt_vet_utc, parse_iso
-from core.ui import apply_chrome, render_sources
+from core.ui import apply_chrome, render_sources, _cached_zone
 
 st.set_page_config(page_title="Doble Sismo Venezuela 2026", page_icon="🌍", layout="wide")
 
@@ -48,7 +47,7 @@ ZONA_PAGES = [
 def _resumen(_salt: int):
     rows, ctx = [], None
     for z in config["zonas"]:
-        _, ctx = build_zone(z, config, with_osm=False)
+        _, ctx = _cached_zone(z["id"], _salt)
         rows.append({"nombre": z["nombre"],
                      "mmi": ctx.get("mmi_max"),
                      "pob": ctx.get("poblacion_total")})

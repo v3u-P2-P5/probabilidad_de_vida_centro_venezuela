@@ -4,11 +4,9 @@ Hospitales, clínicas, estaciones de bomberos/ambulancias y refugios: a dónde
 llevar sobrevivientes y qué activos de rescate hay cerca. Datos en vivo.
 © colaboradores de OpenStreetMap.
 """
-import time
 import pandas as pd
 import requests
-
-_CACHE: dict = {}  # bbox -> (timestamp, DataFrame)
+import streamlit as st
 # Overpass exige un User-Agent descriptivo (etiqueta de uso); sin él responde 406.
 HEADERS = {"User-Agent": "ProbabilidadDeVida-SAR/1.0 "
                          "(respuesta humanitaria a terremoto; contacto en repositorio)"}
@@ -21,6 +19,7 @@ MIRRORS = [
 
 def _post_overpass(endpoints, query, timeout):
     """Intenta cada endpoint con un reintento; devuelve JSON o lanza la última excepción."""
+    import time
     last = None
     for url in endpoints:
         for intento in range(2):
@@ -75,14 +74,10 @@ def assign_areas(df: pd.DataFrame, bbox: list) -> pd.DataFrame:
     return df
 
 
+@st.cache_data(ttl=1800, show_spinner=False)
 def fetch_resources(bbox, endpoint: str, ttl: float = 1800.0,
                     timeout: float = 30.0) -> pd.DataFrame:
     """Recursos de emergencia dentro del bbox [lon_min,lat_min,lon_max,lat_max]."""
-    key = tuple(round(x, 4) for x in bbox)
-    cached = _CACHE.get(key)
-    if cached and (time.time() - cached[0]) < ttl:
-        return cached[1]
-
     lon_min, lat_min, lon_max, lat_max = bbox
     bb = f"{lat_min},{lon_min},{lat_max},{lon_max}"
     query = f"""
@@ -105,14 +100,12 @@ def fetch_resources(bbox, endpoint: str, ttl: float = 1800.0,
             if lat is None or lon is None:
                 continue
 
-            # Teléfono: varios tags alternativos en OSM
             phone = (tags.get("phone")
                      or tags.get("contact:phone")
                      or tags.get("contact:mobile")
                      or tags.get("telephone")
                      or "")
 
-            # Dirección: addr:full > construida desde partes
             addr_full = tags.get("addr:full", "")
             if not addr_full:
                 parts = [tags.get("addr:street", ""),
@@ -135,7 +128,6 @@ def fetch_resources(bbox, endpoint: str, ttl: float = 1800.0,
                 "telefono":      phone,
                 "direccion":     addr_full,
                 "web":           web,
-                # Tags OSM de área/barrio para clasificación geográfica
                 "neighbourhood": tags.get("addr:neighbourhood", ""),
                 "suburb":        tags.get("addr:suburb", ""),
                 "quarter":       tags.get("addr:quarter", ""),
@@ -150,5 +142,4 @@ def fetch_resources(bbox, endpoint: str, ttl: float = 1800.0,
 
     df = pd.DataFrame(rows)
     df.attrs["error"] = False
-    _CACHE[key] = (time.time(), df)
     return df

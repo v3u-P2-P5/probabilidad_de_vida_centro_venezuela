@@ -7,6 +7,7 @@ Datos OFICIALES y en vivo (FDSN event API).
 from datetime import datetime, timezone
 import numpy as np
 import requests
+import streamlit as st
 
 from core.geo import haversine_m
 
@@ -65,20 +66,24 @@ def get_event(event_id: str, timeout: float = 12.0) -> dict | None:
     return out
 
 
+@st.cache_data(ttl=300, show_spinner=False)
+def _fetch_events(event_ids: tuple, timeout: float = 12.0) -> list:
+    """Cached USGS fetch — keyed by event IDs so all zones share the same result."""
+    eventos = []
+    for eid in event_ids:
+        e = get_event(eid, timeout=timeout)
+        if e:
+            eventos.append(e)
+    return eventos
+
+
 def get_sismos(config: dict, timeout: float = 12.0) -> list:
     """Devuelve todos los eventos de la secuencia sísmica (para combinar ShakeMaps)."""
     sismo_cfg = config["sismo"]
     if not sismo_cfg.get("usar_datos_reales"):
         return []
-    ids = sismo_cfg.get("usgs_event_ids") or [sismo_cfg.get("usgs_event_id")]
-    eventos = []
-    for eid in ids:
-        if not eid:
-            continue
-        e = get_event(eid, timeout=timeout)
-        if e:
-            eventos.append(e)
-    return eventos
+    ids = tuple(eid for eid in (sismo_cfg.get("usgs_event_ids") or [sismo_cfg.get("usgs_event_id")]) if eid)
+    return _fetch_events(ids, timeout=timeout)
 
 
 def get_sismo(config: dict) -> dict:
