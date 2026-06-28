@@ -43,6 +43,37 @@ HEADERS = {"User-Agent": "ProbabilidadDeVida-SAR/1.0 "
                          "(humanitarian earthquake response Venezuela)"}
 
 
+def _download_tif(url: str, dest: Path, timeout: int = 180) -> Path | None:
+    """Descarga un ráster GeoTIFF una sola vez. Devuelve la ruta o None si falla."""
+    if dest.exists() and dest.stat().st_size > 0:
+        return dest
+    try:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        with requests.get(url, stream=True, timeout=timeout, headers=HEADERS) as r:
+            r.raise_for_status()
+            with open(dest, "wb") as fh:
+                for chunk in r.iter_content(chunk_size=1 << 20):
+                    fh.write(chunk)
+        return dest
+    except Exception as e:
+        print(f"  [ground-failure] no se pudo descargar {url}: {e}")
+        return None
+
+
+def _sample_tif(path: Path, lats, lons):
+    """Muestrea un ráster en cada (lat, lon). Devuelve array 0-1 o None."""
+    try:
+        import rasterio
+        with rasterio.open(path) as src:
+            vals = np.array([v[0] for v in src.sample(zip(np.asarray(lons), np.asarray(lats)))],
+                            dtype=float)
+        vals[~np.isfinite(vals)] = 0.0
+        return np.clip(vals, 0.0, 1.0)
+    except Exception as e:
+        print(f"  [ground-failure] no se pudo muestrear {path.name}: {e}")
+        return None
+
+
 def reverse_geocode(lat: float, lon: float, timeout: int = 20) -> str:
     """Nombre del área (barrio/sector) vía Nominatim. '' si falla."""
     try:
@@ -60,7 +91,7 @@ def reverse_geocode(lat: float, lon: float, timeout: int = 20) -> str:
     return ""
 
 
-def precompute_zone(zone: dict, cell_m: float) -> pd.DataFrame:
+def precompute_zone(zone: dict, cell_m: float, gf_paths: dict) -> pd.DataFrame:
     grid = make_grid(zone["bbox"], cell_m)
     lats, lons = grid["lat"].values, grid["lon"].values
     lat_edges = np.arange(lats.min(), lats.max() + BLOCK_DEG, BLOCK_DEG)
@@ -102,8 +133,21 @@ def precompute_zone(zone: dict, cell_m: float) -> pd.DataFrame:
             _geo_sector(la, lo, zone["bbox"])
             for la, lo in zip(grid.loc[sin_area, "lat"], grid.loc[sin_area, "lon"])]
 
+    # Ground-failure por celda (probabilidad 0-1): licuefacción + deslizamiento
+    cols = ["zone_id", "cell_id", "lat", "lon", "pop", "area"]
+    if gf_paths.get("liquefaccion"):
+        vals = _sample_tif(gf_paths["liquefaccion"], lats, lons)
+        if vals is not None:
+            grid["liquefaccion"] = vals
+            cols.append("liquefaccion")
+    if gf_paths.get("deslizamiento"):
+        vals = _sample_tif(gf_paths["deslizamiento"], lats, lons)
+        if vals is not None:
+            grid["deslizamiento"] = vals
+            cols.append("deslizamiento")
+
     grid["zone_id"] = zone["id"]
-    return grid[["zone_id", "cell_id", "lat", "lon", "pop", "area"]]
+    return grid[cols]
 
 
 def main() -> int:
@@ -112,14 +156,28 @@ def main() -> int:
     out = ROOT / "data" / "population_cells.csv"
     out.parent.mkdir(parents=True, exist_ok=True)
 
+    # Descargar rásters ground-failure USGS una sola vez
+    gfcfg = cfg.get("ground_failure", {})
+    raw = ROOT / "data" / "raw"
+    gf_paths = {
+        "liquefaccion": _download_tif(gfcfg["liquefaction_tif_url"], raw / "gf_liquefaction.tif")
+        if gfcfg.get("liquefaction_tif_url") else None,
+        "deslizamiento": _download_tif(gfcfg["landslide_tif_url"], raw / "gf_landslide.tif")
+        if gfcfg.get("landslide_tif_url") else None,
+    }
+
     frames = []
     for zone in cfg["zonas"]:
         print(f"\n=== Zona: {zone['nombre']} ===")
-        frames.append(precompute_zone(zone, cell_m))
+        frames.append(precompute_zone(zone, cell_m, gf_paths))
 
     result = pd.concat(frames, ignore_index=True)
     result.to_csv(out, index=False, encoding="utf-8")
-    print(f"\nListo: {out}  ({len(result)} celdas, {result['pop'].gt(0).sum()} con población)")
+    gf_note = ""
+    if "liquefaccion" in result.columns:
+        gf_note = (f" | licuefacción max={result['liquefaccion'].max():.2f}"
+                   f" deslizamiento max={result.get('deslizamiento', pd.Series([0])).max():.2f}")
+    print(f"\nListo: {out}  ({len(result)} celdas, {result['pop'].gt(0).sum()} con población){gf_note}")
     print("Commitea data/population_cells.csv para que funcione en Streamlit Cloud.")
     return 0
 

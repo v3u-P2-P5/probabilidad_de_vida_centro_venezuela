@@ -1,13 +1,12 @@
 # ============================================================================
-#  Configuración — Mapa de Probabilidad de Vida (Caracas / La Guaira)
-#  EVENTO REAL. Editable EN CALIENTE (la app recarga sin reiniciar código).
+#  Configuración — Información post-terremoto Venezuela 2026 (Caracas / La Guaira)
+#  APP INFORMATIVA. Solo datos reales y atribuidos. NO localiza personas atrapadas.
+#  Editable EN CALIENTE (la app recarga sin reiniciar código).
 # ============================================================================
 
 # --- Modo ---
-# operativo=true  => SOLO datos reales + proyecciones estadísticas citadas.
-#                    Si una capa no está disponible se marca NO DISPONIBLE;
-#                    NUNCA se inventan datos.
-# operativo=false => modo demostración (datos sintéticos, claramente rotulados).
+# operativo=true  => SOLO datos reales (USGS, OSM, ReliefWeb, GDACS). Si una capa
+#                    no está disponible se marca NO DISPONIBLE; NUNCA se inventan datos.
 modo_operativo: true
 
 # --- Auto-refresco (tiempo real) ---
@@ -30,60 +29,78 @@ sismo:
   profundidad_km: 10
   epicentro: { lat: 10.4351, lon: -68.4716 }
 
-# --- Proyecciones estadísticas (habilitadas en modo operativo) ---
-# Las proyecciones estadísticas respaldadas con metodología citada NO se
-# consideran datos sintéticos — permiten estimar vulnerabilidad y ocupación
-# sin inventario real de campo. Se muestran siempre con el método y la cita.
-proyecciones_estadisticas:
-  habilitadas: true
-  metodo_vulnerabilidad: "FEMA HAZUS-MH MR5 (2012), Apéndice C — Fragility Functions. Calibrado para Venezuela con USGS PAGER Global Building Inventory (Jaiswal & Wald, 2010, doi:10.3133/ofr20101096)."
-  metodo_ocupacion: "FEMA HAZUS-MH 2.1, Tabla 3-6 — Occupancy Profiles. Adaptado para hora local 18:05 VET (día laborable, martes)."
-  metodo_inventario: "Inventario estructural por zona: estimación probabilística basada en USGS PAGER Global Building Inventory + caracterización morfológica de Caracas (Schmitz et al. 2012, Geofísica Internacional)."
-  ref_hazus: "https://www.fema.gov/sites/default/files/2020-09/fema_hazus-mh_2.1_technical-manual_0.pdf"
-  ref_pager: "https://pubs.usgs.gov/of/2010/1096/"
-  ref_schmitz: "https://www.sciencedirect.com/science/article/pii/S0016716912604289"
+# --- Datos de impacto en tiempo real (ReliefWeb / GDACS) ---
+# Cifras oficiales de fallecidos/heridos/desaparecidos/daños provienen de
+# reportes de situación (OCHA/UNICEF) y se muestran SIEMPRE con fuente y hora.
+relief:
+  reliefweb_disaster: "eq-2026-000093-ven"   # ReliefWeb disaster id (OCHA)
+  # appname de ReliefWeb v2: DEBE ser aprobado (gratis) en
+  # https://apidoc.reliefweb.int/parameters#appname — al ponerlo aquí, el feed
+  # de cifras oficiales aparece automáticamente. Vacío => solo enlace al desastre.
+  appname: ""
+  gdacs_eventid: 1548377                       # GDACS event id (alerta roja)
+  gdacs_episodeid: 1714328
+  ttl_segundos: 600                            # refrescar cifras cada 10 min
 
-# --- Inventario estructural por zona ---
-# Proyección estadística (ver proyecciones_estadisticas.metodo_inventario).
-# Fracción de cada tipo constructivo en la zona (deben sumar 1.0 por zona).
-# vuln=probabilidad de colapso dado MMI; void=huecos de supervivencia.
-inventario_estructural:
-  libertador:
-    informal: 0.25    # autoconstrucción de ladera (vuln=0.95, void=0.25)
-    masonry: 0.40     # mampostería no confinada (vuln=0.75, void=0.30)
-    rc_frame: 0.30    # pórtico de concreto armado (vuln=0.50, void=0.65)
-    highrise: 0.05    # edificio alto (vuln=0.45, void=0.70)
-  sucre_petare:
-    informal: 0.65    # mayoría barrios de ladera
-    masonry: 0.25
-    rc_frame: 0.10
-    highrise: 0.00
-  baruta_hatillo:
-    informal: 0.15
-    masonry: 0.30
-    rc_frame: 0.40
-    highrise: 0.15
-  la_guaira:
-    informal: 0.35    # zona litoral, alta exposición 1999
-    masonry: 0.45
-    rc_frame: 0.18
-    highrise: 0.02
+# --- Cifras oficiales (preliminares, citadas) ---
+# Las cifras de víctimas/desaparecidos varían por fuente y evolucionan. Se
+# publican SIEMPRE atribuidas (fuente + fecha + enlace). Editar a medida que
+# las fuentes oficiales actualicen. Campos opcionales: fallecidos/heridos/
+# desaparecidos (texto), notas.
+cifras_oficiales:
+  - fuente: "Gobierno de Venezuela (Presidencia, vía ONU Noticias)"
+    fecha: "2026-06-25"
+    url: "https://news.un.org/en/story/2026/06/1167806"
+    fallecidos: "164"
+    heridos: "971"
+  - fuente: "Ministerio de Salud (vía Al Jazeera)"
+    fecha: "2026-06-25"
+    url: "https://www.aljazeera.com/news/liveblog/2026/6/25/venezuela-earthquakes-live-at-least-188-dead-as-rescue-efforts-intensify"
+    fallecidos: "235"
+    heridos: "~4.300"
+  - fuente: "NPR (recuento de prensa)"
+    fecha: "2026-06-26"
+    url: "https://www.npr.org/2026/06/26/nx-s1-5870651/venezuela-earthquakes-caracas"
+    fallecidos: "~1.000"
+  - fuente: "Recuento agregado de prensa internacional"
+    fecha: "2026-06-26"
+    url: "https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes"
+    fallecidos: "920"
+    heridos: "4.500"
+    desaparecidos: "50.000"
+  - fuente: "USGS PAGER (estimación por modelo)"
+    fecha: "2026-06-24"
+    url: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/pager"
+    notas: "Alerta ROJA — 44% de probabilidad de más de 10.000 fallecidos (modelo, no recuento)."
 
-# --- Pesos del modelo ---
-pesos:
-  sacudimiento: 1.0
-  colapso: 1.2
-  poblacion: 1.0
-  supervivencia: 0.8
-  decaimiento_temporal: 1.0
-  factor_boost_reporte: 0.5
+# Daños materiales reportados (atribuidos)
+danos_materiales:
+  - texto: "Edificios colapsados en Caracas y La Guaira; mayor afectación en el litoral central."
+    fuente: "CNN / Al Jazeera"
+    fecha: "2026-06-25"
+    url: "https://www.cnn.com/2026/06/24/weather/live-news/venezuela-earthquake-puerto-rico-tsunami"
+  - texto: "Aeropuerto internacional de Maiquetía cerrado tras el sismo."
+    fuente: "Prensa internacional"
+    fecha: "2026-06-25"
+    url: "https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes"
+  - texto: "Cartografía de daño en elaboración (edificios potencialmente dañados)."
+    fuente: "Copernicus EMS EMSR884 / UNOSAT"
+    fecha: "2026-06-26"
+    url: "https://mapping.emergency.copernicus.eu/news/earthquake-in-venezuela-emsr884/"
 
-# Umbral de colapso: solo tiene sentido buscar sobrevivientes ATRAPADOS donde
-# hubo colapso de edificaciones. Celdas con probabilidad de colapso estimada por
-# debajo de este umbral se EXCLUYEN (las personas allí no quedaron atrapadas).
-# La probabilidad de colapso = factor_sacudimiento(MMI) × vulnerabilidad(HAZUS).
-# 0.10 ≈ daño estructural plausible desde ~MMI VI-VII en construcción vulnerable.
-umbral_colapso: 0.10
+# --- Personas desaparecidas ---
+# No existe una lista pública certificada de nombres (la gestión es confidencial
+# vía CICR/Cruz Roja). Esta lista queda EDITABLE para casos publicados por fuentes
+# oficiales/familiares con su consentimiento. Campos: nombre, edad, zona,
+# visto_por_ultima_vez, contacto, foto_url (opcional), fuente, url, fecha.
+desaparecidos: []
+
+# --- Ground-failure USGS (peligro real por ubicación) ---
+# Rásters de probabilidad de licuefacción (Zhu 2017) y deslizamiento (Jessee 2018)
+# del evento M7.5. Se muestrean por celda en scripts/precompute_population.py.
+ground_failure:
+  liquefaction_tif_url: "https://earthquake.usgs.gov/product/ground-failure/6000t7zp/us/1782505459442/zhu_2017_general_model.tif"
+  landslide_tif_url: "https://earthquake.usgs.gov/product/ground-failure/6000t7zp/us/1782505459442/jessee_2018_model.tif"
 
 rejilla:
   tamano_celda_m: 150
@@ -118,39 +135,43 @@ fuentes:
   usgs_ground_failure:
     nombre: "USGS — Deslizamientos y licuefacción"
     url: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/ground-failure"
-  copernicus_ems:
-    nombre: "Copernicus EMS — Cartografía rápida (activaciones)"
-    url: "https://rapidmapping.emergency.copernicus.eu/"
-    activacion_emsr: ""        # rellenar con el código EMSR### cuando se active
+  copernicus_emsr884:
+    nombre: "Copernicus EMS — EMSR884 (cartografía de daño, Venezuela)"
+    url: "https://mapping.emergency.copernicus.eu/news/earthquake-in-venezuela-emsr884/"
+  unosat:
+    nombre: "UNOSAT — Edificios potencialmente dañados (UNITAR)"
+    url: "https://unosat.org/products/"
+  reliefweb:
+    nombre: "ReliefWeb (OCHA) — Reportes de situación Venezuela"
+    url: "https://reliefweb.int/disaster/eq-2026-000093-ven"
+  gdacs:
+    nombre: "GDACS — Alerta y estimación de impacto"
+    url: "https://www.gdacs.org/report.aspx?eventid=1548377&episodeid=1714328&eventtype=EQ"
+  icrc_rfl:
+    nombre: "CICR — Restablecimiento del Contacto entre Familiares (buscar/registrar)"
+    url: "https://familylinks.icrc.org/"
+  icrc_trace_face:
+    nombre: "CICR — Trace the Face (búsqueda con fotos)"
+    url: "https://tracetheface.familylinks.icrc.org/"
+  cruz_roja_venezolana:
+    nombre: "Cruz Roja Venezolana — Ayuda y reunificación familiar"
+    url: "https://cruzroja.ve/"
+  caritas_venezuela:
+    nombre: "Cáritas Venezuela — Ayuda y donaciones (ONG)"
+    url: "https://caritasvenezuela.org/"
+  desaparecidos_terremoto_ve:
+    nombre: "Desaparecidos Terremoto Venezuela — «Reconectemos a cada familia»"
+    url: "https://desaparecidosterremotovenezuela.com/"
   maxar_open_data:
     nombre: "Maxar/Vantor Open Data — Imágenes pre/post evento"
     url: "https://www.maxar.com/open-data"
-    stac_catalog: "https://maxar-opendata.s3.amazonaws.com/events/catalog.json"
-  unosat:
-    nombre: "UNOSAT — Mapas de crisis (UNITAR, libre acceso)"
-    url: "https://unosat.org/products/"
-  nasa_aria:
-    nombre: "NASA ARIA — Damage Proxy Map (SAR coherencia)"
-    url: "https://aria-share.jpl.nasa.gov/events/"
   worldpop:
     nombre: "WorldPop — Población Venezuela 100m (CC-BY 4.0)"
     url: "https://data.humdata.org/dataset/worldpop-population-density-for-venezuela-bolivarian-republic-of"
-  meta_hrsl:
-    nombre: "Meta/CIESIN HRSL — Densidad de población alta resolución (HDX)"
-    url: "https://data.humdata.org/dataset/kontur-population-venezuela-bolivarian-republic-of"
   osm:
     nombre: "OpenStreetMap — Hospitales, bomberos, refugios (© colaboradores OSM)"
     url: "https://www.openstreetmap.org/copyright"
     overpass: "https://overpass-api.de/api/interpreter"
-  hot:
-    nombre: "Humanitarian OpenStreetMap Team (HOT)"
-    url: "https://www.hotosm.org/"
-  hazus:
-    nombre: "FEMA HAZUS-MH 2.1 — Metodología de vulnerabilidad (proyección estadística)"
-    url: "https://www.fema.gov/flood-maps/tools-resources/flood-map-products/hazus"
-  pager_inventory:
-    nombre: "USGS PAGER Global Building Inventory (Jaiswal & Wald, 2010)"
-    url: "https://pubs.usgs.gov/of/2010/1096/"
 
 # --- Zonas (una página por zona). bbox = [lon_min, lat_min, lon_max, lat_max] ---
 zonas:

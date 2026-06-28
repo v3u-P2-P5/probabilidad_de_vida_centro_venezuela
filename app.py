@@ -1,191 +1,200 @@
-"""Página de inicio — Mapa de Probabilidad de Sobrevivientes (Caracas y La Guaira)."""
+"""Router de la app informativa post-terremoto Venezuela 2026.
+
+Usa st.navigation para nombrar la página principal como "Home" y listar las zonas
+y secciones. El contenido de inicio vive en home().
+"""
 import pandas as pd
 import streamlit as st
 
 from core.config import load_config
 from core.i18n import t
 from core.pipeline import build_zone
+from core.relief import get_gdacs, get_reliefweb_reports
 from core.sources import fmt_vet_utc, parse_iso
-from core.ui import ALERT_COLORS, apply_chrome, render_sources
+from core.ui import apply_chrome, render_sources
 
-st.set_page_config(page_title="Probabilidad de Sobrevivientes", page_icon="🛰️", layout="wide")
+st.set_page_config(page_title="Doble Sismo Venezuela 2026", page_icon="🌍", layout="wide")
 
 config = load_config()
-lang = apply_chrome(config)
 
 ZONA_PAGES = [
-    ("pages/1_Caracas_Libertador.py",       "🔴 Libertador"),
-    ("pages/2_Caracas_Sucre_Petare.py",     "🔴 Sucre / Petare"),
-    ("pages/3_Caracas_Baruta_ElHatillo.py", "🔴 Baruta / Hatillo"),
-    ("pages/4_La_Guaira_Litoral.py",        "🔴 La Guaira"),
+    ("pages/1_Caracas_Libertador.py",       "Libertador"),
+    ("pages/2_Caracas_Sucre_Petare.py",     "Sucre / Petare"),
+    ("pages/3_Caracas_Baruta_ElHatillo.py", "Baruta / Hatillo / Chacao"),
+    ("pages/4_La_Guaira_Litoral.py",        "La Guaira"),
 ]
-
-V1 = 72
-V2 = 120
 
 
 @st.cache_data(ttl=300, show_spinner=True)
 def _resumen(_salt: int):
     rows, ctx = [], None
     for z in config["zonas"]:
-        df, ctx = build_zone(z, config, with_osm=False)
+        _, ctx = build_zone(z, config, with_osm=False)
         rows.append({"nombre": z["nombre"],
-                     "alta": int((df["prioridad"] == "alta").sum()),
-                     "mmi": float(df["mmi"].max()) if ctx["shakemap_ok"] else float("nan")})
+                     "mmi": ctx.get("mmi_max"),
+                     "pob": ctx.get("poblacion_total")})
     return pd.DataFrame(rows), ctx
 
 
-resumen, ctx = _resumen(config.get("autorefresco_segundos", 0))
-render_sources(ctx, lang)
+def home():
+    lang = apply_chrome(config)
+    resumen, ctx = _resumen(config.get("autorefresco_segundos", 0))
+    render_sources(ctx, lang)
+    cofu = config["fuentes"]
 
-# Sidebar: navegación
-st.sidebar.markdown("---")
-st.sidebar.markdown("**🗺️ Ir a zona**")
-for path, label in ZONA_PAGES:
-    st.sidebar.page_link(path, label=label)
+    st.title(t("app_title", lang))
+    st.caption(t("app_subtitle", lang))
 
-# ── TÍTULO compacto ──────────────────────────────────────────────────────────
-st.title("🛰️ " + t("app_title", lang))
-st.caption(t("app_subtitle", lang))
-
-# ── ZONA DE MAPAS — elemento principal, arriba de todo ───────────────────────
-lbl_cta = ("Selecciona una zona para abrir el mapa en tiempo real:"
-           if lang == "es" else "Select a zone to open the live map:")
-st.markdown(f"### {lbl_cta}")
-
-zona_rows = resumen.to_dict("records")
-col_alta  = t("col_celdas_alta", lang)
-pairs = list(zip(zona_rows, ZONA_PAGES))
-
-for i in range(0, len(pairs), 2):
-    cols = st.columns(2, gap="medium")
-    for j, col in enumerate(cols):
-        if i + j >= len(pairs):
-            break
-        row, (path, _) = pairs[i + j]
-        alta    = int(row["alta"])
-        mmi_val = f"{row['mmi']:.1f}" if not pd.isna(row["mmi"]) else "—"
-
-        if alta > 200:
-            border, bg, badge = "#b71c1c", "rgba(183,28,28,0.07)", "🔴"
-        elif alta > 50:
-            border, bg, badge = "#e65100", "rgba(230,81,0,0.07)", "🟠"
-        else:
-            border, bg, badge = "#1565c0", "rgba(21,101,192,0.06)", "🔵"
-
-        with col:
-            st.markdown(f"""
-<div style="border:2px solid {border};border-radius:12px;padding:14px 16px 10px;
-  background:{bg};margin-bottom:4px;">
-  <div style="font-size:1.05rem;font-weight:700;color:{border};margin-bottom:6px;">
-    {badge} {row['nombre']}
-  </div>
-  <div style="font-size:0.85rem;color:#444;margin-bottom:2px;">
-    ⚠️ <b>{alta}</b> {col_alta.lower()}
-  </div>
-  <div style="font-size:0.82rem;color:#666;">
-    📳 MMI máx: <b>{mmi_val}</b>
-  </div>
-</div>""", unsafe_allow_html=True)
-            st.page_link(path,
-                         label="📍 Abrir mapa en tiempo real →" if lang == "es"
-                               else "📍 Open live map →")
-
-st.markdown("---")
-
-# ── MODO + INTRO ─────────────────────────────────────────────────────────────
-if ctx["modo"] == "operativo":
-    st.success(t("modo_operativo_label", lang))
-else:
-    st.warning(t("modo_demo_label", lang))
-
-with st.expander("ℹ️ " + ("¿Qué hace esta herramienta?" if lang == "es"
-                           else "What does this tool do?"), expanded=False):
-    st.markdown(t("intro", lang))
-
-# ── SECUENCIA SÍSMICA (compacta) ─────────────────────────────────────────────
-s = ctx["sismo"]
-adicionales = ctx.get("sismos_adicionales", [])
-with st.expander("📍 " + t("sismo_titulo", lang), expanded=False):
-    if adicionales:
-        a = adicionales[0]
+    # ── Evento (compacto) ─────────────────────────────────────────────────────
+    s = ctx["sismo"]
+    adic = ctx.get("sismos_adicionales", [])
+    if adic:
+        a = adic[0]
         st.warning(t("sismo_doble_banner", lang,
                      m1=s.get("id", "us6000t7zp"), mag1=s.get("magnitud", 7.5),
                      m2=a.get("id", "us6000t7zc"), mag2=a.get("magnitud", 7.2)))
+    hs = ctx["hours_since"]
     c = st.columns(4)
+    # Fila 1: datos del sismo principal (M7.5)
     c[0].metric(t("magnitud", lang), f"M{s.get('magnitud')}")
     c[1].metric(t("profundidad", lang), f"{s.get('profundidad_km','?')} km")
-    c[2].metric(t("epicentro", lang), f"{s['epicentro']['lat']:.3f}, {s['epicentro']['lon']:.3f}")
-    if ctx.get("alert_pager"):
-        c[3].metric(t("pager_nivel", lang),
-                    f"{ALERT_COLORS.get(ctx['alert_pager'],'')} {ctx['alert_pager'].upper()}")
-    st.caption(f"📌 {s.get('lugar','')} · 🕒 {t('hora_evento', lang)}: "
-               f"{fmt_vet_utc(parse_iso(s['origen_iso']))}")
-    if s.get("url"):
-        st.caption(f"🔗 [{t('evento_real', lang)}]({s['url']})")
-        if adicionales and adicionales[0].get("url"):
-            st.caption(f"🔗 [{t('sismo_secundario', lang)} M{adicionales[0].get('magnitud')}]"
-                       f"({adicionales[0]['url']})")
-    st.caption(t("actualizacion_tiempo_real", lang))
+    c[2].metric(t("epicentro", lang), f"{s['epicentro']['lat']:.2f}, {s['epicentro']['lon']:.2f}")
+    c[3].metric(t("horas_transcurridas", lang), f"{hs:.0f} h")
+    st.caption(f"📌 {s.get('lugar','')} · 🕒 {fmt_vet_utc(parse_iso(s['origen_iso']))}"
+               + (f" · 🔗 [{t('evento_real', lang)}]({s['url']})" if s.get("url") else ""))
+    # Fila 2: sismo secundario (M7.2) con sus propios datos
+    if adic:
+        a = adic[0]
+        c2 = st.columns(4)
+        c2[0].metric(t("magnitud", lang), f"M{a.get('magnitud')}")
+        c2[1].metric(t("profundidad", lang), f"{a.get('profundidad_km','?')} km")
+        c2[2].metric(t("epicentro", lang),
+                     f"{a['epicentro']['lat']:.2f}, {a['epicentro']['lon']:.2f}")
+        c2[3].metric("", "")   # espacio; las horas son las mismas
+        st.caption(f"📌 {a.get('lugar','')} · 🕒 {fmt_vet_utc(parse_iso(a['origen_iso']))}"
+                   + (f" · 🔗 [{t('evento_real', lang)}]({a['url']})" if a.get("url") else ""))
 
-# ── VENTANAS ESTADÍSTICAS (plegadas) ─────────────────────────────────────────
-hs = ctx["hours_since"]
-if hs < V1:
-    fase, fase_color = ("ventana_principal" if lang == "es" else "primary_window"), "info"
-elif hs < V2:
-    fase, fase_color = ("ventana_secundaria" if lang == "es" else "secondary_window"), "warning"
-else:
-    fase, fase_color = ("fase_extendida" if lang == "es" else "extended_phase"), "warning"
+    # ── IMPACTO Y CIFRAS ──────────────────────────────────────────────────────
+    st.subheader("📊 " + t("impacto_titulo", lang))
+    gd = get_gdacs(config)
+    rw = get_reliefweb_reports(config)
 
-FASES = {
-    "es": {
-        "ventana_principal":  ("🟢 Ventana principal (0–72 h)",
-                               "Mayor probabilidad estadística. Priorizar celdas de alta prioridad de inmediato."),
-        "ventana_secundaria": ("🟡 Ventana secundaria (72–120 h)",
-                               "Probabilidad reducida pero documentada. INSARAG activo. Turquía 2023: +100 h."),
-        "fase_extendida":     ("🔵 Fase extendida (+120 h)",
-                               "Haití 2010 (+15 días), Armenia 1988 (+8 días), México 1985 (+14 días)."),
-    },
-    "en": {
-        "primary_window":   ("🟢 Primary window (0–72 h)",
-                             "Highest statistical probability. Prioritize high-priority cells now."),
-        "secondary_window": ("🟡 Secondary window (72–120 h)",
-                             "Reduced but documented. INSARAG active. Turkey 2023: +100 h."),
-        "extended_phase":   ("🔵 Extended phase (+120 h)",
-                             "Haiti 2010 (+15 days), Armenia 1988 (+8 days), Mexico 1985 (+14 days)."),
-    },
-}
+    # Cifras reportadas por fuente (tabla atribuida)
+    cifras = config.get("cifras_oficiales", [])
+    if cifras:
+        st.markdown("**" + t("cifras_titulo", lang) + "**")
+        st.warning(t("cifras_disclaimer", lang))
+        rows = [{
+            t("col_fuente", lang): x.get("fuente", ""),
+            t("col_fecha", lang): x.get("fecha", ""),
+            t("col_fallecidos", lang): x.get("fallecidos", "—"),
+            t("col_heridos", lang): x.get("heridos", "—"),
+            t("col_desaparecidos", lang): x.get("desaparecidos", "—"),
+            t("col_notas", lang): x.get("notas", ""),
+        } for x in cifras]
+        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+        st.caption("🔗 " + " · ".join(
+            f"[{x.get('fuente','fuente')}]({x['url']})" for x in cifras if x.get("url")))
 
-fase_titulo, fase_texto = FASES.get(lang, FASES["es"]).get(fase, ("", ""))
-expander_label = f"⏳ {t('reloj_titulo', lang)} — {hs:.0f} h"
-with st.expander(expander_label, expanded=False):
-    getattr(st, fase_color)(f"**{fase_titulo}**  \n{fase_texto}")
-    col1, col2, col3 = st.columns(3)
-    col1.metric(t("horas_transcurridas", lang), f"{hs:.1f} h")
-    col2.metric("Ventana 72 h" if lang == "es" else "72-h window",
-                f"{max(V1-hs,0):.1f} h" if hs < V1 else "✓")
-    col3.metric("Ventana 120 h" if lang == "es" else "120-h window",
-                f"{max(V2-hs,0):.1f} h" if hs < V2 else "✓")
-    st.progress(min(hs/V1, 1.0))
-    st.caption("INSARAG · Coburn & Spence (2002)")
-    st.progress(min(hs/V2, 1.0))
-    if ctx.get("proyec_ok"):
-        st.caption(t("nota_proyeccion", lang))
+    # Reportes oficiales OCHA/ReliefWeb
+    if rw.get("reports"):
+        st.markdown("**" + t("reportes_oficiales", lang) + "**")
+        for r in rw["reports"]:
+            st.markdown(f"- [{r['title']}]({r['url']}) — *{r['source']}, {r['date']}*")
+    else:
+        st.caption(t("reportes_oficiales_link", lang, url=rw.get("url", "https://reliefweb.int")))
 
-# ── PELIGROS SECUNDARIOS ──────────────────────────────────────────────────────
-gf = ctx.get("ground_failure") or {}
-if gf:
-    with st.expander("⚠️ " + t("gf_titulo", lang), expanded=False):
-        g = st.columns(2)
-        if gf.get("liquefaction_pop"):
-            g[0].metric(f"{ALERT_COLORS.get(gf.get('liquefaction_alert'),'')} "
-                        f"{t('exposicion_licuefaccion', lang)}",
-                        f"{int(gf['liquefaction_pop']):,}")
-        if gf.get("landslide_pop"):
-            g[1].metric(f"{ALERT_COLORS.get(gf.get('landslide_alert'),'')} "
-                        f"{t('exposicion_deslizamiento', lang)}",
-                        f"{int(gf['landslide_pop']):,}")
-        st.caption(f"🔗 [{config['fuentes']['usgs_ground_failure']['nombre']}]"
-                   f"({config['fuentes']['usgs_ground_failure']['url']})")
+    # Última actualización de las fuentes
+    upd = []
+    if gd.get("datemodified"):
+        upd.append(f"GDACS: {gd['datemodified'][:16].replace('T', ' ')}")
+    upd.append(f"{t('consulta_fuentes', lang)}: {gd.get('fetched_at', '')}")
+    st.caption(t("impacto_nota", lang) + "  ·  " + "  ·  ".join(upd))
 
-st.caption(f"🕒 {t('ultima_actualizacion', lang)}: {ctx['updated_at']}")
+    # ── PERSONAS DESAPARECIDAS ────────────────────────────────────────────────
+    st.subheader("🔎 " + t("desaparecidos_titulo", lang))
+    st.markdown(t("desaparecidos_texto", lang))
+    dcols = st.columns(2)
+    if "icrc_rfl" in cofu:
+        dcols[0].markdown(f"🔗 [{cofu['icrc_rfl']['nombre']}]({cofu['icrc_rfl']['url']})")
+    if "cruz_roja_venezolana" in cofu:
+        dcols[1].markdown(f"🔗 [{cofu['cruz_roja_venezolana']['nombre']}]({cofu['cruz_roja_venezolana']['url']})")
+    st.page_link("pages/6_Personas_desaparecidas.py", label="🔎 " + t("ver_desaparecidos", lang))
+
+    # ── ENCUENTRA AYUDA EN TU ZONA (color por intensidad) ─────────────────────
+    st.subheader("🆘 " + t("ayuda_zona_titulo", lang))
+    st.caption(t("ayuda_zona_nota", lang))
+    recs = resumen.to_dict("records")
+    mmis = [r["mmi"] for r in recs if pd.notna(r["mmi"])]
+    mlo, mhi = (min(mmis), max(mmis)) if mmis else (0, 1)
+
+    def _color(mmi):
+        # Todas las zonas están afectadas: escala rojo (más) → naranja (menos).
+        # Nunca verde (verde sugeriría "están bien", inapropiado en emergencia).
+        if pd.isna(mmi) or mhi - mlo < 1e-9:
+            return "hsl(20, 80%, 45%)"
+        frac = (mmi - mlo) / (mhi - mlo)      # 1 = mayor intensidad
+        return f"hsl({int(35 * (1 - frac))}, 85%, 45%)"   # 0 rojo → 35 naranja
+
+    pairs = list(zip(recs, ZONA_PAGES))
+    for i in range(0, len(pairs), 2):
+        ccs = st.columns(2, gap="medium")
+        for j, col in enumerate(ccs):
+            if i + j >= len(pairs):
+                break
+            row, (path, _) = pairs[i + j]
+            mmi = f"{row['mmi']:.1f}" if pd.notna(row["mmi"]) else "—"
+            pob = f"{int(row['pob']):,}" if pd.notna(row["pob"]) else "—"
+            color = _color(row["mmi"])
+            with col:
+                st.markdown(f"""
+<div style="border:2px solid {color};border-left:10px solid {color};border-radius:12px;
+  padding:12px 14px 8px;background:rgba(0,0,0,0.03);margin-bottom:4px;">
+  <div style="font-size:1.05rem;font-weight:700;color:{color};">📍 {row['nombre']}</div>
+  <div style="font-size:0.82rem;color:#555;">{t('kpi_mmi_max', lang)}: <b>{mmi}</b>
+    &nbsp;·&nbsp; {t('kpi_poblacion_residente', lang)}: <b>{pob}</b></div>
+</div>""", unsafe_allow_html=True)
+                st.page_link(path, label="🆘 " + t("ver_ayuda_zona", lang))
+    st.caption(t("leyenda_zonas", lang))
+
+    # ── DAÑOS MATERIALES Y MAPAS OFICIALES (sección unificada) ────────────────
+    st.subheader("🛰️ " + t("danos_titulo", lang))
+    danos = config.get("danos_materiales", [])
+    if danos:
+        drows = [{
+            t("col_descripcion", lang): d.get("texto", ""),
+            t("col_fuente", lang): d.get("fuente", ""),
+            t("col_actualizado", lang): d.get("fecha", ""),
+            t("col_enlace", lang): d.get("url", ""),
+        } for d in danos]
+        st.dataframe(pd.DataFrame(drows), width="stretch", hide_index=True,
+                     column_config={t("col_enlace", lang): st.column_config.LinkColumn(
+                         t("col_enlace", lang), display_text="🔗 " + t("abrir", lang))})
+    st.markdown(t("danos_texto", lang))
+    for k in ("copernicus_emsr884", "unosat", "maxar_open_data"):
+        if k in cofu:
+            st.markdown(f"🔗 [{cofu[k]['nombre']}]({cofu[k]['url']})")
+
+    # ── CÓMO AYUDAR (donaciones) ──────────────────────────────────────────────
+    if "caritas_venezuela" in cofu:
+        st.subheader("💚 " + t("ayudar_titulo", lang))
+        st.markdown(f"🔗 [{cofu['caritas_venezuela']['nombre']}]({cofu['caritas_venezuela']['url']})")
+
+    # ── CONSEJOS POST-TERREMOTO (página aparte) ───────────────────────────────
+    st.subheader("🧭 " + t("consejos_titulo", lang))
+    st.page_link("pages/5_Consejos_post_terremoto.py", label="🧭 " + t("ver_consejos", lang))
+
+    st.caption(f"🕒 {t('ultima_actualizacion', lang)}: {ctx['updated_at']}")
+
+
+# ── Navegación (la página principal se muestra como "Home") ───────────────────
+pages = [
+    st.Page(home, title="Home", icon="🏠", default=True),
+    st.Page("pages/1_Caracas_Libertador.py",       title="Caracas — Libertador", icon="📍"),
+    st.Page("pages/2_Caracas_Sucre_Petare.py",     title="Caracas — Sucre / Petare", icon="📍"),
+    st.Page("pages/3_Caracas_Baruta_ElHatillo.py", title="Caracas — Baruta / Hatillo / Chacao", icon="📍"),
+    st.Page("pages/4_La_Guaira_Litoral.py",        title="La Guaira — Litoral", icon="📍"),
+    st.Page("pages/5_Consejos_post_terremoto.py",  title="Consejos post-terremoto", icon="🧭"),
+    st.Page("pages/6_Personas_desaparecidas.py",   title="Personas desaparecidas", icon="🔎"),
+]
+st.navigation(pages).run()
