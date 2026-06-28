@@ -72,10 +72,18 @@ def get_weather(lat: float, lon: float) -> dict | None:
 
     Devuelve dict con:
       current  → temp, precip, wind, icon, condition, fetched_at
-      hourly   → lista de dicts {hora, icon, temp, precip_prob, precip}  (próximas 12 h)
-      daily    → lista de dicts {dia, icon, condition, tmax, tmin, precip, precip_prob} (2 días)
-    Devuelve None si la API no responde.
+      hourly   → lista de dicts {hora, icon, temp, precip_prob, precip}
+      daily    → lista de dicts {dia, icon, condition, tmax, tmin, precip, precip_prob}
+    Devuelve None si la API no responde o el parsing falla.
     """
+    def _val(lst, i, default=0):
+        """Acceso seguro a lista que puede contener None."""
+        try:
+            v = lst[i]
+            return v if v is not None else default
+        except Exception:
+            return default
+
     try:
         r = requests.get(
             _URL,
@@ -93,60 +101,69 @@ def get_weather(lat: float, lon: float) -> dict | None:
         )
         r.raise_for_status()
         data = r.json()
+
+        # ── Condiciones actuales ──────────────────────────────────────────────
+        cur  = data.get("current", {})
+        icon, condition = _wmo(cur.get("weathercode", 0))
+        current = {
+            "temp":       cur.get("temperature_2m", 0),
+            "precip":     cur.get("precipitation", 0.0),
+            "wind":       cur.get("windspeed_10m", 0),
+            "icon":       icon,
+            "condition":  condition,
+            "fetched_at": fmt_vet_utc(),
+        }
+
+        # ── Pronóstico horario: próximas 12 h desde ahora ────────────────────
+        now_iso = datetime.now(VET).strftime("%Y-%m-%dT%H:00")
+        h = data.get("hourly", {})
+        times = h.get("time", [])
+        wc_h  = h.get("weathercode") or []
+        tmp_h = h.get("temperature_2m") or []
+        pp_h  = h.get("precipitation_probability") or []
+        pr_h  = h.get("precipitation") or []
+        try:
+            start = next(i for i, t in enumerate(times) if t >= now_iso)
+        except StopIteration:
+            start = 0
+        hourly = []
+        for i in range(start, min(start + 13, len(times))):
+            ic, _ = _wmo(_val(wc_h, i, 0))
+            hourly.append({
+                "hora":        _fmt_hora(times[i]),
+                "icon":        ic,
+                "temp":        _val(tmp_h, i, 0),
+                "precip_prob": _val(pp_h, i, 0),
+                "precip":      _val(pr_h, i, 0.0),
+            })
+
+        # ── Pronóstico diario: mañana y pasado mañana ────────────────────────
+        d = data.get("daily", {})
+        days    = d.get("time", [])
+        today   = datetime.now(VET).strftime("%Y-%m-%d")
+        wc_d    = d.get("weathercode_dominant") or []
+        tmax_d  = d.get("temperature_2m_max") or []
+        tmin_d  = d.get("temperature_2m_min") or []
+        psum_d  = d.get("precipitation_sum") or []
+        pprob_d = d.get("precipitation_probability_max") or []
+        daily = []
+        for i, day in enumerate(days):
+            if day <= today:
+                continue
+            ic, cond = _wmo(_val(wc_d, i, 0))
+            daily.append({
+                "dia":         _fmt_dia(day),
+                "icon":        ic,
+                "condition":   cond,
+                "tmax":        _val(tmax_d, i, 0),
+                "tmin":        _val(tmin_d, i, 0),
+                "precip":      _val(psum_d, i, 0.0),
+                "precip_prob": _val(pprob_d, i, 0),
+            })
+            if len(daily) == 2:
+                break
+
+        return {"current": current, "hourly": hourly, "daily": daily}
+
     except Exception:
         return None
-
-    # ── Condiciones actuales ──────────────────────────────────────────────────
-    cur  = data.get("current", {})
-    code = cur.get("weathercode", 0)
-    icon, condition = _wmo(code)
-    current = {
-        "temp":       cur.get("temperature_2m"),
-        "precip":     cur.get("precipitation", 0.0),
-        "wind":       cur.get("windspeed_10m"),
-        "icon":       icon,
-        "condition":  condition,
-        "fetched_at": fmt_vet_utc(),
-    }
-
-    # ── Pronóstico horario: próximas 12 h desde ahora ─────────────────────────
-    now_iso = (datetime.now(VET)).strftime("%Y-%m-%dT%H:00")
-    h = data.get("hourly", {})
-    times = h.get("time", [])
-    try:
-        start = next(i for i, t in enumerate(times) if t >= now_iso)
-    except StopIteration:
-        start = 0
-    hourly = []
-    for i in range(start, min(start + 13, len(times))):
-        ic, _ = _wmo(h["weathercode"][i])
-        hourly.append({
-            "hora":        _fmt_hora(times[i]),
-            "icon":        ic,
-            "temp":        h["temperature_2m"][i],
-            "precip_prob": h["precipitation_probability"][i],
-            "precip":      h["precipitation"][i],
-        })
-
-    # ── Pronóstico diario: mañana y pasado mañana (omitimos hoy) ─────────────
-    d = data.get("daily", {})
-    days   = d.get("time", [])
-    today  = datetime.now(VET).strftime("%Y-%m-%d")
-    daily  = []
-    for i, day in enumerate(days):
-        if day <= today:
-            continue
-        ic, cond = _wmo(d["weathercode_dominant"][i])
-        daily.append({
-            "dia":         _fmt_dia(day),
-            "icon":        ic,
-            "condition":   cond,
-            "tmax":        d["temperature_2m_max"][i],
-            "tmin":        d["temperature_2m_min"][i],
-            "precip":      d["precipitation_sum"][i],
-            "precip_prob": d["precipitation_probability_max"][i],
-        })
-        if len(daily) == 2:
-            break
-
-    return {"current": current, "hourly": hourly, "daily": daily}
