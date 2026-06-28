@@ -330,21 +330,29 @@ def _build_map(df, zone, ctx, lang):
                     radius=18, blur=14, min_opacity=0.30).add_to(m)
             # Marcadores de las celdas MÁS afectadas (referencia para rescatistas)
             for _, r in heat.nlargest(12, "score").iterrows():
+                maps_url = f"https://www.google.com/maps/search/?api=1&query={r['lat']},{r['lon']}"
+                popup_html = (
+                    f"{t('col_mmi', lang)}: {r['mmi']:.1f}"
+                    + (f"<br>{t('col_area', lang)}: {r['area']}" if "area" in r else "")
+                    + f'<br><a href="{maps_url}" target="_blank">📍 Google Maps</a>'
+                )
                 folium.CircleMarker(
                     [r["lat"], r["lon"]], radius=6, weight=1, color="#bd0026",
                     fill=True, fill_opacity=0.85,
-                    popup=folium.Popup(
-                        f"{t('col_mmi', lang)}: {r['mmi']:.1f}"
-                        + (f"<br>{t('col_area', lang)}: {r['area']}" if "area" in r else ""),
-                        max_width=200)).add_to(m)
+                    popup=folium.Popup(popup_html, max_width=220)).add_to(m)
     # Recursos de ayuda (OSM): dónde acudir — siempre visibles
     for _, r in ctx["resources"].iterrows():
+        maps_url = f"https://www.google.com/maps/search/?api=1&query={r['lat']},{r['lon']}"
+        popup_html = (
+            f"<b>{r['etiqueta']}</b>: {r['nombre']}"
+            f'<br><a href="{maps_url}" target="_blank">📍 Google Maps</a>'
+        )
         folium.Marker(
             [r["lat"], r["lon"]],
             icon=folium.Icon(color="green" if r["tipo"] in ("hospital", "clinic") else
                              "red" if r["tipo"] == "fire_station" else "blue",
                              icon="plus" if r["tipo"] in ("hospital", "clinic") else "info-sign"),
-            popup=f"{r['etiqueta']}: {r['nombre']}",
+            popup=folium.Popup(popup_html, max_width=250),
         ).add_to(m)
     return m
 
