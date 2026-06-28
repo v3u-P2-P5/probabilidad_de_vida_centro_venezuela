@@ -153,6 +153,9 @@ fuentes:
   desaparecidos_terremoto_ve:
     nombre: "Desaparecidos Terremoto Venezuela — «Reconectemos a cada familia»"
     url: "https://desaparecidosterremotovenezuela.com/"
+  localiza_pacientes:
+    nombre: "Localiza Pacientes — Búsqueda de personas hospitalizadas"
+    url: "https://localizapacientes.com/"
   maxar_open_data:
     nombre: "Maxar/Vantor Open Data — Imágenes pre/post evento"
     url: "https://www.maxar.com/open-data"

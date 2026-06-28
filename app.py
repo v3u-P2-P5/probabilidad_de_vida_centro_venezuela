@@ -155,11 +155,13 @@ def home():
     # ── PERSONAS DESAPARECIDAS ────────────────────────────────────────────────
     st.subheader("🔎 " + t("desaparecidos_titulo", lang))
     st.markdown(t("desaparecidos_texto", lang))
-    dcols = st.columns(2)
+    dcols = st.columns(3)
     if "desaparecidos_terremoto_ve" in cofu:
         dcols[0].markdown(f"🔗 [{cofu['desaparecidos_terremoto_ve']['nombre']}]({cofu['desaparecidos_terremoto_ve']['url']})")
+    if "localiza_pacientes" in cofu:
+        dcols[1].markdown(f"🔗 [{cofu['localiza_pacientes']['nombre']}]({cofu['localiza_pacientes']['url']})")
     if "cruz_roja_venezolana" in cofu:
-        dcols[1].markdown(f"🔗 [{cofu['cruz_roja_venezolana']['nombre']}]({cofu['cruz_roja_venezolana']['url']})")
+        dcols[2].markdown(f"🔗 [{cofu['cruz_roja_venezolana']['nombre']}]({cofu['cruz_roja_venezolana']['url']})")
 
     # ── ENCUENTRA AYUDA EN TU ZONA (color por intensidad) ─────────────────────
     st.subheader("🆘 " + t("ayuda_zona_titulo", lang))
