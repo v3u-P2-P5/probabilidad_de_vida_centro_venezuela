@@ -103,57 +103,54 @@ def home():
                    + (f" · 🔗 [{t('evento_real', lang)}]({ev['url']})" if ev.get("url") else ""))
 
     hs = ctx["hours_since"]
-    # Fila 1: sismo principal M7.5 — métricas cortas (no se truncan) + epicentro aparte
-    c = st.columns(3)
-    c[0].metric(t("magnitud", lang), f"M{s.get('magnitud')}")
-    c[1].metric(t("profundidad", lang), _km(s.get("profundidad_km")))
-    c[2].metric(t("horas_transcurridas", lang), f"{hs:.0f} h")
-    _epicentro_linea(s)
-    # Fila 2: sismo secundario M7.2
-    if adic:
-        a = adic[0]
-        c2 = st.columns(3)
-        c2[0].metric(t("magnitud", lang), f"M{a.get('magnitud')}")
-        c2[1].metric(t("profundidad", lang), _km(a.get("profundidad_km")))
-        c2[2].metric("", "")
-        _epicentro_linea(a)
+    with st.expander("🌍 Datos del Doble-Sismo", expanded=False):
+        # Fila 1: sismo principal M7.5
+        c = st.columns(3)
+        c[0].metric(t("magnitud", lang), f"M{s.get('magnitud')}")
+        c[1].metric(t("profundidad", lang), _km(s.get("profundidad_km")))
+        c[2].metric(t("horas_transcurridas", lang), f"{hs:.0f} h")
+        _epicentro_linea(s)
+        # Fila 2: sismo secundario M7.2
+        if adic:
+            a = adic[0]
+            c2 = st.columns(3)
+            c2[0].metric(t("magnitud", lang), f"M{a.get('magnitud')}")
+            c2[1].metric(t("profundidad", lang), _km(a.get("profundidad_km")))
+            c2[2].metric("", "")
+            _epicentro_linea(a)
 
     # ── IMPACTO Y CIFRAS ──────────────────────────────────────────────────────
-    st.subheader("📊 " + t("impacto_titulo", lang))
     gd = get_gdacs(config)
     rw = get_reliefweb_reports(config)
+    with st.expander("📊 " + t("impacto_titulo", lang), expanded=False):
+        cifras = config.get("cifras_oficiales", [])
+        if cifras:
+            st.markdown("**" + t("cifras_titulo", lang) + "**")
+            st.warning(t("cifras_disclaimer", lang))
+            rows = [{
+                t("col_fuente", lang): x.get("fuente", ""),
+                t("col_fecha", lang): x.get("fecha", ""),
+                t("col_fallecidos", lang): x.get("fallecidos", "—"),
+                t("col_heridos", lang): x.get("heridos", "—"),
+                t("col_desaparecidos", lang): x.get("desaparecidos", "—"),
+                t("col_notas", lang): x.get("notas", ""),
+            } for x in cifras]
+            st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+            st.caption("🔗 " + " · ".join(
+                f"[{x.get('fuente','fuente')}]({x['url']})" for x in cifras if x.get("url")))
 
-    # Cifras reportadas por fuente (tabla atribuida)
-    cifras = config.get("cifras_oficiales", [])
-    if cifras:
-        st.markdown("**" + t("cifras_titulo", lang) + "**")
-        st.warning(t("cifras_disclaimer", lang))
-        rows = [{
-            t("col_fuente", lang): x.get("fuente", ""),
-            t("col_fecha", lang): x.get("fecha", ""),
-            t("col_fallecidos", lang): x.get("fallecidos", "—"),
-            t("col_heridos", lang): x.get("heridos", "—"),
-            t("col_desaparecidos", lang): x.get("desaparecidos", "—"),
-            t("col_notas", lang): x.get("notas", ""),
-        } for x in cifras]
-        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
-        st.caption("🔗 " + " · ".join(
-            f"[{x.get('fuente','fuente')}]({x['url']})" for x in cifras if x.get("url")))
+        if rw.get("reports"):
+            st.markdown("**" + t("reportes_oficiales", lang) + "**")
+            for r in rw["reports"]:
+                st.markdown(f"- [{r['title']}]({r['url']}) — *{r['source']}, {r['date']}*")
+        else:
+            st.caption(t("reportes_oficiales_link", lang, url=rw.get("url", "https://reliefweb.int")))
 
-    # Reportes oficiales OCHA/ReliefWeb
-    if rw.get("reports"):
-        st.markdown("**" + t("reportes_oficiales", lang) + "**")
-        for r in rw["reports"]:
-            st.markdown(f"- [{r['title']}]({r['url']}) — *{r['source']}, {r['date']}*")
-    else:
-        st.caption(t("reportes_oficiales_link", lang, url=rw.get("url", "https://reliefweb.int")))
-
-    # Última actualización de las fuentes
-    upd = []
-    if gd.get("datemodified"):
-        upd.append(f"GDACS: {gd['datemodified'][:16].replace('T', ' ')}")
-    upd.append(f"{t('consulta_fuentes', lang)}: {gd.get('fetched_at', '')}")
-    st.caption(t("impacto_nota", lang) + "  ·  " + "  ·  ".join(upd))
+        upd = []
+        if gd.get("datemodified"):
+            upd.append(f"GDACS: {gd['datemodified'][:16].replace('T', ' ')}")
+        upd.append(f"{t('consulta_fuentes', lang)}: {gd.get('fetched_at', '')}")
+        st.caption(t("impacto_nota", lang) + "  ·  " + "  ·  ".join(upd))
 
     # ── PERSONAS DESAPARECIDAS ────────────────────────────────────────────────
     st.subheader("🔎 " + t("desaparecidos_titulo", lang))
