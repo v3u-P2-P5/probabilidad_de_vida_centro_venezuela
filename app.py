@@ -66,11 +66,6 @@ def home():
     # ── Evento (compacto) ─────────────────────────────────────────────────────
     s = ctx["sismo"]
     adic = ctx.get("sismos_adicionales", [])
-    if adic:
-        a = adic[0]
-        st.warning(t("sismo_doble_banner", lang,
-                     m1=s.get("id", "us6000t7zp"), mag1=s.get("magnitud", 7.5),
-                     m2=a.get("id", "us6000t7zc"), mag2=a.get("magnitud", 7.2)))
     def _ciudad(lugar: str) -> str:
         """Convierte descripción USGS a español legible.
         '28 km SE of Yumare, Venezuela' → '28 km SE de Yumare'
@@ -104,6 +99,11 @@ def home():
 
     hs = ctx["hours_since"]
     with st.expander("🌍 Datos del Doble-Sismo", expanded=False):
+        if adic:
+            a = adic[0]
+            st.warning(t("sismo_doble_banner", lang,
+                         m1=s.get("id", "us6000t7zp"), mag1=s.get("magnitud", 7.5),
+                         m2=a.get("id", "us6000t7zc"), mag2=a.get("magnitud", 7.2)))
         # Fila 1: sismo principal M7.5
         c = st.columns(3)
         c[0].metric(t("magnitud", lang), f"M{s.get('magnitud')}")
