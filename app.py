@@ -94,8 +94,11 @@ def home():
         """Epicentro a ancho completo (texto descriptivo que no cabe en un st.metric)."""
         ciudad = _ciudad(ev.get("lugar", ""))
         ref = _ref_ciudad(ev["epicentro"]["lat"], ev["epicentro"]["lon"])
+        dist_valencia = haversine_m(ev["epicentro"]["lat"], ev["epicentro"]["lon"],
+                                    *CIUDADES_REF["Valencia"]) / 1000.0
         coords = f"{ev['epicentro']['lat']:.2f}, {ev['epicentro']['lon']:.2f}"
-        st.markdown(f"**📍 {t('epicentro', lang)}:** {ciudad} · {ref} · ({coords})")
+        st.markdown(f"**📍 {t('epicentro', lang)}:** {ciudad} · {ref} · "
+                    f"a ~{dist_valencia:.0f} km de Valencia · ({coords})")
         st.caption(f"🕒 {fmt_vet_utc(parse_iso(ev['origen_iso']))}"
                    + (f" · 🔗 [{t('evento_real', lang)}]({ev['url']})" if ev.get("url") else ""))
 
