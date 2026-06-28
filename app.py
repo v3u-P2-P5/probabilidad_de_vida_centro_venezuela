@@ -53,24 +53,35 @@ def home():
         st.warning(t("sismo_doble_banner", lang,
                      m1=s.get("id", "us6000t7zp"), mag1=s.get("magnitud", 7.5),
                      m2=a.get("id", "us6000t7zc"), mag2=a.get("magnitud", 7.2)))
+    def _ciudad(lugar: str) -> str:
+        """Extrae ciudad de 'X km DIR of Ciudad, Venezuela' → 'Ciudad'."""
+        if not lugar:
+            return ""
+        if " of " in lugar:
+            return lugar.split(" of ", 1)[1].replace(", Venezuela", "").strip()
+        return lugar
+
     hs = ctx["hours_since"]
     c = st.columns(4)
-    # Fila 1: datos del sismo principal (M7.5)
+    # Fila 1: sismo principal M7.5
+    ciudad_p = _ciudad(s.get("lugar", ""))
     c[0].metric(t("magnitud", lang), f"M{s.get('magnitud')}")
     c[1].metric(t("profundidad", lang), f"{s.get('profundidad_km','?')} km")
-    c[2].metric(t("epicentro", lang), f"{s['epicentro']['lat']:.2f}, {s['epicentro']['lon']:.2f}")
+    c[2].metric(t("epicentro", lang),
+                f"{ciudad_p}  \n{s['epicentro']['lat']:.2f}, {s['epicentro']['lon']:.2f}")
     c[3].metric(t("horas_transcurridas", lang), f"{hs:.0f} h")
     st.caption(f"📌 {s.get('lugar','')} · 🕒 {fmt_vet_utc(parse_iso(s['origen_iso']))}"
                + (f" · 🔗 [{t('evento_real', lang)}]({s['url']})" if s.get("url") else ""))
-    # Fila 2: sismo secundario (M7.2) con sus propios datos
+    # Fila 2: sismo secundario M7.2
     if adic:
         a = adic[0]
+        ciudad_s = _ciudad(a.get("lugar", ""))
         c2 = st.columns(4)
         c2[0].metric(t("magnitud", lang), f"M{a.get('magnitud')}")
         c2[1].metric(t("profundidad", lang), f"{a.get('profundidad_km','?')} km")
         c2[2].metric(t("epicentro", lang),
-                     f"{a['epicentro']['lat']:.2f}, {a['epicentro']['lon']:.2f}")
-        c2[3].metric("", "")   # espacio; las horas son las mismas
+                     f"{ciudad_s}  \n{a['epicentro']['lat']:.2f}, {a['epicentro']['lon']:.2f}")
+        c2[3].metric("", "")
         st.caption(f"📌 {a.get('lugar','')} · 🕒 {fmt_vet_utc(parse_iso(a['origen_iso']))}"
                    + (f" · 🔗 [{t('evento_real', lang)}]({a['url']})" if a.get("url") else ""))
 
@@ -115,11 +126,10 @@ def home():
     st.subheader("🔎 " + t("desaparecidos_titulo", lang))
     st.markdown(t("desaparecidos_texto", lang))
     dcols = st.columns(2)
-    if "icrc_rfl" in cofu:
-        dcols[0].markdown(f"🔗 [{cofu['icrc_rfl']['nombre']}]({cofu['icrc_rfl']['url']})")
+    if "desaparecidos_terremoto_ve" in cofu:
+        dcols[0].markdown(f"🔗 [{cofu['desaparecidos_terremoto_ve']['nombre']}]({cofu['desaparecidos_terremoto_ve']['url']})")
     if "cruz_roja_venezolana" in cofu:
         dcols[1].markdown(f"🔗 [{cofu['cruz_roja_venezolana']['nombre']}]({cofu['cruz_roja_venezolana']['url']})")
-    st.page_link("pages/6_Personas_desaparecidas.py", label="🔎 " + t("ver_desaparecidos", lang))
 
     # ── ENCUENTRA AYUDA EN TU ZONA (color por intensidad) ─────────────────────
     st.subheader("🆘 " + t("ayuda_zona_titulo", lang))
@@ -195,6 +205,5 @@ pages = [
     st.Page("pages/3_Caracas_Baruta_ElHatillo.py", title="Caracas — Baruta / Hatillo / Chacao", icon="📍"),
     st.Page("pages/4_La_Guaira_Litoral.py",        title="La Guaira — Litoral", icon="📍"),
     st.Page("pages/5_Consejos_post_terremoto.py",  title="Consejos post-terremoto", icon="🧭"),
-    st.Page("pages/6_Personas_desaparecidas.py",   title="Personas desaparecidas", icon="🔎"),
 ]
 st.navigation(pages).run()
