@@ -177,7 +177,9 @@ fuentes:
 zonas:
   - id: libertador
     nombre: "Caracas — Libertador"
-    bbox: [-66.95, 10.480, -66.870, 10.520]
+    # Ampliado al oeste y sur para cubrir Caricuao, Antímano, Coche y El Valle
+    # (antes se cortaban: bbox empezaba en -66.95 / 10.480).
+    bbox: [-67.00, 10.440, -66.870, 10.520]
     # Densidad poblacional: INE Venezuela Censo 2011 — Municipio Libertador (~2,094,000 hab, ~76 km²)
     densidad_hab_km2: 19000
   - id: sucre_petare
@@ -187,11 +189,15 @@ zonas:
     densidad_hab_km2: 14400
   - id: baruta_hatillo
     nombre: "Caracas — Baruta / El Hatillo / Chacao"
-    bbox: [-66.885, 10.400, -66.800, 10.480]
+    # Ampliado al norte (10.480 → 10.510) para incluir Chacao/Chacaíto, que antes
+    # quedaba en el hueco entre Libertador y Sucre (sin cobertura).
+    bbox: [-66.885, 10.400, -66.800, 10.510]
     # Municipios Baruta + El Hatillo + Chacao (~600,000 hab, ~76 km²)
     densidad_hab_km2: 7800
   - id: la_guaira
     nombre: "La Guaira — Litoral"
-    bbox: [-66.950, 10.580, -66.850, 10.620]
+    # Ampliado al este (-66.850 → -66.730) para cubrir Macuto, Caraballeda,
+    # Tanaguarena y Naiguatá, que antes quedaban fuera del litoral mostrado.
+    bbox: [-66.950, 10.580, -66.730, 10.625]
     # Estado Vargas / La Guaira (~352,000 hab, ~74 km² zona costera)
     densidad_hab_km2: 4800
