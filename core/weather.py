@@ -92,8 +92,8 @@ def get_weather(lat: float, lon: float) -> dict | None:
                 "longitude":  round(lon, 4),
                 "current":    "temperature_2m,precipitation,windspeed_10m,weathercode",
                 "hourly":     "temperature_2m,precipitation_probability,precipitation,weathercode",
-                "daily":      "weathercode_dominant,temperature_2m_max,temperature_2m_min,"
-                              "precipitation_sum,precipitation_probability_max",
+                "daily":      "weather_code,temperature_2m_max,temperature_2m_min,"
+                              "precipitation_sum",
                 "timezone":   "America/Caracas",
                 "forecast_days": 3,
             },
@@ -141,24 +141,22 @@ def get_weather(lat: float, lon: float) -> dict | None:
         d = data.get("daily", {})
         days    = d.get("time", [])
         today   = datetime.now(VET).strftime("%Y-%m-%d")
-        wc_d    = d.get("weathercode_dominant") or []
-        tmax_d  = d.get("temperature_2m_max") or []
-        tmin_d  = d.get("temperature_2m_min") or []
-        psum_d  = d.get("precipitation_sum") or []
-        pprob_d = d.get("precipitation_probability_max") or []
+        wc_d   = d.get("weather_code") or []
+        tmax_d = d.get("temperature_2m_max") or []
+        tmin_d = d.get("temperature_2m_min") or []
+        psum_d = d.get("precipitation_sum") or []
         daily = []
         for i, day in enumerate(days):
             if day <= today:
                 continue
             ic, cond = _wmo(_val(wc_d, i, 0))
             daily.append({
-                "dia":         _fmt_dia(day),
-                "icon":        ic,
-                "condition":   cond,
-                "tmax":        _val(tmax_d, i, 0),
-                "tmin":        _val(tmin_d, i, 0),
-                "precip":      _val(psum_d, i, 0.0),
-                "precip_prob": _val(pprob_d, i, 0),
+                "dia":       _fmt_dia(day),
+                "icon":      ic,
+                "condition": cond,
+                "tmax":      _val(tmax_d, i, 0),
+                "tmin":      _val(tmin_d, i, 0),
+                "precip":    _val(psum_d, i, 0.0),
             })
             if len(daily) == 2:
                 break

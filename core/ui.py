@@ -415,7 +415,7 @@ def render_zone(zone_id: str) -> None:
                         f"**{d['dia']}**  \n"
                         f"{d['icon']} {d['condition']}  \n"
                         f"🌡️ {d['tmax']:.0f}° / {d['tmin']:.0f}°  \n"
-                        f"🌧️ {d['precip']:.1f} mm · {int(d['precip_prob'] or 0)} % prob."
+                        f"🌧️ {d['precip']:.1f} mm"
                     )
 
         st.caption(f"🕒 Clima: {cur['fetched_at']} · [Open-Meteo](https://open-meteo.com) (CC BY 4.0)")
