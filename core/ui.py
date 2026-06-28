@@ -33,28 +33,30 @@ def _inject_responsive_css() -> None:
     max-width: 100% !important;
   }
 
-  /* Columnas: 2 por fila (wrap) — mejor que apilar todo en 1 */
+  /* Columnas: hasta 3 por fila (wrap natural según contenido) */
   [data-testid="stHorizontalBlock"] {
     flex-wrap: wrap !important;
-    gap: 0.5rem 0.5rem !important;
+    gap: 0.4rem 0.4rem !important;
   }
+  /* basis 28%: 3 columnas caben en una fila (3×28%=84%+gaps≈100%);
+     2 columnas crecen a 50% cada una via flex-grow. */
   [data-testid="column"] {
-    min-width: 47% !important;
-    flex: 1 1 47% !important;
+    min-width: 28% !important;
+    flex: 1 1 28% !important;
   }
 
   /* Métricas: legibles y con fondo sutil */
   [data-testid="stMetric"] {
     background: rgba(0,0,0,0.04);
     border-radius: 8px;
-    padding: 0.45rem 0.6rem !important;
+    padding: 0.4rem 0.5rem !important;
   }
   [data-testid="stMetricLabel"] > div {
-    font-size: 0.72rem !important;
+    font-size: 0.68rem !important;
     line-height: 1.2 !important;
   }
   [data-testid="stMetricValue"] > div {
-    font-size: 1.3rem !important;
+    font-size: 1.15rem !important;
     font-weight: 700 !important;
   }
 
@@ -131,17 +133,18 @@ def _inject_responsive_css() -> None:
     max-width: 100% !important;
   }
 
-  /* Columnas de 4: 2×2 */
+  /* basis 30%: 3 KPIs por fila; 2 columnas crecen a 50% cada una */
   [data-testid="stHorizontalBlock"] {
     flex-wrap: wrap !important;
-    gap: 0.4rem !important;
+    gap: 0.5rem !important;
   }
   [data-testid="column"] {
-    min-width: 46% !important;
-    flex: 1 1 46% !important;
+    min-width: 30% !important;
+    flex: 1 1 30% !important;
   }
 
   [data-testid="stMetricValue"] > div { font-size: 1.2rem !important; }
+  [data-testid="stMetricLabel"] > div { font-size: 0.78rem !important; }
 
   [data-testid="stPageLink"] a,
   [data-testid="stPageLink"] button {
