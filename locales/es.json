@@ -94,5 +94,22 @@
   "no_disponible": "NO DISPONIBLE",
   "estado_ok": "en línea",
   "proyeccion_estadistica": "referencia (censo)",
-  "atribucion": "Datos: USGS · GDACS · OCHA/ReliefWeb · OpenStreetMap (© colaboradores) · WorldPop · Copernicus EMS · UNOSAT · CICR"
+  "atribucion": "Datos: USGS · GDACS · OCHA/ReliefWeb · OpenStreetMap (© colaboradores) · WorldPop · Copernicus EMS · UNOSAT · CICR",
+
+  "expander_sismo_doble": "🌍 Datos del Doble-Sismo",
+  "expander_respuesta_intl": "🌍 Respuesta internacional desplegada",
+  "expander_replicas": "📉 Réplicas registradas — Opinión de los expertos:",
+  "swipe_hint": "desliza →",
+
+  "clima_temperatura": "🌡️ Temperatura",
+  "clima_lluvia_1h": "🌧️ Lluvia (1 h)",
+  "clima_viento": "💨 Viento",
+  "clima_cielo": "Cielo",
+  "clima_expander": "📅 Pronóstico del clima en el área afectada, próximas horas y 2 días",
+  "clima_proximas_horas": "Próximas horas",
+  "clima_2_dias": "Próximos 2 días",
+  "clima_col_hora": "Hora (VET)",
+  "clima_col_prob": "💧 Prob.",
+  "clima_col_lluvia": "Lluvia mm",
+  "clima_caption": "🕒 Clima:"
 }

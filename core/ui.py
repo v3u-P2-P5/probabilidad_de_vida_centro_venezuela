@@ -243,11 +243,17 @@ def apply_chrome(config: dict) -> str:
     if secs > 0:
         st_autorefresh(interval=secs * 1000, key="auto")
     codes = list(IDIOMAS.keys())
-    _render_construction_banner(st.session_state.lang)
-    lang = st.sidebar.selectbox(t("idioma", st.session_state.lang), codes,
-                                index=codes.index(st.session_state.lang),
-                                format_func=lambda c: IDIOMAS[c])
+    _, lang_col = st.columns([5, 1])
+    with lang_col:
+        lang = st.selectbox(
+            "🌐",
+            codes,
+            index=codes.index(st.session_state.lang),
+            format_func=lambda c: IDIOMAS[c],
+            label_visibility="collapsed",
+        )
     st.session_state.lang = lang
+    _render_construction_banner(lang)
     if st.sidebar.button(t("actualizar", lang)):
         st.cache_data.clear()
         st.rerun()
@@ -385,32 +391,28 @@ def render_zone(zone_id: str) -> None:
     # ── CLIMA: actual + pronóstico ────────────────────────────────────────────
     lat_c = (zone["bbox"][1] + zone["bbox"][3]) / 2
     lon_c = (zone["bbox"][0] + zone["bbox"][2]) / 2
-    wx = get_weather(lat_c, lon_c)
+    wx = get_weather(lat_c, lon_c, lang)
     if wx:
         cur = wx["current"]
-        # Condiciones actuales (siempre visibles)
         wc = st.columns(4)
-        wc[0].metric("🌡️ Temperatura",   f"{cur['temp']:.0f} °C")
-        wc[1].metric("🌧️ Lluvia (1 h)",  f"{cur['precip']:.1f} mm")
-        wc[2].metric("💨 Viento",          f"{cur['wind']:.0f} km/h")
-        wc[3].metric(cur["icon"] + " Cielo", cur["condition"])
+        wc[0].metric(t("clima_temperatura", lang), f"{cur['temp']:.0f} °C")
+        wc[1].metric(t("clima_lluvia_1h",   lang), f"{cur['precip']:.1f} mm")
+        wc[2].metric(t("clima_viento",       lang), f"{cur['wind']:.0f} km/h")
+        wc[3].metric(cur["icon"] + " " + t("clima_cielo", lang), cur["condition"])
 
-        # Pronóstico próximas horas + 2 días (desplegable)
-        with st.expander("📅 Pronóstico del clima en el área afectada, próximas horas y 2 días", expanded=False):
-            # Próximas 12 h
+        with st.expander(t("clima_expander", lang), expanded=False):
             if wx["hourly"]:
-                st.markdown("**Próximas horas**")
+                st.markdown(f"**{t('clima_proximas_horas', lang)}**")
                 rows = [{
-                    "Hora (VET)": f"{h['icon']} {h['hora']}",
-                    "Temp (°C)":  f"{h['temp']:.0f}",
-                    "💧 Prob.":   f"{int(h['precip_prob'] or 0)} %",
-                    "Lluvia mm":  f"{h['precip']:.1f}",
+                    t("clima_col_hora",  lang): f"{h['icon']} {h['hora']}",
+                    "Temp (°C)":               f"{h['temp']:.0f}",
+                    t("clima_col_prob",  lang): f"{int(h['precip_prob'] or 0)} %",
+                    t("clima_col_lluvia",lang): f"{h['precip']:.1f}",
                 } for h in wx["hourly"]]
                 st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
 
-            # Próximos 2 días
             if wx["daily"]:
-                st.markdown("**Próximos 2 días**")
+                st.markdown(f"**{t('clima_2_dias', lang)}**")
                 dc = st.columns(len(wx["daily"]))
                 for col, d in zip(dc, wx["daily"]):
                     col.markdown(
@@ -420,7 +422,7 @@ def render_zone(zone_id: str) -> None:
                         f"🌧️ {d['precip']:.1f} mm"
                     )
 
-        st.caption(f"🕒 Clima: {cur['fetched_at']} · [Open-Meteo](https://open-meteo.com) (CC BY 4.0)")
+        st.caption(f"{t('clima_caption', lang)} {cur['fetched_at']} · [Open-Meteo](https://open-meteo.com) (CC BY 4.0)")
 
     # ── KPIs informativos ─────────────────────────────────────────────────────
     c1, c2, c3 = st.columns(3)

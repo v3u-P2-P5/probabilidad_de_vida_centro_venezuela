@@ -15,8 +15,8 @@ from core.sources import fmt_vet_utc
 _URL = "https://api.open-meteo.com/v1/forecast"
 VET  = timezone(timedelta(hours=-4))
 
-# WMO Weather Interpretation Codes → (emoji, texto español)
-_WMO = {
+# WMO Weather Interpretation Codes → (emoji, descripción)
+_WMO_ES = {
     0:  ("☀️",  "Despejado"),
     1:  ("🌤️", "Mayormente despejado"),
     2:  ("⛅",  "Parcialmente nublado"),
@@ -40,13 +40,41 @@ _WMO = {
     99: ("⛈️",  "Tormenta con granizo fuerte"),
 }
 
-_DIAS_ES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
+_WMO_EN = {
+    0:  ("☀️",  "Clear"),
+    1:  ("🌤️", "Mostly clear"),
+    2:  ("⛅",  "Partly cloudy"),
+    3:  ("☁️",  "Overcast"),
+    45: ("🌫️", "Fog"),
+    48: ("🌫️", "Freezing fog"),
+    51: ("🌦️", "Light drizzle"),
+    53: ("🌦️", "Moderate drizzle"),
+    55: ("🌦️", "Heavy drizzle"),
+    61: ("🌧️", "Light rain"),
+    63: ("🌧️", "Moderate rain"),
+    65: ("🌧️", "Heavy rain"),
+    71: ("🌨️", "Light snow"),
+    73: ("🌨️", "Moderate snow"),
+    75: ("🌨️", "Heavy snow"),
+    80: ("🌦️", "Light showers"),
+    81: ("🌦️", "Moderate showers"),
+    82: ("⛈️",  "Heavy showers"),
+    95: ("⛈️",  "Thunderstorm"),
+    96: ("⛈️",  "Thunderstorm with hail"),
+    99: ("⛈️",  "Thunderstorm with heavy hail"),
+}
+
+_DIAS_ES  = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 _MESES_ES = ["ene", "feb", "mar", "abr", "may", "jun",
              "jul", "ago", "sep", "oct", "nov", "dic"]
 
+_DIAS_EN  = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+_MESES_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
-def _wmo(code) -> tuple[str, str]:
-    return _WMO.get(int(code) if code is not None else 0, ("🌡️", "—"))
+
+def _wmo(code, wmo_dict: dict) -> tuple[str, str]:
+    return wmo_dict.get(int(code) if code is not None else 0, ("🌡️", "—"))
 
 
 def _fmt_hora(iso: str) -> str:
@@ -57,27 +85,30 @@ def _fmt_hora(iso: str) -> str:
         return iso
 
 
-def _fmt_dia(date_str: str) -> str:
-    """'2026-06-29' → 'Dom 29 jun'"""
+def _fmt_dia(date_str: str, dias: list, meses: list) -> str:
+    """'2026-06-29' → 'Dom 29 jun'  /  'Sun 29 Jun'"""
     try:
         d = datetime.strptime(date_str, "%Y-%m-%d")
-        return f"{_DIAS_ES[d.weekday()]} {d.day} {_MESES_ES[d.month - 1]}"
+        return f"{dias[d.weekday()]} {d.day} {meses[d.month - 1]}"
     except Exception:
         return date_str
 
 
 @st.cache_data(ttl=600, show_spinner=False)
-def get_weather(lat: float, lon: float) -> dict | None:
+def get_weather(lat: float, lon: float, lang: str = "es") -> dict | None:
     """Condiciones actuales + pronóstico horario (12 h) + diario (2 días).
 
     Devuelve dict con:
       current  → temp, precip, wind, icon, condition, fetched_at
       hourly   → lista de dicts {hora, icon, temp, precip_prob, precip}
-      daily    → lista de dicts {dia, icon, condition, tmax, tmin, precip, precip_prob}
+      daily    → lista de dicts {dia, icon, condition, tmax, tmin, precip}
     Devuelve None si la API no responde o el parsing falla.
     """
+    wmo_dict = _WMO_EN if lang == "en" else _WMO_ES
+    dias     = _DIAS_EN  if lang == "en" else _DIAS_ES
+    meses    = _MESES_EN if lang == "en" else _MESES_ES
+
     def _val(lst, i, default=0):
-        """Acceso seguro a lista que puede contener None."""
         try:
             v = lst[i]
             return v if v is not None else default
@@ -104,7 +135,7 @@ def get_weather(lat: float, lon: float) -> dict | None:
 
         # ── Condiciones actuales ──────────────────────────────────────────────
         cur  = data.get("current", {})
-        icon, condition = _wmo(cur.get("weathercode", 0))
+        icon, condition = _wmo(cur.get("weathercode", 0), wmo_dict)
         current = {
             "temp":       cur.get("temperature_2m", 0),
             "precip":     cur.get("precipitation", 0.0),
@@ -128,7 +159,7 @@ def get_weather(lat: float, lon: float) -> dict | None:
             start = 0
         hourly = []
         for i in range(start, min(start + 13, len(times))):
-            ic, _ = _wmo(_val(wc_h, i, 0))
+            ic, _ = _wmo(_val(wc_h, i, 0), wmo_dict)
             hourly.append({
                 "hora":        _fmt_hora(times[i]),
                 "icon":        ic,
@@ -149,9 +180,9 @@ def get_weather(lat: float, lon: float) -> dict | None:
         for i, day in enumerate(days):
             if day <= today:
                 continue
-            ic, cond = _wmo(_val(wc_d, i, 0))
+            ic, cond = _wmo(_val(wc_d, i, 0), wmo_dict)
             daily.append({
-                "dia":       _fmt_dia(day),
+                "dia":       _fmt_dia(day, dias, meses),
                 "icon":      ic,
                 "condition": cond,
                 "tmax":      _val(tmax_d, i, 0),
