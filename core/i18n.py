@@ -22,3 +22,10 @@ def t(key: str, lang: str = "es", **kwargs) -> str:
     """Traduce una clave; admite formato con kwargs. Devuelve la clave si falta."""
     s = load_locale(lang).get(key, key)
     return s.format(**kwargs) if kwargs else s
+
+
+def fuente_nombre(f: dict, lang: str) -> str:
+    """Display name for a data source in the given language."""
+    if lang == "en":
+        return f.get("nombre_en") or f.get("nombre", "")
+    return f.get("nombre", "")

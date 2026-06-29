@@ -24,10 +24,12 @@ def fmt_vet_utc(dt: datetime | None = None) -> str:
 
 
 def layer(nombre: str, url: str, status: str = "ok",
-          fetched: datetime | None = None, detalle: str = "") -> dict:
+          fetched: datetime | None = None, detalle: str = "",
+          nombre_en: str = "") -> dict:
     """Crea un registro de procedencia para una capa de datos."""
     return {
-        "nombre": nombre, "url": url, "status": status,
+        "nombre": nombre, "nombre_en": nombre_en,
+        "url": url, "status": status,
         "fetched": fmt_vet_utc(fetched) if fetched else None,
         "detalle": detalle,
     }

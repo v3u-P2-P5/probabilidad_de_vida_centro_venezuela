@@ -2,7 +2,7 @@
 import streamlit as st
 
 from core.config import load_config
-from core.i18n import t
+from core.i18n import fuente_nombre, t
 from core.ui import apply_chrome
 
 config = load_config()
@@ -120,6 +120,6 @@ for titulo, items in CONTENIDO.get(lang, CONTENIDO["es"]):
 f = config["fuentes"]
 st.markdown("---")
 st.caption(t("seguridad_titulo", lang))
-links = [f"🔗 [{f[k]['nombre']}]({f[k]['url']})"
+links = [f"🔗 [{fuente_nombre(f[k], lang)}]({f[k]['url']})"
          for k in ("proteccion_civil", "cruz_roja_venezolana", "icrc_rfl") if k in f]
 st.markdown("  \n".join(links))

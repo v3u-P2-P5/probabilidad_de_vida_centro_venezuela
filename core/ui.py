@@ -13,7 +13,7 @@ from streamlit_folium import st_folium
 
 from core import scoring
 from core.config import get_zone, load_config
-from core.i18n import IDIOMAS, t
+from core.i18n import IDIOMAS, fuente_nombre, t
 from core.pipeline import build_zone
 from core.sources import fmt_vet_utc, parse_iso
 from core.weather import get_weather
@@ -273,7 +273,8 @@ def render_sources(ctx: dict, lang: str) -> None:
             estado = (t("estado_ok", lang) if ly["status"] == "ok"
                       else t("proyeccion_estadistica", lang) if ly["status"] == "proyeccion"
                       else t("no_disponible", lang))
-            st.markdown(f"{_status_icon(ly['status'])} **{ly['nombre']}** — {estado}  \n"
+            display = ly.get("nombre_en") or ly["nombre"] if lang == "en" else ly["nombre"]
+            st.markdown(f"{_status_icon(ly['status'])} **{display}** — {estado}  \n"
                         f"[{t('ver_fuente', lang)}]({ly['url']})"
                         + (f"  \n_{ly['fetched']}_" if ly.get("fetched") else "")
                         + (f"  \n_{ly['detalle']}_" if ly.get("detalle") else ""))
@@ -284,7 +285,7 @@ def render_sources(ctx: dict, lang: str) -> None:
                     "unosat", "maxar_open_data", "icrc_rfl", "cruz_roja_venezolana",
                     "proteccion_civil", "worldpop", "osm"):
             if key in f:
-                st.markdown(f"🔗 [{f[key]['nombre']}]({f[key]['url']})")
+                st.markdown(f"🔗 [{fuente_nombre(f[key], lang)}]({f[key]['url']})")
     st.sidebar.caption(t("atribucion", lang))
 
 
@@ -510,7 +511,7 @@ def _render_official_links(f: dict, lang: str) -> None:
     for key in ("proteccion_civil", "copernicus_emsr884", "unosat",
                 "reliefweb", "gdacs", "icrc_rfl", "cruz_roja_venezolana"):
         if key in f:
-            links.append(f"🔗 [{f[key]['nombre']}]({f[key]['url']})")
+            links.append(f"🔗 [{fuente_nombre(f[key], lang)}]({f[key]['url']})")
     st.markdown("  \n".join(links))
 
 

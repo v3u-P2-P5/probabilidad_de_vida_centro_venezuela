@@ -8,7 +8,7 @@ import streamlit as st
 
 from core.config import load_config
 from core.geo import haversine_m
-from core.i18n import t
+from core.i18n import fuente_nombre, t
 from core.relief import get_gdacs, get_reliefweb_reports
 from core.sources import fmt_vet_utc, parse_iso
 from core.ui import apply_chrome, render_sources, _cached_zone
@@ -355,7 +355,7 @@ def home():
         (dcols[0], dcols[1], dcols[0], dcols[1]),
     ):
         if key in cofu:
-            col.markdown(f"🔗 [{cofu[key]['nombre']}]({cofu[key]['url']})")
+            col.markdown(f"🔗 [{fuente_nombre(cofu[key], lang)}]({cofu[key]['url']})")
 
     # ── ENCUENTRA AYUDA EN TU ZONA (color por intensidad) ─────────────────────
     st.subheader("🆘 " + t("ayuda_zona_titulo", lang))
@@ -398,9 +398,9 @@ def home():
     if "centros_acopio_vzla" in cofu or "caritas_venezuela" in cofu:
         st.subheader("💚 " + t("ayudar_titulo", lang))
         if "centros_ayuda_vzla" in cofu:
-            st.markdown(f"🔗 [{cofu['centros_ayuda_vzla']['nombre']}]({cofu['centros_ayuda_vzla']['url']})")
+            st.markdown(f"🔗 [{fuente_nombre(cofu['centros_ayuda_vzla'], lang)}]({cofu['centros_ayuda_vzla']['url']})")
         if "caritas_venezuela" in cofu:
-            st.markdown(f"🔗 [{cofu['caritas_venezuela']['nombre']}]({cofu['caritas_venezuela']['url']})")
+            st.markdown(f"🔗 [{fuente_nombre(cofu['caritas_venezuela'], lang)}]({cofu['caritas_venezuela']['url']})")
 
     # ── CONSEJOS POST-TERREMOTO (página aparte) ───────────────────────────────
     st.subheader("🧭 " + t("consejos_titulo", lang))

@@ -73,16 +73,19 @@ def build_zone(zone: dict, config: dict, now: datetime | None = None, with_osm: 
         sm_ok = True
         sm_label = f"ShakeMap combinado ({n_grids_ok} evento{'s' if n_grids_ok > 1 else ''})"
         layers.append(layer(f["usgs_shakemap"]["nombre"], f["usgs_shakemap"]["url"],
-                            "ok", datetime.now(timezone.utc), sm_label))
+                            "ok", datetime.now(timezone.utc), sm_label,
+                            nombre_en=f["usgs_shakemap"].get("nombre_en", "")))
         if n_grids_ok > 1 and "usgs_shakemap_secundario" in f:
             layers.append(layer(f["usgs_shakemap_secundario"]["nombre"],
                                 f["usgs_shakemap_secundario"]["url"], "ok",
-                                datetime.now(timezone.utc), "ShakeMap M7.2 incluido"))
+                                datetime.now(timezone.utc), "ShakeMap M7.2 incluido",
+                                nombre_en=f["usgs_shakemap_secundario"].get("nombre_en", "")))
     except Exception as e:
         df["mmi"] = float("nan")
         df["intensidad"] = float("nan")
         layers.append(layer(f["usgs_shakemap"]["nombre"], f["usgs_shakemap"]["url"],
-                            "no_disponible", detalle=str(e)))
+                            "no_disponible", detalle=str(e),
+                            nombre_en=f["usgs_shakemap"].get("nombre_en", "")))
 
     # --- Capa 2: Población residente real por celda ---
     if precomp is not None and df["pop_precomp"].notna().any():
@@ -102,14 +105,16 @@ def build_zone(zone: dict, config: dict, now: datetime | None = None, with_osm: 
                             datetime.now(timezone.utc), f"Población residente — {src_label}"))
     else:
         df["pop"] = float("nan")
-        layers.append(layer(f["worldpop"]["nombre"], f["worldpop"]["url"], "no_disponible"))
+        layers.append(layer(f["worldpop"]["nombre"], f["worldpop"]["url"], "no_disponible",
+                            nombre_en=f["worldpop"].get("nombre_en", "")))
 
     # --- Capa 3: Ground-failure (peligro real por ubicación) ---
     gf_cell = ("liquefaccion" in df.columns) or ("deslizamiento" in df.columns)
     if gf_cell:
         layers.append(layer(f["usgs_ground_failure"]["nombre"], f["usgs_ground_failure"]["url"],
                             "ok", datetime.now(timezone.utc),
-                            "Licuefacción (Zhu 2017) + deslizamiento (Jessee 2018) por celda"))
+                            "Licuefacción (Zhu 2017) + deslizamiento (Jessee 2018) por celda",
+                            nombre_en=f["usgs_ground_failure"].get("nombre_en", "")))
 
     # --- Recursos críticos reales (OSM) ---
     if with_osm:
@@ -121,7 +126,8 @@ def build_zone(zone: dict, config: dict, now: datetime | None = None, with_osm: 
             f["osm"]["nombre"], f["osm"]["url"],
             "no_disponible" if resources.attrs.get("error") else "ok",
             None if resources.attrs.get("error") else datetime.now(timezone.utc),
-            f"{len(resources)} recursos"))
+            f"{len(resources)} recursos",
+            nombre_en=f["osm"].get("nombre_en", "")))
     else:
         resources = pd.DataFrame(columns=["nombre", "tipo", "etiqueta", "lat", "lon"])
 

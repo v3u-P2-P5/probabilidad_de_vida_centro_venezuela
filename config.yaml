@@ -110,66 +110,87 @@ poblacion:
 fuentes:
   usgs_evento:
     nombre: "USGS — Evento principal M7.5 (us6000t7zp)"
+    nombre_en: "USGS — Main event M7.5 (us6000t7zp)"
     url: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/executive"
   usgs_evento_secundario:
     nombre: "USGS — Evento secundario M7.2 (us6000t7zc)"
+    nombre_en: "USGS — Secondary event M7.2 (us6000t7zc)"
     url: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zc/executive"
   usgs_shakemap:
     nombre: "USGS ShakeMap — Intensidad combinada (MMI max entre ambos eventos)"
+    nombre_en: "USGS ShakeMap — Combined intensity (max MMI across both events)"
     url: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/shakemap/intensity"
   usgs_shakemap_secundario:
     nombre: "USGS ShakeMap M7.2"
+    nombre_en: "USGS ShakeMap M7.2"
     url: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zc/shakemap/intensity"
   usgs_pager:
     nombre: "USGS PAGER — Víctimas y pérdidas estimadas"
+    nombre_en: "USGS PAGER — Estimated casualties and losses"
     url: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/pager"
   usgs_ground_failure:
     nombre: "USGS — Deslizamientos y licuefacción"
+    nombre_en: "USGS — Landslides and liquefaction"
     url: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/ground-failure"
   copernicus_emsr884:
     nombre: "Copernicus EMS — EMSR884 (cartografía de daño, Venezuela)"
+    nombre_en: "Copernicus EMS — EMSR884 (damage mapping, Venezuela)"
     url: "https://mapping.emergency.copernicus.eu/news/earthquake-in-venezuela-emsr884/"
   unosat:
     nombre: "UNOSAT — Edificios potencialmente dañados (UNITAR)"
+    nombre_en: "UNOSAT — Potentially damaged buildings (UNITAR)"
     url: "https://unosat.org/products/"
   reliefweb:
     nombre: "ReliefWeb (OCHA) — Reportes de situación Venezuela"
+    nombre_en: "ReliefWeb (OCHA) — Venezuela situation reports"
     url: "https://reliefweb.int/disaster/eq-2026-000093-ven"
   gdacs:
     nombre: "GDACS — Alerta y estimación de impacto"
+    nombre_en: "GDACS — Alert and impact assessment"
     url: "https://www.gdacs.org/report.aspx?eventid=1548377&episodeid=1714328&eventtype=EQ"
   icrc_rfl:
     nombre: "CICR — Restablecimiento del Contacto entre Familiares (buscar/registrar)"
+    nombre_en: "ICRC — Restoring Family Links (search/register)"
     url: "https://familylinks.icrc.org/"
   icrc_trace_face:
     nombre: "CICR — Trace the Face (búsqueda con fotos)"
+    nombre_en: "ICRC — Trace the Face (photo search)"
     url: "https://tracetheface.familylinks.icrc.org/"
   cruz_roja_venezolana:
     nombre: "Cruz Roja Venezolana — Ayuda y reunificación familiar"
+    nombre_en: "Venezuelan Red Cross — Aid and family reunification"
     url: "https://cruzroja.ve/"
   centros_ayuda_vzla:
     nombre: "Centros de Ayuda Venezuela — Directorio de puntos de acopio"
+    nombre_en: "Venezuela Aid Centers — Directory of donation points"
     url: "https://centrosayudavenezuela.org/"
   caritas_venezuela:
     nombre: "Cáritas Venezuela — Ayuda y donaciones (ONG)"
+    nombre_en: "Cáritas Venezuela — Aid and donations (NGO)"
     url: "https://caritasvenezuela.org/"
   desaparecidos_terremoto_ve:
     nombre: "Desaparecidos Terremoto Venezuela — «Reconectemos a cada familia»"
+    nombre_en: "Venezuela Earthquake Missing Persons — «Reconnecting every family»"
     url: "https://desaparecidosterremotovenezuela.com/"
   localiza_pacientes:
     nombre: "Localiza Pacientes — Búsqueda de personas hospitalizadas"
+    nombre_en: "Locate Patients — Search for hospitalized persons"
     url: "https://localizapacientes.com/"
   pacientes_terremoto_vzla:
     nombre: "Pacientes Terremoto VZla — Listas de hospitales (plataforma ciudadana)"
+    nombre_en: "Venezuela Earthquake Patients — Hospital lists (citizen platform)"
     url: "https://pacientesterremotovzla.lovable.app/"
   maxar_open_data:
     nombre: "Maxar/Vantor Open Data — Imágenes pre/post evento"
+    nombre_en: "Maxar/Vantor Open Data — Pre/post event imagery"
     url: "https://www.maxar.com/open-data"
   worldpop:
     nombre: "WorldPop — Población Venezuela 100m (CC-BY 4.0)"
+    nombre_en: "WorldPop — Venezuela population 100m (CC-BY 4.0)"
     url: "https://data.humdata.org/dataset/worldpop-population-density-for-venezuela-bolivarian-republic-of"
   osm:
     nombre: "OpenStreetMap — Hospitales, bomberos, refugios (© colaboradores OSM)"
+    nombre_en: "OpenStreetMap — Hospitals, fire stations, shelters (© OSM contributors)"
     url: "https://www.openstreetmap.org/copyright"
     overpass: "https://overpass-api.de/api/interpreter"
 
