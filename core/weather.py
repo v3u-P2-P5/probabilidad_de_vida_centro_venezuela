@@ -94,7 +94,7 @@ def _fmt_dia(date_str: str, dias: list, meses: list) -> str:
         return date_str
 
 
-@st.cache_data(ttl=600, show_spinner=False)
+@st.cache_data(ttl=1800, show_spinner=False)
 def get_weather(lat: float, lon: float, lang: str = "es") -> dict | None:
     """Condiciones actuales + pronóstico horario (12 h) + diario (2 días).
 

@@ -318,6 +318,7 @@ def render_event_banner(ctx: dict, lang: str) -> None:
     st.caption(t("actualizacion_tiempo_real", lang))
 
 
+@st.cache_data(ttl=300, show_spinner=False)
 def _build_map(df, zone, ctx, lang, nasa_buildings=None):
     """Mapa de INTENSIDAD sentida (MMI) + recursos de ayuda."""
     lon_min, lat_min, lon_max, lat_max = zone["bbox"]

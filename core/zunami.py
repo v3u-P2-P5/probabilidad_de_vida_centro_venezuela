@@ -5,6 +5,7 @@ Streamlit Cloud lo reinstala), incluye un "hombre estatico" que no queremos, y n
 permite anadir a Zunami. Aqui ocultamos el svg nativo y animamos una mascara CSS.
 Paths Material (Apache-2.0) extraidos del bundle de Streamlit; perro propio.
 """
+import functools
 import urllib.parse
 
 # (viewBox, path) de cada figura del ciclo. Zunami es la ultima.
@@ -26,6 +27,7 @@ def _mask(viewbox: str, d: str) -> str:
     return "url(\"data:image/svg+xml," + urllib.parse.quote(svg, safe="") + "\")"
 
 
+@functools.lru_cache(maxsize=1)
 def running_indicator_css() -> str:
     """CSS que sustituye el running-man de Streamlit por el ciclo con Zunami."""
     n = len(FIGURAS)
