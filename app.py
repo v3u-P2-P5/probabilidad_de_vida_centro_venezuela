@@ -160,6 +160,46 @@ def home():
         upd.append(f"{t('consulta_fuentes', lang)}: {gd.get('fetched_at', '')}")
         st.caption(t("impacto_nota", lang) + "  ·  " + "  ·  ".join(upd))
 
+    # ── RESPUESTA INTERNACIONAL ───────────────────────────────────────────────
+    with st.expander("🌍 Respuesta internacional desplegada", expanded=False):
+        rc = st.columns(4)
+        rc[0].metric("🌐 Países", "27")
+        rc[1].metric("🔍 Equipos USAR", "44")
+        rc[2].metric("🧑‍🚒 Rescatistas", "2.245")
+        rc[3].metric("🐕 Perros", "140")
+        st.warning(
+            "⚠️ **El total de OCHA (2.245 rescatistas · 140 perros) es el dato oficial "
+            "consolidado de los 44 equipos de 27 países.** Las cifras por país son las "
+            "publicadas individualmente — la mayoría no ha dado un desglose detallado, "
+            "por eso la suma de la tabla es menor que el total oficial de la ONU."
+        )
+        _rescate_rows = [
+            {"País": "El Salvador",      "🧑‍🚒 Rescatistas": "300", "🐕 Perros": "—"},
+            {"País": "Francia",          "🧑‍🚒 Rescatistas": "85",  "🐕 Perros": "—"},
+            {"País": "Suiza",            "🧑‍🚒 Rescatistas": "80",  "🐕 Perros": "s/d"},
+            {"País": "Reino Unido",      "🧑‍🚒 Rescatistas": "68",  "🐕 Perros": "s/d"},
+            {"País": "Turquía",          "🧑‍🚒 Rescatistas": "67",  "🐕 Perros": "—"},
+            {"País": "España (UME)",     "🧑‍🚒 Rescatistas": "59",  "🐕 Perros": "8"},
+            {"País": "Portugal",         "🧑‍🚒 Rescatistas": "50",  "🐕 Perros": "—"},
+            {"País": "Costa Rica",       "🧑‍🚒 Rescatistas": "48",  "🐕 Perros": "—"},
+            {"País": "Chile",            "🧑‍🚒 Rescatistas": "46",  "🐕 Perros": "—"},
+            {"País": "Brasil",           "🧑‍🚒 Rescatistas": "36",  "🐕 Perros": "6"},
+            {"País": "Eslovaquia",       "🧑‍🚒 Rescatistas": "20",  "🐕 Perros": "4"},
+            {"País": "Japón",            "🧑‍🚒 Rescatistas": "7",   "🐕 Perros": "—"},
+            {"País": "Rep. Dominicana",  "🧑‍🚒 Rescatistas": "s/d", "🐕 Perros": "—"},
+            {"País": "Países Bajos",     "🧑‍🚒 Rescatistas": "s/d", "🐕 Perros": "s/d"},
+            {"País": "Otros 13 países ✝", "🧑‍🚒 Rescatistas": "s/d", "🐕 Perros": "s/d"},
+        ]
+        st.markdown('<p class="swipe-hint">desliza →</p>', unsafe_allow_html=True)
+        st.dataframe(pd.DataFrame(_rescate_rows), hide_index=True, use_container_width=True)
+        st.caption(
+            "✝ Argentina, Canadá, Colombia, Ecuador, Guatemala, México, Panamá, Perú, "
+            "Alemania, Rep. Checa, Jordania, Lituania, Qatar · "
+            "s/d = sin dato publicado · "
+            "Fuente: [OCHA/ONU](https://news.un.org/en/story/2026/06/1167825) · "
+            "[Wikipedia](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes) · 27 jun 2026"
+        )
+
     # ── PERSONAS DESAPARECIDAS ────────────────────────────────────────────────
     st.subheader("🔎 " + t("desaparecidos_titulo", lang))
     st.markdown(t("desaparecidos_texto", lang))
