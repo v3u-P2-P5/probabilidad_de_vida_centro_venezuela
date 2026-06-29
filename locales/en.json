@@ -130,7 +130,7 @@
   "chat_pensando": "Checking the app's data…",
   "chat_pie_ia": "AI-generated from the cited sources. Verify the links. Not official advice.",
   "chat_fuentes": "Sources checked",
-  "chat_sin_clave": "The assistant is not configured (missing OpenRouter key). In the meantime, use the official links:",
+  "chat_sin_clave": "The assistant is not available right now. In the meantime, use the official links:",
   "chat_error_api": "The assistant is unavailable right now. Try again in a few minutes or use the official sources.",
   "chat_rate_limit": "You've reached this session's question limit. Reload the page later to continue.",
   "chat_rechazo_persona": "I can't confirm a person's whereabouts or status: that information is handled confidentially through official channels. To **search for or register a relative**, use these channels:",

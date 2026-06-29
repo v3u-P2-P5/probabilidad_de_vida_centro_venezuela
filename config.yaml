@@ -17,14 +17,14 @@ autorefresco_segundos: 300      # la app se actualiza sola cada N segundos
 shakemap_ttl_segundos: 300      # relee ShakeMap de USGS cada N segundos
 osm_ttl_segundos: 1800          # relee recursos OSM cada N segundos
 
-# --- Asistente IA (chat con grounding, vía OpenRouter) ---
+# --- Asistente IA (chat con grounding) ---
 # SOLO responde con datos reales ya presentes en la app (no inventa). La API key
 # va en .streamlit/secrets.toml (OPENROUTER_API_KEY), NUNCA aquí. Sin clave o con
 # activo=false, la página del asistente se auto-deshabilita y enlaza fuentes oficiales.
 chat:
   activo: true
-  modelo: "anthropic/claude-3.5-sonnet"   # id OpenRouter con tool-calling robusto
-  modelo_fallback: "openai/gpt-4o-mini"    # respaldo si el primario falla
+  modelo: "anthropic/claude-sonnet-4.6"   # id del modelo (proveedor compatible OpenAI)
+  modelo_fallback: "openai/gpt-4o-mini"    # respaldo cross-proveedor si el primario falla
   max_tokens: 600
   temperatura: 0.1
   max_input_chars: 600                     # trunca preguntas largas (anti-abuso)

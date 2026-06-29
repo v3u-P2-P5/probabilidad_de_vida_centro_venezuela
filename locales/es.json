@@ -130,7 +130,7 @@
   "chat_pensando": "Consultando los datos de la app…",
   "chat_pie_ia": "Generado por IA a partir de las fuentes citadas. Verifica los enlaces. No es asesoría oficial.",
   "chat_fuentes": "Fuentes consultadas",
-  "chat_sin_clave": "El asistente no está configurado (falta la clave de OpenRouter). Mientras tanto, usa los enlaces oficiales:",
+  "chat_sin_clave": "El asistente no está disponible por ahora. Mientras tanto, usa los enlaces oficiales:",
   "chat_error_api": "El asistente no está disponible en este momento. Inténtalo de nuevo en unos minutos o usa las fuentes oficiales.",
   "chat_rate_limit": "Has alcanzado el límite de preguntas de esta sesión. Recarga la página más tarde para seguir.",
   "chat_rechazo_persona": "No puedo confirmar el paradero ni el estado de una persona: esa información se gestiona de forma confidencial por canales oficiales. Para **buscar o registrar a un familiar**, usa estos canales:",

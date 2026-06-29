@@ -1,4 +1,4 @@
-"""Cliente OpenRouter (HTTP compatible con OpenAI) con streaming.
+"""Cliente de IA por HTTP (API compatible con OpenAI) con streaming.
 
 Sin Streamlit a propósito (testeable y reutilizable): recibe la api_key como
 argumento. Las excepciones tipadas permiten que la UI degrade con un mensaje
@@ -8,7 +8,7 @@ import json
 
 import requests
 
-OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 
 class ChatError(Exception):
@@ -54,7 +54,7 @@ def stream_chat(messages, api_key, model, *, referer="", title="",
     }
 
     try:
-        r = requests.post(OPENROUTER_URL, headers=headers, json=payload,
+        r = requests.post(API_URL, headers=headers, json=payload,
                           stream=True, timeout=timeout)
     except requests.RequestException as e:
         raise ChatUnavailable(str(e))

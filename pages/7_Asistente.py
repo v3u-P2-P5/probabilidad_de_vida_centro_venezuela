@@ -1,4 +1,4 @@
-"""Asistente IA con grounding (OpenRouter) — responde SOLO con datos reales.
+"""Asistente IA con grounding (API compatible con OpenAI) — responde SOLO con datos reales.
 
 MVP v1: inyecta un "context pack" factual (no tool-calling) y aplica defensa en
 profundidad: clasificador de intención determinista para preguntas por el
