@@ -135,6 +135,14 @@ def home():
                 t("col_desaparecidos", lang): x.get("desaparecidos", "—"),
                 t("col_notas", lang): x.get("notas", ""),
             } for x in cifras]
+            st.markdown(
+                '<p class="swipe-hint">desliza →</p>'
+                '<style>@media(max-width:768px){.swipe-hint{'
+                'display:block!important;text-align:right;'
+                'font-size:0.72rem;color:#aaa;margin:2px 0 0}}'
+                '.swipe-hint{display:none}</style>',
+                unsafe_allow_html=True,
+            )
             st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
             st.caption("🔗 " + " · ".join(
                 f"[{x.get('fuente','fuente')}]({x['url']})" for x in cifras if x.get("url")))
