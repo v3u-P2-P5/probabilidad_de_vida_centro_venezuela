@@ -42,21 +42,23 @@ KIND_LABELS = {
 KIND_ORDER = ["hospital", "ambulance_station", "clinic", "fire_station", "shelter"]
 
 
+_SECTOR_GRID = [
+    ["Suroeste", "Sur",    "Sureste"],
+    ["Oeste",    "Centro", "Este"   ],
+    ["Noroeste", "Norte",  "Noreste"],
+]
+
+
 def _geo_sector(lat: float, lon: float, bbox: list) -> str:
-    """Sector geográfico dentro del bbox usando el eje más largo."""
+    """Cuadrícula 3×3 dentro del bbox → hasta 9 sectores en puntos cardinales."""
     lon_min, lat_min, lon_max, lat_max = bbox
     lon_span = lon_max - lon_min
     lat_span = lat_max - lat_min
-    if lon_span >= lat_span:          # zona más ancha que alta → dividir E-W
-        frac = (lon - lon_min) / lon_span if lon_span else 0.5
-        if frac < 0.34:  return "Sector Oeste"
-        if frac < 0.67:  return "Sector Centro"
-        return "Sector Este"
-    else:                              # zona más alta que ancha → dividir N-S
-        frac = (lat - lat_min) / lat_span if lat_span else 0.5
-        if frac < 0.34:  return "Sector Sur"
-        if frac < 0.67:  return "Sector Centro"
-        return "Sector Norte"
+    frac_lon = (lon - lon_min) / lon_span if lon_span else 0.5
+    frac_lat = (lat - lat_min) / lat_span if lat_span else 0.5
+    col = 0 if frac_lon < 0.33 else (1 if frac_lon < 0.67 else 2)
+    row = 0 if frac_lat < 0.33 else (1 if frac_lat < 0.67 else 2)
+    return "Sector " + _SECTOR_GRID[row][col]
 
 
 def assign_areas(df: pd.DataFrame, bbox: list) -> pd.DataFrame:
