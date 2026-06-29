@@ -13,7 +13,7 @@ from core.relief import get_gdacs, get_reliefweb_reports
 from core.sources import fmt_vet_utc, parse_iso
 from core.ui import apply_chrome, render_sources, _cached_zone
 
-st.set_page_config(page_title="Doble Sismo Venezuela 2026", page_icon="🌍", layout="wide")
+st.set_page_config(page_title="Venezuela 2026 — Doble Sismo / Double Earthquake", page_icon="🌍", layout="wide")
 
 # Ciudades grandes y conocidas para dar referencia geográfica al público (el
 # epicentro real, cerca de Yumare, no le dice nada a la mayoría de la gente).
@@ -476,7 +476,7 @@ pages = [
     st.Page("pages/2_Caracas_Sucre_Petare.py",     title="Caracas — Sucre / Petare", icon="📍"),
     st.Page("pages/3_Caracas_Baruta_ElHatillo.py", title="Caracas — Baruta / Hatillo / Chacao", icon="📍"),
     st.Page("pages/4_La_Guaira_Litoral.py",        title="La Guaira — Litoral", icon="📍"),
-    st.Page("pages/5_Consejos_post_terremoto.py",  title="Consejos post-terremoto", icon="🧭"),
-    st.Page("pages/6_Mapa_NASA.py",                title="Mapa NASA Sentinel-1",    icon="🛰️"),
+    st.Page("pages/5_Consejos_post_terremoto.py",  title="Safety Tips / Consejos", icon="🧭"),
+    st.Page("pages/6_Mapa_NASA.py",                title="NASA Satellite Map",       icon="🛰️"),
 ]
 st.navigation(pages).run()

@@ -17,11 +17,14 @@ _NASA_URL = (
 _WEBMAP_ID   = "0c3d77dd5aae46e4829d9a282477615c"
 _PORTAL_URL  = "https://gis.earthdata.nasa.gov/portal"
 
-# Mapa renderizado con ArcGIS JS API 4.29 (CDN público de Esri).
-# No incrustamos la página de NASA — cargamos sus datos directamente con
-# la librería oficial, exactamente como hacen los sitios profesionales con
-# Google Maps o Mapbox.
-_MAP_HTML = f"""<!DOCTYPE html>
+def _build_map_html(lang: str) -> str:
+    """Devuelve el HTML del mapa ArcGIS JS con textos en el idioma correcto."""
+    # Cargamos los datos directamente con la ArcGIS JS API (CDN Esri) —
+    # NO incrustamos la página de NASA, así que no aplica X-Frame-Options.
+    loading_txt = "Loading NASA map…" if lang == "en" else "Cargando mapa NASA…"
+    error_txt   = "Could not load map. " if lang == "en" else "No se pudo cargar el mapa. "
+    open_tab    = "Open in new tab →"   if lang == "en" else "Abrir en nueva pestaña →"
+    return f"""<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -43,7 +46,7 @@ _MAP_HTML = f"""<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <div id="viewDiv"><div id="loading">Cargando mapa NASA…</div></div>
+  <div id="viewDiv"><div id="loading">{loading_txt}</div></div>
   <script>
     require([
       "esri/WebMap",
@@ -70,8 +73,8 @@ _MAP_HTML = f"""<!DOCTYPE html>
         document.getElementById("loading").style.display = "none";
       }}, function(err) {{
         document.getElementById("loading").innerHTML =
-          "No se pudo cargar el mapa. "
-          + '<a href="{_NASA_URL}" target="_blank">Abrir en nueva pestaña →</a>';
+          "{error_txt}"
+          + '<a href="{_NASA_URL}" target="_blank">{open_tab}</a>';
       }});
     }});
   </script>
@@ -111,7 +114,7 @@ else:
     )
 
 # Mapa ArcGIS JS — si el CDN de Esri no carga, muestra el link de fallback
-components.html(_MAP_HTML, height=620, scrolling=False)
+components.html(_build_map_html(lang), height=620, scrolling=False)
 
 st.divider()
 
