@@ -245,47 +245,27 @@ def home():
     with st.expander(t("expander_nasa_danos", lang), expanded=False):
         if lang == "en":
             st.markdown(
-                "Official satellite analysis of structural damage from the double earthquake "
-                "(June 24, 2026). Data from NASA and Copernicus EMS."
+                "Sentinel-1 SAR analysis (NASA) shows **>50 % of buildings** "
+                "in Caraballeda, Macuto, La Guaira and Catia la Mar with a "
+                "**≥ 75 % damage probability**. Copernicus EMS EMSR884 provides "
+                "complementary damage cartography."
+            )
+            st.page_link(
+                "pages/6_Mapa_NASA.py",
+                label="Open interactive satellite damage map →",
+                icon="🛰️",
             )
         else:
             st.markdown(
-                "Análisis oficial por satélite del daño estructural causado por el doble sismo "
-                "del 24 de junio de 2026. Datos de NASA y Copernicus EMS."
+                "El análisis Sentinel-1 SAR (NASA) indica que **más del 50 % de los edificios** "
+                "en Caraballeda, Macuto, La Guaira y Catia la Mar tienen "
+                "**probabilidad de daño ≥ 75 %**. Copernicus EMS EMSR884 aporta "
+                "cartografía complementaria de daño."
             )
-        if "nasa_sentinel1" in cofu:
-            ns = cofu["nasa_sentinel1"]
-            if lang == "en":
-                st.markdown(
-                    f"**🛰️ [{fuente_nombre(ns, lang)}]({ns['url']})**  \n"
-                    "Sentinel-1 SAR damage probability map (NASA EarthData / GIS Portal). "
-                    "Analysis shows **>50 % of buildings** in Caraballeda, Macuto, La Guaira "
-                    "and Catia la Mar with a **≥ 75 % damage probability**."
-                )
-            else:
-                st.markdown(
-                    f"**🛰️ [{fuente_nombre(ns, lang)}]({ns['url']})**  \n"
-                    "Mapa de probabilidad de daño estructural Sentinel-1 SAR (NASA EarthData / "
-                    "Portal GIS). El análisis muestra que **más del 50 % de los edificios** en "
-                    "Caraballeda, Macuto, La Guaira y Catia la Mar tienen **probabilidad de "
-                    "daño ≥ 75 %**."
-                )
-        if "copernicus_emsr884" in cofu:
-            cp = cofu["copernicus_emsr884"]
-            st.markdown(
-                f"**🌍 [{fuente_nombre(cp, lang)}]({cp['url']})**  \n"
-                + ("Copernicus Emergency Management Service — damage and affected-building "
-                   "mapping for Venezuela (EMSR884). Continuously updated."
-                   if lang == "en" else
-                   "Servicio Europeo de Gestión de Emergencias — cartografía de daño y "
-                   "edificios afectados en Venezuela (EMSR884). En actualización continua.")
-            )
-        if "nasa_disasters" in cofu:
-            nd = cofu["nasa_disasters"]
-            st.caption(
-                f"🔗 [{fuente_nombre(nd, lang)}]({nd['url']}) · "
-                + (f"[{fuente_nombre(cofu['maxar_open_data'], lang)}]({cofu['maxar_open_data']['url']})"
-                   if "maxar_open_data" in cofu else "")
+            st.page_link(
+                "pages/6_Mapa_NASA.py",
+                label="Abrir mapa interactivo de daños por satélite →",
+                icon="🛰️",
             )
 
     # ── RESPUESTA INTERNACIONAL ───────────────────────────────────────────────

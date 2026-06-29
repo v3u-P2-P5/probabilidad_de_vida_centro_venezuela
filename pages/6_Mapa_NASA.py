@@ -115,17 +115,54 @@ components.html(_MAP_HTML, height=620, scrolling=False)
 
 st.divider()
 
+# ── Fuentes / Sources ────────────────────────────────────────────────────────
 if lang == "en":
+    st.subheader("Sources")
+    st.markdown(
+        "| # | Source | Notes |\n"
+        "|---|--------|-------|\n"
+        "| 1 | [NASA EarthData GIS — Structural Damage Probability Map (Sentinel-1 SAR)]"
+        f"({_NASA_URL}) | Before/after SAR analysis, building-level damage probability. "
+        "Author: patrick_rea@NASA. **Public domain** (17 USC § 105). |\n"
+        "| 2 | [NASA Disasters Program — Venezuela 2026 Activation](https://disasters.nasa.gov/) "
+        "| Coordination portal for the NASA Disasters response to the June 2026 event. |\n"
+        "| 3 | [Copernicus EMS — EMSR884 (damage mapping, Venezuela)]"
+        "(https://mapping.emergency.copernicus.eu/news/earthquake-in-venezuela-emsr884/) "
+        "| European Commission satellite damage cartography. "
+        "Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). |\n"
+        "| 4 | [Maxar/Vantor Open Data — Pre/post event imagery]"
+        "(https://vantor.com/company/open-data-program/) "
+        "| Very-high-resolution optical imagery released under the Open Data Program. |\n"
+        "| 5 | [ArcGIS JS API 4.29](https://developers.arcgis.com/javascript/) (Esri) "
+        "| Map rendering library. Map data © Esri & contributors. |"
+    )
     st.caption(
-        f"[👉 Open full NASA map in new tab]({_NASA_URL}) · "
-        "Source: NASA EarthData GIS · Sentinel-1 SAR · "
-        "patrick_rea@NASA · public domain (17 USC § 105) · "
-        "Map rendered via [ArcGIS JS API 4.29](https://developers.arcgis.com/javascript/) (Esri)"
+        f"[👉 Open full NASA map in new tab]({_NASA_URL})  ·  "
+        "Experimental analysis — not validated in the field — do not use as sole basis for "
+        "damage assessment or resource allocation."
     )
 else:
+    st.subheader("Fuentes")
+    st.markdown(
+        "| # | Fuente | Notas |\n"
+        "|---|--------|-------|\n"
+        "| 1 | [NASA EarthData GIS — Mapa de probabilidad de daño estructural (Sentinel-1 SAR)]"
+        f"({_NASA_URL}) | Análisis SAR antes/después, probabilidad de daño por edificio. "
+        "Autor: patrick_rea@NASA. **Dominio público** (17 USC § 105). |\n"
+        "| 2 | [NASA Disasters Program — Activación Venezuela 2026](https://disasters.nasa.gov/) "
+        "| Portal de coordinación de la respuesta NASA al evento de junio 2026. |\n"
+        "| 3 | [Copernicus EMS — EMSR884 (cartografía de daño, Venezuela)]"
+        "(https://mapping.emergency.copernicus.eu/news/earthquake-in-venezuela-emsr884/) "
+        "| Cartografía de daño por satélite de la Comisión Europea. "
+        "Licencia [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). |\n"
+        "| 4 | [Maxar/Vantor Open Data — Imágenes pre/post evento]"
+        "(https://vantor.com/company/open-data-program/) "
+        "| Imágenes ópticas de muy alta resolución publicadas bajo el Open Data Program. |\n"
+        "| 5 | [ArcGIS JS API 4.29](https://developers.arcgis.com/javascript/) (Esri) "
+        "| Librería de renderizado del mapa. Datos cartográficos © Esri y colaboradores. |"
+    )
     st.caption(
-        f"[👉 Abrir mapa NASA completo en nueva pestaña]({_NASA_URL}) · "
-        "Fuente: NASA EarthData GIS · Sentinel-1 SAR · "
-        "patrick_rea@NASA · dominio público (17 USC § 105) · "
-        "Mapa renderizado con [ArcGIS JS API 4.29](https://developers.arcgis.com/javascript/) (Esri)"
+        f"[👉 Abrir mapa NASA completo en nueva pestaña]({_NASA_URL})  ·  "
+        "Análisis experimental — sin validación en campo — no usar como única base para "
+        "evaluación de daños o asignación de recursos."
     )
