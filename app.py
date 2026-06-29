@@ -66,7 +66,7 @@ def home():
 
     # ── NOTA: RÉPLICAS Y RIESGO SÍSMICO ──────────────────────────────────────
     st.info(
-        "**🔬 Réplicas en curso — qué dicen los expertos**\n\n"
+        "**📡 Réplicas en curso — Opinión de los expertos:**\n\n"
         "Desde el doble sismo del 24 de junio se han registrado **más de 130 réplicas** "
         "(la mayor en M4.8). Son esperables y forman parte del proceso natural de "
         "estabilización cortical post-ruptura. El USGS estima ~40 % de probabilidad de "
@@ -79,15 +79,15 @@ def home():
         "liberada la energía acumulada durante más de un siglo en el sistema de fallas de "
         "Boconó, una repetición inmediata carece de base física. FUNVISIS y el USGS "
         "monitorean la actividad de forma continua y en tiempo real.\n\n"
-        "🧭 Sigue las precauciones post-terremoto — especialmente respecto a estructuras "
-        "dañadas que pueden colapsar con réplicas menores: "
-        "[ver consejos →](pages/5_Consejos_post_terremoto.py)\n\n"
+        "🧭 **Sigue las precauciones post-terremoto** — especialmente respecto a estructuras "
+        "dañadas que pueden colapsar con réplicas menores.\n\n"
         "📌 *Fuentes: "
         "[USGS · Miyamoto International](https://miyamotointernational.com/venezuelas-strongest-earthquake-in-125-years-what-happened-on-june-24-2026/) · "
         "[Wikipedia EN](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes) · "
         "[SkyAlert MX](https://skyalert.mx/articulos/actualizacion-sismos-venezuela-2026) · "
         "[Ecoosfera — teoría de placas](https://ecoosfera.com/noticias/sismos-venezuela-2026-teoria-placas/)*"
     )
+    st.page_link("pages/5_Consejos_post_terremoto.py", label="🧭 Ver consejos post-terremoto →")
 
     # ── Evento (compacto) ─────────────────────────────────────────────────────
     s = ctx["sismo"]
@@ -227,7 +227,7 @@ def home():
         )
 
     # ── RÉPLICAS ──────────────────────────────────────────────────────────────
-    with st.expander("📉 Réplicas registradas desde el sismo principal", expanded=False):
+    with st.expander("📉 Réplicas registradas — Opinión de los expertos:", expanded=False):
         st.markdown(
             "Tras el doble sismo del **24 jun 2026** se han registrado **más de 130 réplicas**. "
             "Las réplicas son ajustes normales de la corteza terrestre después de una ruptura "
