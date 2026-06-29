@@ -23,10 +23,14 @@ osm_ttl_segundos: 1800          # relee recursos OSM cada N segundos
 # activo=false, la página del asistente se auto-deshabilita y enlaza fuentes oficiales.
 chat:
   activo: true
-  modelo: "anthropic/claude-sonnet-4.6"   # id del modelo (proveedor compatible OpenAI)
-  modelo_fallback: "openai/gpt-4o-mini"    # respaldo cross-proveedor si el primario falla
+  # Modelos GRATUITOS (Google Gemma 4 + Llama 3.3 70B). El grounding anti-alucinación
+  # lo imponen el system prompt + los guardrails deterministas, no el modelo.
+  # OJO: los tiers ':free' tienen límite de peticiones agresivo; para tráfico real
+  # conviene un modelo de bajo costo (p.ej. google/gemini-2.5-flash-lite, ~$0.10/M).
+  modelo: "google/gemma-4-31b-it:free"             # Google, gratuito
+  modelo_fallback: "meta-llama/llama-3.3-70b-instruct:free"   # respaldo gratuito
   max_tokens: 600
-  temperatura: 0.1
+  temperatura: 0.0                         # 0 = máxima fidelidad al contexto (anti-alucinación)
   max_input_chars: 600                     # trunca preguntas largas (anti-abuso)
   rate_limit_por_sesion: 30                # nº máx de preguntas por sesión de navegador
 
