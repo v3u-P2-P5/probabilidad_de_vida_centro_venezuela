@@ -49,11 +49,11 @@ relief:
 # desaparecidos (texto), notas.
 cifras_oficiales:
   - fuente: "Cifras oficiales consolidadas (ABC News / Wikipedia)"
-    fecha: "2026-06-28"
+    fecha: "2026-06-29"
     url: "https://abcnews.com/International/live-updates/venezuela-earthquakes-updates/?id=134196335"
-    fallecidos: "1.430"
-    heridos: ">3.200"
-    desaparecidos: "~50.000"
+    fallecidos: "1.450"
+    heridos: ">3.150"
+    desaparecidos: ">50.000"
   - fuente: "Jorge Rodríguez — Asamblea Nacional Venezuela"
     fecha: "2026-06-26"
     url: "https://es.wikipedia.org/wiki/Terremotos_de_Venezuela_de_2026"
