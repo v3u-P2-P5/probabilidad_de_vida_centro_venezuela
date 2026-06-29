@@ -113,6 +113,26 @@ else:
         "Haz clic en un edificio para ver los detalles."
     )
 
+# ── Leyenda de colores ────────────────────────────────────────────────────────
+_LEGEND_ITEMS = [
+    ("#c62828", "≥ 75 %", "Likely destroyed"        if lang == "en" else "Probable destrucción"),
+    ("#e65100", "50–74 %","Heavily / mod. damaged"   if lang == "en" else "Daño grave / moderado"),
+    ("#f9a825", "< 50 %", "Possibly damaged"         if lang == "en" else "Posiblemente dañado"),
+]
+_legend_title = "Map color key — damage probability" if lang == "en" else "Leyenda de colores — probabilidad de daño"
+st.markdown(
+    f"<p style='font-size:0.8rem;font-weight:600;margin-bottom:4px'>{_legend_title}</p>"
+    + "".join(
+        f"<span style='display:inline-flex;align-items:center;gap:5px;"
+        f"margin-right:14px;font-size:0.8rem;'>"
+        f"<span style='display:inline-block;width:14px;height:14px;border-radius:50%;"
+        f"background:{color};opacity:0.85;flex-shrink:0'></span>"
+        f"<b>{pct}</b>&nbsp;{label}</span>"
+        for color, pct, label in _LEGEND_ITEMS
+    ),
+    unsafe_allow_html=True,
+)
+
 # Mapa ArcGIS JS — si el CDN de Esri no carga, muestra el link de fallback
 components.html(_build_map_html(lang), height=620, scrolling=False)
 
