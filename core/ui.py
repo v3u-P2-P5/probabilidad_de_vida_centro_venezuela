@@ -394,7 +394,7 @@ def render_zone(zone_id: str) -> None:
         wc[3].metric(cur["icon"] + " Cielo", cur["condition"])
 
         # Pronóstico próximas horas + 2 días (desplegable)
-        with st.expander("📅 Pronóstico próximas horas y 2 días", expanded=False):
+        with st.expander("📅 Pronóstico del clima en el área afectada, próximas horas y 2 días", expanded=False):
             # Próximas 12 h
             if wx["hourly"]:
                 st.markdown("**Próximas horas**")
