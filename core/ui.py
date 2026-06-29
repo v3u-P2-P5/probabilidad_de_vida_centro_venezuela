@@ -256,7 +256,7 @@ def _render_construction_banner(lang: str) -> None:
 
 
 def apply_chrome(config: dict, autorefresh: bool = True) -> str:
-    """Idioma, auto-refresco en tiempo real y botón de actualizar. Devuelve lang.
+    """Idioma y auto-refresco en tiempo real. Devuelve lang.
 
     autorefresh=False desactiva el auto-refresco en páginas con mapas pesados
     (NASA / asistente) para no re-montar el iframe ni perder el estado cada ciclo.
