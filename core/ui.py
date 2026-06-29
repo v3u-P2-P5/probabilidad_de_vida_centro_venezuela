@@ -281,9 +281,6 @@ def apply_chrome(config: dict, autorefresh: bool = True) -> str:
         )
     st.session_state.lang = lang
     _render_construction_banner(lang)
-    if st.sidebar.button(t("actualizar", lang)):
-        st.cache_data.clear()
-        st.rerun()
     st.sidebar.caption(f"🕒 {t('ultima_actualizacion', lang)}:\n\n{fmt_vet_utc()}")
     return lang
 
