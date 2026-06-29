@@ -37,6 +37,11 @@ KIND_LABELS = {
     "fire_station": "🚒 Bomberos", "ambulance_station": "🚑 Ambulancias",
     "shelter": "⛺ Refugio",
 }
+KIND_LABELS_EN = {
+    "hospital": "🏥 Hospital", "clinic": "🏥 Clinic",
+    "fire_station": "🚒 Fire Station", "ambulance_station": "🚑 Ambulance Station",
+    "shelter": "⛺ Shelter",
+}
 
 # Orden de presentación por tipo (prioridad SAR)
 KIND_ORDER = ["hospital", "ambulance_station", "clinic", "fire_station", "shelter"]
@@ -47,6 +52,18 @@ _SECTOR_GRID = [
     ["Oeste",    "Centro", "Este"   ],
     ["Noroeste", "Norte",  "Noreste"],
 ]
+_SECTOR_ES_TO_EN = {
+    "Suroeste": "Southwest", "Sur": "South",    "Sureste": "Southeast",
+    "Oeste":    "West",      "Centro": "Center", "Este":    "East",
+    "Noroeste": "Northwest", "Norte": "North",   "Noreste": "Northeast",
+}
+
+
+def translate_area(area: str) -> str:
+    """Translate a Spanish grid-sector label to English; OSM neighbourhood names pass through."""
+    if not isinstance(area, str) or not area.startswith("Sector "):
+        return area or ""
+    return "Sector " + _SECTOR_ES_TO_EN.get(area[7:], area[7:])
 
 
 def _geo_sector(lat: float, lon: float, bbox: list) -> str:
@@ -125,6 +142,7 @@ def fetch_resources(bbox, endpoint: str, ttl: float = 1800.0,
                 "nombre":        tags.get("name", "—"),
                 "tipo":          kind,
                 "etiqueta":      KIND_LABELS.get(kind, kind),
+                "etiqueta_en":   KIND_LABELS_EN.get(kind, kind),
                 "lat":           lat,
                 "lon":           lon,
                 "telefono":      phone,
@@ -136,7 +154,7 @@ def fetch_resources(bbox, endpoint: str, ttl: float = 1800.0,
                 "district":      tags.get("addr:district", ""),
             })
     except Exception:
-        df = pd.DataFrame(columns=["nombre", "tipo", "etiqueta", "lat", "lon",
+        df = pd.DataFrame(columns=["nombre", "tipo", "etiqueta", "etiqueta_en", "lat", "lon",
                                    "telefono", "direccion", "web",
                                    "neighbourhood", "suburb", "quarter", "district"])
         df.attrs["error"] = True

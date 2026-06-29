@@ -14,6 +14,7 @@ from streamlit_folium import st_folium
 from core import scoring
 from core.config import get_zone, load_config
 from core.i18n import IDIOMAS, fuente_nombre, t
+from core.osm import translate_area
 from core.pipeline import build_zone
 from core.sources import fmt_vet_utc, parse_iso
 from core.weather import get_weather
@@ -344,9 +345,10 @@ def _build_map(df, zone, ctx, lang):
             # Marcadores de las celdas MÁS afectadas (referencia para rescatistas)
             for _, r in heat.nlargest(12, "score").iterrows():
                 maps_url = f"https://www.google.com/maps/search/?api=1&query={r['lat']},{r['lon']}"
+                _area_lbl = translate_area(r["area"]) if lang == "en" else r["area"]
                 popup_html = (
                     f"{t('col_mmi', lang)}: {r['mmi']:.1f}"
-                    + (f"<br>{t('col_area', lang)}: {r['area']}" if "area" in r else "")
+                    + (f"<br>{t('col_area', lang)}: {_area_lbl}" if "area" in r else "")
                     + f'<br><a href="{maps_url}" target="_blank">📍 Google Maps</a>'
                 )
                 folium.CircleMarker(
@@ -356,9 +358,12 @@ def _build_map(df, zone, ctx, lang):
     # Recursos de ayuda (OSM): dónde acudir — siempre visibles
     for _, r in ctx["resources"].iterrows():
         maps_url = f"https://www.google.com/maps/search/?api=1&query={r['lat']},{r['lon']}"
-        area = r.get("area", "") or ""
+        area = (translate_area(r.get("area", "")) if lang == "en"
+                else r.get("area", "")) or ""
+        etiqueta = ((r.get("etiqueta_en") or r.get("etiqueta", "")) if lang == "en"
+                    else r.get("etiqueta", ""))
         popup_html = (
-            f"<b>{r['etiqueta']}</b>: {r['nombre']}"
+            f"<b>{etiqueta}</b>: {r['nombre']}"
             + (f"<br>📌 {area}" if area else "")
             + f'<br><a href="{maps_url}" target="_blank">📍 Google Maps</a>'
         )
@@ -456,7 +461,8 @@ def render_zone(zone_id: str) -> None:
                 if group.empty:
                     continue
                 if has_area and area:
-                    st.markdown(f"#### 📌 {area}")
+                    area_display = translate_area(area) if lang == "en" else area
+                    st.markdown(f"#### 📌 {area_display}")
 
                 for _, r in group.sort_values("tipo").iterrows():
                     tel      = r.get("telefono", "") or ""
@@ -466,14 +472,16 @@ def render_zone(zone_id: str) -> None:
                     maps_url = (f"https://www.google.com/maps/search/?api=1"
                                 f"&query={r['lat']},{r['lon']}")
 
-                    area_line = f"📌 {area_r}" if area_r else ""
+                    area_r_lbl = translate_area(area_r) if lang == "en" else area_r
+                    area_line = f"📌 {area_r_lbl}" if area_r else ""
                     tel_line  = f"📞 [{tel}](tel:{tel.replace(' ','')})" if tel else ""
                     addr_line = f"📍 {addr}" if addr else ""
                     web_line  = f"🌐 [{web}]({web})" if web else ""
                     detail    = "  \n".join(x for x in [area_line, tel_line, addr_line, web_line] if x)
-                    detail   += ("  \n" if detail else "") + f"[📍 Ver en mapa]({maps_url})"
-
-                    st.markdown(f"**{r['etiqueta']}** — {r['nombre']}  \n{detail}")
+                    detail   += ("  \n" if detail else "") + f"[{t('ver_en_mapa', lang)}]({maps_url})"
+                    _etiq = ((r.get('etiqueta_en') or r.get('etiqueta', ''))
+                             if lang == "en" else r.get('etiqueta', ''))
+                    st.markdown(f"**{_etiq}** — {r['nombre']}  \n{detail}")
                     st.divider()
     else:
         st.info(t("recursos_ninguno", lang))
@@ -498,7 +506,7 @@ def render_zone(zone_id: str) -> None:
     _render_official_links(ctx["fuentes"], lang)
 
     # ── QUÉ PASÓ (evento) ─────────────────────────────────────────────────────
-    with st.expander("📍 " + t("sismo_titulo", lang), expanded=False):
+    with st.expander("📍 " + t("que_paso_titulo", lang), expanded=False):
         render_event_banner(ctx, lang)
 
     st.caption(f"🕒 {t('ultima_actualizacion', lang)}: {ctx['updated_at']}")
