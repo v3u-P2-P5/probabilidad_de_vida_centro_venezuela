@@ -236,6 +236,8 @@ def apply_chrome(config: dict) -> str:
     """Idioma, auto-refresco en tiempo real y botón de actualizar. Devuelve lang."""
     if "lang" not in st.session_state:
         st.session_state.lang = "es"
+    st.markdown("<style>#MainMenu{visibility:hidden}footer{visibility:hidden}</style>",
+                unsafe_allow_html=True)
     _inject_responsive_css()
     secs = int(config.get("autorefresco_segundos", 0) or 0)
     if secs > 0:
