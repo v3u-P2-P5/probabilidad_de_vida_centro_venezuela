@@ -235,28 +235,58 @@ def home():
         else:
             st.caption(t("reportes_oficiales_link", lang, url=rw.get("url", "https://reliefweb.int")))
 
-        if "nasa_sentinel1" in cofu:
-            ns = cofu["nasa_sentinel1"]
-            if lang == "en":
-                st.markdown(
-                    f"🛰️ **Satellite damage analysis (NASA / Sentinel-1 SAR):** "
-                    f"[{fuente_nombre(ns, lang)}]({ns['url']}) — "
-                    "damage probability map for Venezuela 2026: >50 % of buildings in "
-                    "Caraballeda, Macuto, La Guaira and Catia la Mar show ≥ 75 % damage likelihood."
-                )
-            else:
-                st.markdown(
-                    f"🛰️ **Análisis de daños por satélite (NASA / Sentinel-1 SAR):** "
-                    f"[{fuente_nombre(ns, lang)}]({ns['url']}) — "
-                    "más del 50 % de los edificios en Caraballeda, Macuto, La Guaira y "
-                    "Catia la Mar con probabilidad de daño ≥ 75 %."
-                )
-
         upd = []
         if gd.get("datemodified"):
             upd.append(f"GDACS: {gd['datemodified'][:16].replace('T', ' ')}")
         upd.append(f"{t('consulta_fuentes', lang)}: {gd.get('fetched_at', '')}")
         st.caption(t("impacto_nota", lang) + "  ·  " + "  ·  ".join(upd))
+
+    # ── DAÑOS POR SATÉLITE (NASA / Copernicus) ────────────────────────────────
+    with st.expander(t("expander_nasa_danos", lang), expanded=False):
+        if lang == "en":
+            st.markdown(
+                "Official satellite analysis of structural damage from the double earthquake "
+                "(June 24, 2026). Data from NASA and Copernicus EMS."
+            )
+        else:
+            st.markdown(
+                "Análisis oficial por satélite del daño estructural causado por el doble sismo "
+                "del 24 de junio de 2026. Datos de NASA y Copernicus EMS."
+            )
+        if "nasa_sentinel1" in cofu:
+            ns = cofu["nasa_sentinel1"]
+            if lang == "en":
+                st.markdown(
+                    f"**🛰️ [{fuente_nombre(ns, lang)}]({ns['url']})**  \n"
+                    "Sentinel-1 SAR damage probability map (NASA EarthData / GIS Portal). "
+                    "Analysis shows **>50 % of buildings** in Caraballeda, Macuto, La Guaira "
+                    "and Catia la Mar with a **≥ 75 % damage probability**."
+                )
+            else:
+                st.markdown(
+                    f"**🛰️ [{fuente_nombre(ns, lang)}]({ns['url']})**  \n"
+                    "Mapa de probabilidad de daño estructural Sentinel-1 SAR (NASA EarthData / "
+                    "Portal GIS). El análisis muestra que **más del 50 % de los edificios** en "
+                    "Caraballeda, Macuto, La Guaira y Catia la Mar tienen **probabilidad de "
+                    "daño ≥ 75 %**."
+                )
+        if "copernicus_emsr884" in cofu:
+            cp = cofu["copernicus_emsr884"]
+            st.markdown(
+                f"**🌍 [{fuente_nombre(cp, lang)}]({cp['url']})**  \n"
+                + ("Copernicus Emergency Management Service — damage and affected-building "
+                   "mapping for Venezuela (EMSR884). Continuously updated."
+                   if lang == "en" else
+                   "Servicio Europeo de Gestión de Emergencias — cartografía de daño y "
+                   "edificios afectados en Venezuela (EMSR884). En actualización continua.")
+            )
+        if "nasa_disasters" in cofu:
+            nd = cofu["nasa_disasters"]
+            st.caption(
+                f"🔗 [{fuente_nombre(nd, lang)}]({nd['url']}) · "
+                + (f"[{fuente_nombre(cofu['maxar_open_data'], lang)}]({cofu['maxar_open_data']['url']})"
+                   if "maxar_open_data" in cofu else "")
+            )
 
     # ── RESPUESTA INTERNACIONAL ───────────────────────────────────────────────
     with st.expander(t("expander_respuesta_intl", lang), expanded=False):
