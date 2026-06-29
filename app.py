@@ -66,52 +66,81 @@ def home():
     st.image("assets/rescatistas.jpg", use_container_width=True,
              caption=t("img_rescatistas", lang))
 
-    # ── NOTA: RÉPLICAS Y RIESGO SÍSMICO ──────────────────────────────────────
-    if lang == "en":
-        st.info(
-            "**📡 Aftershocks in progress — Expert assessment:**\n\n"
-            "Since the double earthquake on June 24, **more than 130 aftershocks** have been "
-            "recorded (largest M4.8). They are expected and are part of the natural process of "
-            "post-rupture crustal stabilization. The USGS estimates a ~40 % probability of a "
-            "M6.0+ aftershock in the first week — **these do not signal a new main quake, "
-            "but the normal adjustment of the fault**.\n\n"
-            "**The probability of a new earthquake of comparable magnitude (M7+) in the coming "
-            "hours or days is extremely low.** The June 24 event was the most intense in "
-            "Venezuela in **126 years** (since San Narciso, 1900): events of this magnitude are "
-            "extremely rare in the same area. Seismologists note that, with the energy "
-            "accumulated over more than a century in the Boconó fault system now released, "
-            "an immediate repeat has no physical basis. FUNVISIS and USGS monitor seismic "
-            "activity continuously and in real time.\n\n"
-            "🧭 **Follow post-earthquake safety precautions** — especially regarding damaged "
-            "structures that may collapse during minor aftershocks.\n\n"
-            "📌 *Sources: "
+    # ── RÉPLICAS + OPINIÓN DE EXPERTOS (primera sección desplegable) ─────────
+    with st.expander(t("expander_replicas", lang), expanded=False):
+        if lang == "en":
+            st.markdown(
+                "Since the double earthquake on **24 Jun 2026**, **more than 130 aftershocks** "
+                "have been recorded (largest M4.8). They are expected and are part of the natural "
+                "process of post-rupture crustal stabilization."
+            )
+            _replicas = [
+                {"Date": "26 Jun 2026", "Magnitude": "M4.7", "Area": "La Guaira",
+                 "Note": "Bridge collapse in Caraballeda; additional damage in Caracas"},
+                {"Date": "29 Jun 2026", "Magnitude": "M4.6", "Area": "N. Venezuela",
+                 "Note": "Felt in Caracas and coastal area"},
+                {"Date": "24–29 Jun",   "Magnitude": "≤M4.8", "Area": "Epicentral region",
+                 "Note": "130+ aftershocks recorded; largest M4.8 (USGS)"},
+            ]
+            st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
+            st.markdown("**USGS forecast (first week):**")
+            _pronostico = [
+                {"Threshold": "M5.0+", "Estimated probability": "~100 % (near certain)", "Meaning": "Several expected"},
+                {"Threshold": "M6.0+", "Estimated probability": "~40 %",                 "Meaning": "Possible, not certain"},
+                {"Threshold": "M7.0+", "Estimated probability": "Very low",               "Meaning": "Extremely unlikely"},
+            ]
+            st.dataframe(pd.DataFrame(_pronostico), hide_index=True, use_container_width=True)
+            st.info(
+                "**The probability of a new earthquake of comparable magnitude (M7+) in the "
+                "coming hours or days is extremely low.** The June 24 event was the most intense "
+                "in Venezuela in **126 years** (since San Narciso, 1900). Seismologists note "
+                "that with the energy accumulated over more than a century in the Boconó fault "
+                "system now released, an immediate repeat has no physical basis. FUNVISIS and "
+                "USGS monitor seismic activity continuously and in real time.\n\n"
+                "🧭 **Follow post-earthquake safety precautions** — especially regarding damaged "
+                "structures that may collapse during minor aftershocks."
+            )
+        else:
+            st.markdown(
+                "Tras el doble sismo del **24 jun 2026** se han registrado **más de 130 réplicas** "
+                "(la mayor en M4.8). Son esperables y forman parte del proceso natural de "
+                "estabilización cortical post-ruptura."
+            )
+            _replicas = [
+                {"Fecha": "26 jun 2026", "Magnitud": "M4.7", "Zona": "La Guaira",
+                 "Nota": "Colapso de puente en Caraballeda; daños adicionales en Caracas"},
+                {"Fecha": "29 jun 2026", "Magnitud": "M4.6", "Zona": "Norte de Venezuela",
+                 "Nota": "Sentida en Caracas y zona costera"},
+                {"Fecha": "24–29 jun",   "Magnitud": "≤M4.8", "Zona": "Región epicentral",
+                 "Nota": "Más de 130 réplicas registradas; mayor en M4.8 (USGS)"},
+            ]
+            st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
+            st.markdown("**Pronóstico USGS (primera semana):**")
+            _pronostico = [
+                {"Umbral": "M5.0+", "Probabilidad estimada": "~100 % (casi certeza)", "Significado": "Esperables varias"},
+                {"Umbral": "M6.0+", "Probabilidad estimada": "~40 %",                 "Significado": "Posible, no segura"},
+                {"Umbral": "M7.0+", "Probabilidad estimada": "Muy baja",              "Significado": "Extremadamente improbable"},
+            ]
+            st.dataframe(pd.DataFrame(_pronostico), hide_index=True, use_container_width=True)
+            st.info(
+                "**La probabilidad de un nuevo sismo de magnitud comparable (M7+) en las "
+                "próximas horas o días es sumamente baja.** El evento del 24 de junio fue el "
+                "más intenso en Venezuela en **126 años** (desde San Narciso, 1900). Los "
+                "sismólogos señalan que, liberada la energía acumulada durante más de un siglo "
+                "en el sistema de fallas de Boconó, una repetición inmediata carece de base "
+                "física. FUNVISIS y el USGS monitorean la actividad de forma continua y en "
+                "tiempo real.\n\n"
+                "🧭 **Sigue las precauciones post-terremoto** — especialmente respecto a "
+                "estructuras dañadas que pueden colapsar con réplicas menores."
+            )
+        _src_lbl = "Sources" if lang == "en" else "Fuentes"
+        st.caption(
+            f"{_src_lbl}: "
             "[USGS · Miyamoto International](https://miyamotointernational.com/venezuelas-strongest-earthquake-in-125-years-what-happened-on-june-24-2026/) · "
             "[Wikipedia EN](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes) · "
             "[SkyAlert MX](https://skyalert.mx/articulos/actualizacion-sismos-venezuela-2026) · "
-            "[Ecoosfera — plate tectonics](https://ecoosfera.com/noticias/sismos-venezuela-2026-teoria-placas/)*"
-        )
-    else:
-        st.info(
-            "**📡 Réplicas en curso — Opinión de los expertos:**\n\n"
-            "Desde el doble sismo del 24 de junio se han registrado **más de 130 réplicas** "
-            "(la mayor en M4.8). Son esperables y forman parte del proceso natural de "
-            "estabilización cortical post-ruptura. El USGS estima ~40 % de probabilidad de "
-            "una réplica M6.0+ durante la primera semana — **no indican un nuevo sismo "
-            "principal, sino el ajuste normal de la falla**.\n\n"
-            "**La probabilidad de un nuevo sismo de magnitud comparable (M7+) en las próximas "
-            "horas o días es sumamente baja.** El evento del 24 de junio fue el más intenso en "
-            "Venezuela en **126 años** (desde San Narciso, 1900): eventos de esta magnitud son "
-            "extremadamente infrecuentes en la misma zona. Los sismólogos señalan que, "
-            "liberada la energía acumulada durante más de un siglo en el sistema de fallas de "
-            "Boconó, una repetición inmediata carece de base física. FUNVISIS y el USGS "
-            "monitorean la actividad de forma continua y en tiempo real.\n\n"
-            "🧭 **Sigue las precauciones post-terremoto** — especialmente respecto a estructuras "
-            "dañadas que pueden colapsar con réplicas menores.\n\n"
-            "📌 *Fuentes: "
-            "[USGS · Miyamoto International](https://miyamotointernational.com/venezuelas-strongest-earthquake-in-125-years-what-happened-on-june-24-2026/) · "
-            "[Wikipedia EN](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes) · "
-            "[SkyAlert MX](https://skyalert.mx/articulos/actualizacion-sismos-venezuela-2026) · "
-            "[Ecoosfera — teoría de placas](https://ecoosfera.com/noticias/sismos-venezuela-2026-teoria-placas/)*"
+            "[Ecoosfera](https://ecoosfera.com/noticias/sismos-venezuela-2026-teoria-placas/) · "
+            "[Univision (29 jun)](https://www.univision.com/noticias/america-latina/ultimas-noticias-del-terremoto-en-venezuela-un-nuevo-sismo-de-4-2-vuelve-a-impactar-la-zona-norte-de-venezuela-en-medio-de-la-busqueda-de-mas-de-50-000-personas-atrapadas-hoy-29-de-junio-de-2026)"
         )
     st.page_link("pages/5_Consejos_post_terremoto.py", label="🧭 " + t("ver_consejos", lang) + " →")
 
@@ -205,6 +234,23 @@ def home():
                 st.markdown(f"- [{r['title']}]({r['url']}) — *{r['source']}, {r['date']}*")
         else:
             st.caption(t("reportes_oficiales_link", lang, url=rw.get("url", "https://reliefweb.int")))
+
+        if "nasa_sentinel1" in cofu:
+            ns = cofu["nasa_sentinel1"]
+            if lang == "en":
+                st.markdown(
+                    f"🛰️ **Satellite damage analysis (NASA / Sentinel-1 SAR):** "
+                    f"[{fuente_nombre(ns, lang)}]({ns['url']}) — "
+                    "damage probability map for Venezuela 2026: >50 % of buildings in "
+                    "Caraballeda, Macuto, La Guaira and Catia la Mar show ≥ 75 % damage likelihood."
+                )
+            else:
+                st.markdown(
+                    f"🛰️ **Análisis de daños por satélite (NASA / Sentinel-1 SAR):** "
+                    f"[{fuente_nombre(ns, lang)}]({ns['url']}) — "
+                    "más del 50 % de los edificios en Caraballeda, Macuto, La Guaira y "
+                    "Catia la Mar con probabilidad de daño ≥ 75 %."
+                )
 
         upd = []
         if gd.get("datemodified"):
@@ -300,59 +346,6 @@ def home():
                 "[Depto. de Estado](https://www.state.gov/responding-to-venezuela-earthquakes) · "
                 "[Wikipedia](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes)"
             )
-
-    # ── RÉPLICAS ──────────────────────────────────────────────────────────────
-    with st.expander(t("expander_replicas", lang), expanded=False):
-        if lang == "en":
-            st.markdown(
-                "Since the double earthquake on **24 Jun 2026**, **more than 130 aftershocks** "
-                "have been recorded. Aftershocks are normal adjustments of the Earth's crust "
-                "following a major rupture and decrease in frequency and intensity over time."
-            )
-            _replicas = [
-                {"Date": "26 Jun 2026", "Magnitude": "M4.7", "Area": "La Guaira",
-                 "Note": "Bridge collapse in Caraballeda; additional damage in Caracas"},
-                {"Date": "29 Jun 2026", "Magnitude": "M4.6", "Area": "N. Venezuela",
-                 "Note": "Felt in Caracas and coastal area"},
-                {"Date": "24–29 Jun",   "Magnitude": "≤M4.8", "Area": "Epicentral region",
-                 "Note": "130+ aftershocks recorded; largest M4.8 (USGS)"},
-            ]
-            st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
-            st.markdown("**USGS forecast (first week):**")
-            _pronostico = [
-                {"Threshold": "M5.0+", "Estimated probability": "~100 % (near certain)", "Meaning": "Several expected"},
-                {"Threshold": "M6.0+", "Estimated probability": "~40 %",                 "Meaning": "Possible, not certain"},
-                {"Threshold": "M7.0+", "Estimated probability": "Very low",               "Meaning": "Extremely unlikely"},
-            ]
-        else:
-            st.markdown(
-                "Tras el doble sismo del **24 jun 2026** se han registrado **más de 130 réplicas**. "
-                "Las réplicas son ajustes normales de la corteza terrestre después de una ruptura "
-                "mayor y disminuyen en frecuencia e intensidad con el tiempo."
-            )
-            _replicas = [
-                {"Fecha": "26 jun 2026", "Magnitud": "M4.7", "Zona": "La Guaira",
-                 "Nota": "Colapso de puente en Caraballeda; daños adicionales en Caracas"},
-                {"Fecha": "29 jun 2026", "Magnitud": "M4.6", "Zona": "Norte de Venezuela",
-                 "Nota": "Sentida en Caracas y zona costera"},
-                {"Fecha": "24–29 jun",   "Magnitud": "≤M4.8", "Zona": "Región epicentral",
-                 "Nota": "Más de 130 réplicas registradas; mayor en M4.8 (USGS)"},
-            ]
-            st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
-            st.markdown("**Pronóstico USGS (primera semana):**")
-            _pronostico = [
-                {"Umbral": "M5.0+", "Probabilidad estimada": "~100 % (casi certeza)", "Significado": "Esperables varias"},
-                {"Umbral": "M6.0+", "Probabilidad estimada": "~40 %",                 "Significado": "Posible, no segura"},
-                {"Umbral": "M7.0+", "Probabilidad estimada": "Muy baja",              "Significado": "Extremadamente improbable"},
-            ]
-        st.dataframe(pd.DataFrame(_pronostico), hide_index=True, use_container_width=True)
-        _src_lbl = "Sources" if lang == "en" else "Fuentes"
-        st.caption(
-            f"{_src_lbl}: "
-            "[USGS · Miyamoto International](https://miyamotointernational.com/venezuelas-strongest-earthquake-in-125-years-what-happened-on-june-24-2026/) · "
-            "[Wikipedia EN](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes) · "
-            "[Univision (29 jun)](https://www.univision.com/noticias/america-latina/ultimas-noticias-del-terremoto-en-venezuela-un-nuevo-sismo-de-4-2-vuelve-a-impactar-la-zona-norte-de-venezuela-en-medio-de-la-busqueda-de-mas-de-50-000-personas-atrapadas-hoy-29-de-junio-de-2026)"
-        )
 
     # ── PERSONAS DESAPARECIDAS ────────────────────────────────────────────────
     st.subheader("🔎 " + t("desaparecidos_titulo", lang))

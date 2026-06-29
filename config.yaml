@@ -180,6 +180,14 @@ fuentes:
     nombre: "Pacientes Terremoto VZla — Listas de hospitales (plataforma ciudadana)"
     nombre_en: "Venezuela Earthquake Patients — Hospital lists (citizen platform)"
     url: "https://pacientesterremotovzla.lovable.app/"
+  nasa_sentinel1:
+    nombre: "NASA EarthData GIS — Mapa de probabilidad de daño estructural (Sentinel-1 SAR)"
+    nombre_en: "NASA EarthData GIS — Structural Damage Probability Map (Sentinel-1 SAR)"
+    url: "https://gis.earthdata.nasa.gov/portal/apps/mapviewer/index.html?webmap=0c3d77dd5aae46e4829d9a282477615c"
+  nasa_disasters:
+    nombre: "NASA Disasters Program — Activación Venezuela 2026"
+    nombre_en: "NASA Disasters Program — Venezuela 2026 Activation"
+    url: "https://disasters.nasa.gov/"
   maxar_open_data:
     nombre: "Maxar/Vantor Open Data — Imágenes pre/post evento"
     nombre_en: "Maxar/Vantor Open Data — Pre/post event imagery"

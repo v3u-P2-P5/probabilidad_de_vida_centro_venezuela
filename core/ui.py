@@ -283,7 +283,8 @@ def render_sources(ctx: dict, lang: str) -> None:
         st.markdown("---")
         for key in ("usgs_evento", "usgs_evento_secundario", "usgs_pager",
                     "usgs_ground_failure", "gdacs", "reliefweb", "copernicus_emsr884",
-                    "unosat", "maxar_open_data", "icrc_rfl", "cruz_roja_venezolana",
+                    "unosat", "nasa_sentinel1", "nasa_disasters", "maxar_open_data",
+                    "icrc_rfl", "cruz_roja_venezolana",
                     "proteccion_civil", "worldpop", "osm"):
             if key in f:
                 st.markdown(f"🔗 [{fuente_nombre(f[key], lang)}]({f[key]['url']})")
@@ -516,7 +517,8 @@ def _render_official_links(f: dict, lang: str) -> None:
     """Tarjeta de seguridad: emergencias + mapas de daño oficiales."""
     st.subheader("🛟 " + t("seguridad_titulo", lang))
     links = []
-    for key in ("proteccion_civil", "copernicus_emsr884", "unosat",
+    for key in ("proteccion_civil", "nasa_sentinel1", "nasa_disasters",
+                "copernicus_emsr884", "unosat", "maxar_open_data",
                 "reliefweb", "gdacs", "icrc_rfl", "cruz_roja_venezolana"):
         if key in f:
             links.append(f"🔗 [{fuente_nombre(f[key], lang)}]({f[key]['url']})")
