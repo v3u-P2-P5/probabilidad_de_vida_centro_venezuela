@@ -29,3 +29,16 @@ def fuente_nombre(f: dict, lang: str) -> str:
     if lang == "en":
         return f.get("nombre_en") or f.get("nombre", "")
     return f.get("nombre", "")
+
+
+def fmt_int(n, lang: str = "es") -> str:
+    """Entero con separador de millar según idioma: 1.719 (es) / 1,719 (en).
+
+    Evita mostrar 'Población 1,719' (formato inglés) junto a 'Fallecidos 1.719'
+    (formato español) en la misma pantalla.
+    """
+    try:
+        s = f"{int(round(float(n))):,}"
+    except (TypeError, ValueError):
+        return "—"
+    return s.replace(",", ".") if lang == "es" else s

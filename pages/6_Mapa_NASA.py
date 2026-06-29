@@ -28,7 +28,7 @@ def _build_map_html(lang: str) -> str:
 <html>
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet"
         href="https://js.arcgis.com/4.29/esri/themes/light/main.css">
   <script src="https://js.arcgis.com/4.29/"></script>
@@ -82,7 +82,9 @@ def _build_map_html(lang: str) -> str:
 </html>"""
 
 config = load_config()
-lang   = apply_chrome(config)
+# autorefresh=False: el WebMap NASA es contenido estático; sin esto el iframe se
+# re-monta cada ciclo, re-descarga el bundle ArcGIS (varios MB) y resetea el zoom.
+lang   = apply_chrome(config, autorefresh=False)
 
 if lang == "en":
     st.title("🛰️ NASA Satellite Damage Map")
@@ -114,7 +116,7 @@ else:
     )
 
 # Mapa ArcGIS JS — si el CDN de Esri no carga, muestra el link de fallback
-components.html(_build_map_html(lang), height=620, scrolling=False)
+components.html(_build_map_html(lang), height=460, scrolling=False)
 
 st.divider()
 

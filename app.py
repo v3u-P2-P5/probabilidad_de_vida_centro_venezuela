@@ -8,7 +8,7 @@ import streamlit as st
 
 from core.config import load_config
 from core.geo import haversine_m
-from core.i18n import fuente_nombre, t
+from core.i18n import fmt_int, fuente_nombre, t
 from core.relief import get_gdacs, get_reliefweb_reports
 from core.sources import fmt_vet_utc, parse_iso
 from core.ui import apply_chrome, render_sources, _cached_zone
@@ -48,7 +48,9 @@ ZONA_PAGES = [
 def _resumen(_salt: int):
     rows, ctx = [], None
     for z in config["zonas"]:
-        _, ctx = _cached_zone(z["id"], _salt)
+        # with_osm=False: el Home solo necesita MMI y población, no los recursos
+        # OSM → evita 4 POST en serie a Overpass que bloqueaban la carga inicial.
+        _, ctx = _cached_zone(z["id"], _salt, with_osm=False)
         rows.append({"nombre": z["nombre"],
                      "mmi": ctx.get("mmi_max"),
                      "pob": ctx.get("poblacion_total")})
@@ -142,8 +144,6 @@ def home():
             "[Ecoosfera](https://ecoosfera.com/noticias/sismos-venezuela-2026-teoria-placas/) · "
             "[Univision (29 jun)](https://www.univision.com/noticias/america-latina/ultimas-noticias-del-terremoto-en-venezuela-un-nuevo-sismo-de-4-2-vuelve-a-impactar-la-zona-norte-de-venezuela-en-medio-de-la-busqueda-de-mas-de-50-000-personas-atrapadas-hoy-29-de-junio-de-2026)"
         )
-    st.page_link("pages/5_Consejos_post_terremoto.py", label="🧭 " + t("ver_consejos", lang) + " →")
-
     # ── Evento (compacto) ─────────────────────────────────────────────────────
     s = ctx["sismo"]
     adic = ctx.get("sismos_adicionales", [])
@@ -194,16 +194,18 @@ def home():
         # Fila 2: sismo secundario M7.2
         if adic:
             a = adic[0]
-            c2 = st.columns(3)
+            c2 = st.columns(2)
             c2[0].metric(t("magnitud", lang), f"M{a.get('magnitud')}")
             c2[1].metric(t("profundidad", lang), _km(a.get("profundidad_km")))
-            c2[2].metric("", "")
             _epicentro_linea(a)
 
     # ── IMPACTO Y CIFRAS ──────────────────────────────────────────────────────
-    gd = get_gdacs(config)
-    rw = get_reliefweb_reports(config)
-    with st.expander("📊 " + t("impacto_titulo", lang), expanded=False):
+    # Abierto por defecto: las cifras de víctimas son el dato informativo de mayor
+    # relevancia; no deben requerir un clic. GDACS/ReliefWeb se piden aquí dentro
+    # (no en el render principal) para no añadir una llamada de red al cargar Home.
+    with st.expander("📊 " + t("impacto_titulo", lang), expanded=True):
+        gd = get_gdacs(config)
+        rw = get_reliefweb_reports(config)
         cifras = config.get("cifras_oficiales", [])
         if cifras:
             st.markdown("**" + t("cifras_titulo", lang) + "**")
@@ -216,14 +218,8 @@ def home():
                 t("col_desaparecidos", lang): x.get("desaparecidos", "—"),
                 t("col_notas", lang): x.get("notas", ""),
             } for x in cifras]
-            st.markdown(
-                f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>'
-                '<style>@media(max-width:768px){.swipe-hint{'
-                'display:block!important;text-align:right;'
-                'font-size:0.72rem;color:#aaa;margin:2px 0 0}}'
-                '.swipe-hint{display:none}</style>',
-                unsafe_allow_html=True,
-            )
+            st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>',
+                        unsafe_allow_html=True)
             st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
             st.caption("🔗 " + " · ".join(
                 f"[{x.get('fuente','fuente')}]({x['url']})" for x in cifras if x.get("url")))
@@ -368,6 +364,7 @@ def home():
     ):
         if key in cofu:
             col.markdown(f"🔗 [{fuente_nombre(cofu[key], lang)}]({cofu[key]['url']})")
+    st.page_link("pages/7_Asistente.py", label=t("ver_asistente", lang), icon="💬")
 
     # ── ENCUENTRA AYUDA EN TU ZONA (color por intensidad) ─────────────────────
     st.subheader("🆘 " + t("ayuda_zona_titulo", lang))
@@ -392,19 +389,25 @@ def home():
                 break
             row, (path, _) = pairs[i + j]
             mmi = f"{row['mmi']:.1f}" if pd.notna(row["mmi"]) else "—"
-            pob = f"{int(row['pob']):,}" if pd.notna(row["pob"]) else "—"
+            pob = fmt_int(row["pob"], lang) if pd.notna(row["pob"]) else "—"
             color = _color(row["mmi"])
             with col:
+                # El color de intensidad va en el borde y el pin (señal no textual);
+                # el nombre va en texto de alto contraste (WCAG AA) y las superficies
+                # usan tokens de tema (legibles en claro y oscuro).
                 st.markdown(f"""
-<div style="border:2px solid {color};border-left:10px solid {color};border-radius:12px;
-  padding:12px 14px 8px;background:rgba(0,0,0,0.03);margin-bottom:4px;">
-  <div style="font-size:1.05rem;font-weight:700;color:{color};">📍 {row['nombre']}</div>
-  <div style="font-size:0.82rem;color:#555;">{t('kpi_mmi_max', lang)}: <b>{mmi}</b>
+<div style="border:1px solid var(--border-color,#e6dada);border-left:10px solid {color};
+  border-radius:12px;padding:12px 14px 8px;
+  background:var(--secondary-background-color,#f5f0ef);margin-bottom:4px;">
+  <div style="font-size:1.05rem;font-weight:700;color:var(--text-color,#1a1a1a);">
+    <span style="color:{color};">📍</span> {row['nombre']}</div>
+  <div style="font-size:0.82rem;color:var(--text-color,#1a1a1a);opacity:0.78;">
+    {t('kpi_mmi_max', lang)}: <b>{mmi}</b>
     &nbsp;·&nbsp; {t('kpi_poblacion_residente', lang)}: <b>{pob}</b></div>
 </div>""", unsafe_allow_html=True)
                 st.page_link(path, label="🆘 " + t("ver_ayuda_zona", lang))
     st.caption(t("leyenda_zonas", lang))
-    st.image("assets/perros.png", use_container_width=True,
+    st.image("assets/perros.jpg", use_container_width=True,
              caption=t("img_perros", lang))
 
     # ── CÓMO AYUDAR (donaciones) ──────────────────────────────────────────────
@@ -478,5 +481,6 @@ pages = [
     st.Page("pages/4_La_Guaira_Litoral.py",        title="La Guaira — Litoral", icon="📍"),
     st.Page("pages/5_Consejos_post_terremoto.py",  title="Safety Tips / Consejos", icon="🧭"),
     st.Page("pages/6_Mapa_NASA.py",                title="NASA Satellite Map",       icon="🛰️"),
+    st.Page("pages/7_Asistente.py",                title="Asistente / Assistant",    icon="💬"),
 ]
 st.navigation(pages).run()

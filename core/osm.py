@@ -18,10 +18,16 @@ MIRRORS = [
 
 
 def _post_overpass(endpoints, query, timeout):
-    """Intenta cada endpoint con un reintento; devuelve JSON o lanza la última excepción."""
+    """Intenta cada endpoint con un reintento; devuelve JSON o lanza la última excepción.
+
+    Acota el peor caso: sin el sleep final inútil (antes esperaba ~3s justo antes
+    de lanzar la excepción) y con timeout (connect, read) separado para fallar
+    rápido ante un host inalcanzable en vez de colgar el render.
+    """
     import time
     last = None
-    for url in endpoints:
+    n_endpoints = len(endpoints)
+    for i_url, url in enumerate(endpoints):
         for intento in range(2):
             try:
                 r = requests.post(url, data={"data": query}, headers=HEADERS, timeout=timeout)
@@ -29,7 +35,9 @@ def _post_overpass(endpoints, query, timeout):
                 return r.json()
             except Exception as e:  # 429/504/timeout → reintentar / siguiente espejo
                 last = e
-                time.sleep(1.5 * (intento + 1))
+                ultimo = (i_url == n_endpoints - 1) and (intento == 1)
+                if not ultimo:                       # no dormir tras el último intento
+                    time.sleep(1.5 * (intento + 1))
     raise last
 
 KIND_LABELS = {
@@ -95,7 +103,7 @@ def assign_areas(df: pd.DataFrame, bbox: list) -> pd.DataFrame:
 
 @st.cache_data(ttl=1800, show_spinner=False)
 def fetch_resources(bbox, endpoint: str, ttl: float = 1800.0,
-                    timeout: float = 30.0) -> pd.DataFrame:
+                    timeout=(4, 15)) -> pd.DataFrame:
     """Recursos de emergencia dentro del bbox [lon_min,lat_min,lon_max,lat_max]."""
     lon_min, lat_min, lon_max, lat_max = bbox
     bb = f"{lat_min},{lon_min},{lat_max},{lon_max}"

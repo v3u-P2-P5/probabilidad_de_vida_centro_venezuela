@@ -119,5 +119,25 @@
   "nasa_experimental_caption": "🛰️ Puntos coloreados: {n} edificios con probabilidad de daño ≥ 50 % según análisis Sentinel-1 SAR (NASA, experimental, sin validar en campo). Rojo ≥ 75 % · Naranja 50–75 % · Ámbar < 50 %. Cobertura parcial.",
   "ver_en_mapa": "📍 Ver en mapa",
   "img_rescatistas": "Equipos de rescate desplegados en Caracas y La Guaira — Venezuela, junio 2026",
-  "img_perros": "Perros de búsqueda y rescate desplegados en las zonas afectadas — Venezuela, junio 2026"
+  "img_perros": "Perros de búsqueda y rescate desplegados en las zonas afectadas — Venezuela, junio 2026",
+
+  "ver_asistente": "Pregúntale al asistente sobre tu zona",
+  "chat_titulo": "Asistente — Pregunta sobre las zonas",
+  "chat_intro": "Pregunta sobre la intensidad, la población, los hospitales y refugios, las cifras oficiales y dónde buscar a un familiar. El asistente responde **solo con los datos reales de esta app** y cita sus fuentes; si un dato no está disponible, lo dice.",
+  "chat_disclaimer": "ℹ️ Asistente informativo. **No localiza personas** ni confirma el paradero o estado de nadie. Puede equivocarse: verifica siempre en las fuentes citadas. Emergencias: 171 o 911.",
+  "chat_cobertura": "Cobertura: Caracas (Libertador · Sucre/Petare · Baruta/Hatillo/Chacao) y La Guaira (litoral). Otras zonas: sin datos en esta app.",
+  "chat_placeholder": "Escribe tu pregunta…",
+  "chat_pensando": "Consultando los datos de la app…",
+  "chat_pie_ia": "Generado por IA a partir de las fuentes citadas. Verifica los enlaces. No es asesoría oficial.",
+  "chat_fuentes": "Fuentes consultadas",
+  "chat_sin_clave": "El asistente no está configurado (falta la clave de OpenRouter). Mientras tanto, usa los enlaces oficiales:",
+  "chat_error_api": "El asistente no está disponible en este momento. Inténtalo de nuevo en unos minutos o usa las fuentes oficiales.",
+  "chat_rate_limit": "Has alcanzado el límite de preguntas de esta sesión. Recarga la página más tarde para seguir.",
+  "chat_rechazo_persona": "No puedo confirmar el paradero ni el estado de una persona: esa información se gestiona de forma confidencial por canales oficiales. Para **buscar o registrar a un familiar**, usa estos canales:",
+  "chat_aviso_emergencia": "Si es una emergencia, llama al **171** o **911**.",
+  "chat_limpiar": "Limpiar conversación",
+  "chat_ejemplos_titulo": "Ejemplos de preguntas:",
+  "chat_ejemplo_1": "¿Cuál es la intensidad y la población en La Guaira?",
+  "chat_ejemplo_2": "¿Qué hospitales hay cerca en Petare?",
+  "chat_ejemplo_3": "¿Cuántos fallecidos se han reportado y según qué fuente?"
 }

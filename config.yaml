@@ -10,9 +10,25 @@
 modo_operativo: true
 
 # --- Auto-refresco (tiempo real) ---
-autorefresco_segundos: 120      # la app se actualiza sola cada N segundos
+# Alineado con el TTL de la fuente más volátil (ShakeMap = 300s): por debajo de
+# eso el rerun repinta toda la página sin poder traer datos nuevos (gasta CPU,
+# batería y datos en móvil). 0 = desactivar (queda el botón manual "Actualizar").
+autorefresco_segundos: 300      # la app se actualiza sola cada N segundos
 shakemap_ttl_segundos: 300      # relee ShakeMap de USGS cada N segundos
 osm_ttl_segundos: 1800          # relee recursos OSM cada N segundos
+
+# --- Asistente IA (chat con grounding, vía OpenRouter) ---
+# SOLO responde con datos reales ya presentes en la app (no inventa). La API key
+# va en .streamlit/secrets.toml (OPENROUTER_API_KEY), NUNCA aquí. Sin clave o con
+# activo=false, la página del asistente se auto-deshabilita y enlaza fuentes oficiales.
+chat:
+  activo: true
+  modelo: "anthropic/claude-3.5-sonnet"   # id OpenRouter con tool-calling robusto
+  modelo_fallback: "openai/gpt-4o-mini"    # respaldo si el primario falla
+  max_tokens: 600
+  temperatura: 0.1
+  max_input_chars: 600                     # trunca preguntas largas (anti-abuso)
+  rate_limit_por_sesion: 30                # nº máx de preguntas por sesión de navegador
 
 # --- Secuencia sísmica REAL (USGS) — SISMO DOBLE ---
 # Dos eventos en 38 segundos, epicentros separados ~5.5 km. Se combinan sus

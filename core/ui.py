@@ -3,17 +3,16 @@
 El mapa muestra INTENSIDAD SENTIDA (MMI) y recursos de ayuda. NO localiza
 personas atrapadas ni modela probabilidad de sobrevivientes.
 """
-import folium
 import numpy as np
 import pandas as pd
 import streamlit as st
-from folium.plugins import HeatMap
 from streamlit_autorefresh import st_autorefresh
-from streamlit_folium import st_folium
+# folium y streamlit_folium se importan dentro de las funciones de mapa (import
+# diferido): así Home, Consejos y el Mapa NASA no pagan su coste de import.
 
 from core import scoring
 from core.config import get_zone, load_config
-from core.i18n import IDIOMAS, fuente_nombre, t
+from core.i18n import IDIOMAS, fmt_int, fuente_nombre, t
 from core.nasa_damage import fetch_nasa_damage, nasa_map_url
 from core.osm import translate_area
 from core.pipeline import build_zone
@@ -48,9 +47,9 @@ def _inject_responsive_css() -> None:
     flex: 1 1 28% !important;
   }
 
-  /* Métricas: legibles y con fondo sutil */
+  /* Métricas: legibles y con fondo sutil (token de tema → visible en claro y oscuro) */
   [data-testid="stMetric"] {
-    background: rgba(0,0,0,0.04);
+    background: var(--secondary-background-color, rgba(0,0,0,0.04));
     border-radius: 8px;
     padding: 0.4rem 0.5rem !important;
   }
@@ -91,11 +90,28 @@ def _inject_responsive_css() -> None:
     line-height: 1.4 !important;
   }
 
-  /* Mapa: altura cómoda en móvil */
-  iframe[title="streamlit_folium.st_folium"],
-  .leaflet-container {
+  /* Mapa: altura cómoda en móvil. (.leaflet-container vivía dentro del iframe
+     sandbox y el selector nunca aplicaba: eliminado.) */
+  iframe[title="streamlit_folium.st_folium"] {
     height: 300px !important;
     min-height: 300px !important;
+  }
+
+  /* Filas de 4 columnas (KPIs de clima y respuesta internacional): 2×2 en vez
+     de 3+1 con una métrica huérfana. Sólo afecta a bloques con un 4º hijo;
+     los st.columns(3) de KPIs no se tocan. */
+  [data-testid="stHorizontalBlock"]:has([data-testid="column"]:nth-child(4)) [data-testid="column"] {
+    min-width: 46% !important;
+    flex: 1 1 46% !important;
+  }
+
+  /* Pista "desliza →": visible sólo en móvil, sobre tablas anchas con scroll */
+  .swipe-hint {
+    display: block !important;
+    text-align: right;
+    font-size: 0.72rem;
+    color: #6b6b6b;
+    margin: 2px 0 0;
   }
 
   /* Dataframe: scroll horizontal sin desborde */
@@ -164,6 +180,11 @@ def _inject_responsive_css() -> None:
 
 /* ── MEJORAS GENERALES (todos los tamaños) ───────────────────────── */
 
+/* Pista de scroll horizontal de tablas: oculta por defecto; el bloque móvil
+   (≤640px) la muestra. Centralizada aquí para que funcione en TODAS las tablas
+   sin depender del orden de render de cada página. */
+.swipe-hint { display: none; }
+
 /* Progress bars suaves */
 .stProgress > div > div > div {
   border-radius: 4px !important;
@@ -182,7 +203,7 @@ def _inject_responsive_css() -> None:
 
 /* Zona cards: separación visual entre zonas */
 .zona-card {
-  border-left: 3px solid #b71c1c;
+  border-left: 3px solid #b30000;
   padding-left: 0.5rem;
   margin-bottom: 0.25rem;
 }
@@ -203,7 +224,7 @@ def _inject_responsive_css() -> None:
   border-radius: 8px !important;
   padding: 0.55rem 1rem !important;
   font-weight: 600 !important;
-  color: #b71c1c !important;
+  color: #b30000 !important;
   transition: background 0.15s, border-color 0.15s, transform 0.1s !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -213,7 +234,7 @@ def _inject_responsive_css() -> None:
 }
 [data-testid="stPageLink"] a:hover {
   background: rgba(183,28,28,0.14) !important;
-  border-color: #b71c1c !important;
+  border-color: #b30000 !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 2px 8px rgba(183,28,28,0.18) !important;
 }
@@ -234,21 +255,25 @@ def _render_construction_banner(lang: str) -> None:
     st.info(msg)
 
 
-def apply_chrome(config: dict) -> str:
-    """Idioma, auto-refresco en tiempo real y botón de actualizar. Devuelve lang."""
+def apply_chrome(config: dict, autorefresh: bool = True) -> str:
+    """Idioma, auto-refresco en tiempo real y botón de actualizar. Devuelve lang.
+
+    autorefresh=False desactiva el auto-refresco en páginas con mapas pesados
+    (NASA / asistente) para no re-montar el iframe ni perder el estado cada ciclo.
+    """
     if "lang" not in st.session_state:
         st.session_state.lang = "es"
     st.markdown("<style>#MainMenu{visibility:hidden}footer{visibility:hidden}</style>",
                 unsafe_allow_html=True)
     _inject_responsive_css()
     secs = int(config.get("autorefresco_segundos", 0) or 0)
-    if secs > 0:
+    if autorefresh and secs > 0:
         st_autorefresh(interval=secs * 1000, key="auto")
     codes = list(IDIOMAS.keys())
     _, lang_col = st.columns([5, 1])
     with lang_col:
         lang = st.selectbox(
-            "🌐",
+            t("idioma", st.session_state.lang),
             codes,
             index=codes.index(st.session_state.lang),
             format_func=lambda c: IDIOMAS[c],
@@ -321,9 +346,14 @@ def render_event_banner(ctx: dict, lang: str) -> None:
 @st.cache_data(ttl=300, show_spinner=False)
 def _build_map(df, zone, ctx, lang, nasa_buildings=None):
     """Mapa de INTENSIDAD sentida (MMI) + recursos de ayuda."""
+    import folium
+    from folium.plugins import HeatMap
     lon_min, lat_min, lon_max, lat_max = zone["bbox"]
+    # scrollWheelZoom=False evita el "scroll-trap" táctil: en móvil el dedo
+    # desplaza la página en vez de quedar atrapado haciendo zoom en el mapa.
     m = folium.Map(location=[(lat_min + lat_max) / 2, (lon_min + lon_max) / 2],
-                   zoom_start=14, tiles="CartoDB positron", control_scale=True)
+                   zoom_start=14, tiles="CartoDB positron", control_scale=True,
+                   scrollWheelZoom=False)
     if ctx["shakemap_ok"] and "mmi" in df.columns:
         heat = df.dropna(subset=["mmi"]).copy()
         # Índice de AFECTACIÓN probable: sacudimiento × población expuesta (+ realce
@@ -419,6 +449,7 @@ def _build_map(df, zone, ctx, lang, nasa_buildings=None):
 
 
 def render_zone(zone_id: str) -> None:
+    from streamlit_folium import st_folium
     config = load_config()
     lang = apply_chrome(config)
     zone = get_zone(config, zone_id)
@@ -432,8 +463,8 @@ def render_zone(zone_id: str) -> None:
 
     # ── MAPA: intensidad sentida + recursos de ayuda ──────────────────────────
     nasa_buildings = fetch_nasa_damage(tuple(zone["bbox"]))
-    st_folium(_build_map(df, zone, ctx, lang, nasa_buildings), height=480, width="stretch",
-              returned_objects=[], key=f"map_{zone_id}")
+    st_folium(_build_map(df, zone, ctx, lang, nasa_buildings), height=420,
+              use_container_width=True, returned_objects=[], key=f"map_{zone_id}")
     st.caption(t("leyenda_intensidad", lang))
     if nasa_buildings:
         st.caption(t("nasa_experimental_caption", lang, n=len(nasa_buildings)))
@@ -478,7 +509,7 @@ def render_zone(zone_id: str) -> None:
     c1, c2, c3 = st.columns(3)
     c1.metric(t("kpi_mmi_max", lang), f"{ctx['mmi_max']:.1f}" if ctx.get("mmi_max") else "—")
     c2.metric(t("kpi_poblacion_residente", lang),
-              f"{ctx['poblacion_total']:,}" if ctx.get("poblacion_total") else "—")
+              fmt_int(ctx["poblacion_total"], lang) if ctx.get("poblacion_total") else "—")
     c3.metric(t("recursos_titulo", lang), f"{len(ctx['resources'])}")
 
     # ── Peligro ground-failure (si hay datos por celda) ───────────────────────
@@ -569,6 +600,8 @@ def _render_official_links(f: dict, lang: str) -> None:
 
 
 @st.cache_data(ttl=300, show_spinner=False)
-def _cached_zone(zone_id: str, _refresh_salt: int):
+def _cached_zone(zone_id: str, _refresh_salt: int, with_osm: bool = True):
+    # with_osm=False lo usa el Home: solo necesita mmi_max y población, no los
+    # recursos OSM, así evita 4 POST a Overpass en serie en la carga inicial.
     config = load_config()
-    return build_zone(get_zone(config, zone_id), config)
+    return build_zone(get_zone(config, zone_id), config, with_osm=with_osm)

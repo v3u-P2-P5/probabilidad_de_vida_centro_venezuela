@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 
 import numpy as np
 import pandas as pd
+import streamlit as st
 
 from core import scoring, shakemap
 from core.data_sources import get_sismo, get_sismos
@@ -20,6 +21,17 @@ from core.geo import make_grid
 from core.osm import _geo_sector, assign_areas, fetch_resources
 from core.population import get_population, load_precomputed
 from core.sources import fmt_vet_utc, layer, parse_iso
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def _grid_for_event(event_id: str, url: str, ttl: int) -> dict:
+    """Descarga+parsea el grid.xml de un evento UNA sola vez (cacheado por event_id).
+
+    Antes el grid.xml (varios MB) se parseaba 2 eventos × 4 zonas = 8 veces por
+    carga del Home; ahora las 4 zonas reusan el mismo parseo por evento.
+    """
+    path = shakemap.download_grid_for_event(event_id, url, ttl=ttl)
+    return shakemap.parse_grid(path)
 
 
 def hours_since(sismo: dict, now: datetime | None = None) -> float:
@@ -58,13 +70,12 @@ def build_zone(zone: dict, config: dict, now: datetime | None = None, with_osm: 
     try:
         eventos = get_sismos(config)
         grids = []
+        ttl_sm = int(config.get("shakemap_ttl_segundos", 300))
         for ev in eventos:
             url = ev.get("shakemap_grid_url")
             if not url:
                 continue
-            path = shakemap.download_grid_for_event(
-                ev["id"], url, ttl=config.get("shakemap_ttl_segundos", 300))
-            grids.append(shakemap.parse_grid(path))
+            grids.append(_grid_for_event(ev["id"], url, ttl_sm))
             n_grids_ok += 1
         if not grids:
             raise RuntimeError("Ningún ShakeMap disponible en USGS")

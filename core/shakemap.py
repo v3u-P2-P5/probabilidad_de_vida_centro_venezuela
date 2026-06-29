@@ -16,7 +16,7 @@ CACHE = ROOT / "data" / "raw" / "shakemap_grid.xml"
 
 
 def download_grid(url: str, dest: Path = CACHE, ttl: float = 300.0,
-                  timeout: float = 30.0) -> Path:
+                  timeout=(4, 20)) -> Path:
     """Descarga grid.xml si la copia local está vencida (TTL)."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     fresh = dest.exists() and (time.time() - dest.stat().st_mtime) < ttl

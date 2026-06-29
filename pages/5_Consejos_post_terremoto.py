@@ -12,8 +12,8 @@ st.title("🧭 " + t("consejos_titulo", lang))
 st.caption(t("consejos_page_intro", lang))
 
 EMERG = {
-    "es": "📞 **Emergencias: 171 o 911** · Bomberos · Protección Civil.",
-    "en": "📞 **Emergencies: 171 or 911** · Fire · Civil Protection.",
+    "es": "📞 **Emergencias: [171](tel:171) o [911](tel:911)** · Bomberos · Protección Civil.",
+    "en": "📞 **Emergencies: [171](tel:171) or [911](tel:911)** · Fire · Civil Protection.",
 }
 st.error(EMERG.get(lang, EMERG["es"]))
 
@@ -112,10 +112,12 @@ CONTENIDO = {
     ],
 }
 
-for titulo, items in CONTENIDO.get(lang, CONTENIDO["es"]):
-    st.subheader(titulo)
-    for it in items:
-        st.markdown(f"- {it}")
+# Secciones colapsables: abrir por defecto las críticas (réplica; gas/luz/agua)
+# para que lo más urgente quede visible sin taps; el resto se expande a demanda.
+for i, (titulo, items) in enumerate(CONTENIDO.get(lang, CONTENIDO["es"])):
+    with st.expander(titulo, expanded=(i in (0, 2))):
+        for it in items:
+            st.markdown(f"- {it}")
 
 f = config["fuentes"]
 st.markdown("---")
