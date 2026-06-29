@@ -14,6 +14,7 @@ from streamlit_folium import st_folium
 from core import scoring
 from core.config import get_zone, load_config
 from core.i18n import IDIOMAS, fuente_nombre, t
+from core.nasa_damage import fetch_nasa_damage, nasa_map_url
 from core.osm import translate_area
 from core.pipeline import build_zone
 from core.sources import fmt_vet_utc, parse_iso
@@ -317,7 +318,7 @@ def render_event_banner(ctx: dict, lang: str) -> None:
     st.caption(t("actualizacion_tiempo_real", lang))
 
 
-def _build_map(df, zone, ctx, lang):
+def _build_map(df, zone, ctx, lang, nasa_buildings=None):
     """Mapa de INTENSIDAD sentida (MMI) + recursos de ayuda."""
     lon_min, lat_min, lon_max, lat_max = zone["bbox"]
     m = folium.Map(location=[(lat_min + lat_max) / 2, (lon_min + lon_max) / 2],
@@ -375,6 +376,44 @@ def _build_map(df, zone, ctx, lang):
                              icon="plus" if r["tipo"] in ("hospital", "clinic") else "info-sign"),
             popup=folium.Popup(popup_html, max_width=250),
         ).add_to(m)
+
+    # ── NASA Sentinel-1 SAR: edificios dañados (experimental) ────────────────
+    if nasa_buildings:
+        def _nasa_color(prob: float) -> str:
+            if prob >= 0.75: return "#c62828"
+            if prob >= 0.50: return "#e65100"
+            return "#f9a825"
+
+        for b in nasa_buildings:
+            color    = _nasa_color(b["prob"])
+            n_url    = nasa_map_url(b["lat"], b["lon"])
+            g_url    = f"https://www.google.com/maps/@{b['lat']:.6f},{b['lon']:.6f},18z"
+            prob_pct = f"{b['prob'] * 100:.0f} %"
+            if lang == "en":
+                popup_html = (
+                    f"<b>🏗️ Damaged building (NASA)</b><br>"
+                    f"Damage probability: <b>{prob_pct}</b><br>"
+                    f"Status: {b['label']}<br>"
+                    f'<a href="{n_url}" target="_blank">🛰️ NASA map — this exact point</a><br>'
+                    f'<a href="{g_url}" target="_blank">📍 Google Maps</a><br>'
+                    f"<small>⚠️ Experimental · NASA Sentinel-1 SAR · unvalidated</small>"
+                )
+            else:
+                popup_html = (
+                    f"<b>🏗️ Edificio dañado (NASA)</b><br>"
+                    f"Probabilidad de daño: <b>{prob_pct}</b><br>"
+                    f"Estado: {b['label']}<br>"
+                    f'<a href="{n_url}" target="_blank">🛰️ Mapa NASA — este punto exacto</a><br>'
+                    f'<a href="{g_url}" target="_blank">📍 Google Maps</a><br>'
+                    f"<small>⚠️ Experimental · NASA Sentinel-1 SAR · sin validar</small>"
+                )
+            folium.CircleMarker(
+                [b["lat"], b["lon"]],
+                radius=4, color=color, weight=1,
+                fill=True, fill_color=color, fill_opacity=0.75,
+                popup=folium.Popup(popup_html, max_width=270),
+            ).add_to(m)
+
     return m
 
 
@@ -391,9 +430,12 @@ def render_zone(zone_id: str) -> None:
         st.error(t("banner_sin_shakemap", lang))
 
     # ── MAPA: intensidad sentida + recursos de ayuda ──────────────────────────
-    st_folium(_build_map(df, zone, ctx, lang), height=480, width="stretch",
+    nasa_buildings = fetch_nasa_damage(tuple(zone["bbox"]))
+    st_folium(_build_map(df, zone, ctx, lang, nasa_buildings), height=480, width="stretch",
               returned_objects=[], key=f"map_{zone_id}")
     st.caption(t("leyenda_intensidad", lang))
+    if nasa_buildings:
+        st.caption(t("nasa_experimental_caption", lang, n=len(nasa_buildings)))
 
     # ── CLIMA: actual + pronóstico ────────────────────────────────────────────
     lat_c = (zone["bbox"][1] + zone["bbox"][3]) / 2
