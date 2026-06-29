@@ -497,5 +497,6 @@ pages = [
     st.Page("pages/3_Caracas_Baruta_ElHatillo.py", title="Caracas — Baruta / Hatillo / Chacao", icon="📍"),
     st.Page("pages/4_La_Guaira_Litoral.py",        title="La Guaira — Litoral", icon="📍"),
     st.Page("pages/5_Consejos_post_terremoto.py",  title="Consejos post-terremoto", icon="🧭"),
+    st.Page("pages/6_Mapa_NASA.py",                title="Mapa NASA Sentinel-1",    icon="🛰️"),
 ]
 st.navigation(pages).run()
