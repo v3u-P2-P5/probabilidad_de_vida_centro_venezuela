@@ -62,6 +62,7 @@ def home():
 
     st.title(t("app_title", lang))
     st.caption(t("app_subtitle", lang))
+    st.image("assets/rescatistas.jpg", use_container_width=True)
 
     # ── Evento (compacto) ─────────────────────────────────────────────────────
     s = ctx["sismo"]
@@ -247,6 +248,7 @@ def home():
 </div>""", unsafe_allow_html=True)
                 st.page_link(path, label="🆘 " + t("ver_ayuda_zona", lang))
     st.caption(t("leyenda_zonas", lang))
+    st.image("assets/perros.png", use_container_width=True)
 
     # ── CÓMO AYUDAR (donaciones) ──────────────────────────────────────────────
     if "centros_acopio_vzla" in cofu or "caritas_venezuela" in cofu:
