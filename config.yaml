@@ -183,7 +183,7 @@ fuentes:
   maxar_open_data:
     nombre: "Maxar/Vantor Open Data — Imágenes pre/post evento"
     nombre_en: "Maxar/Vantor Open Data — Pre/post event imagery"
-    url: "https://www.maxar.com/open-data"
+    url: "https://vantor.com/company/open-data-program/"
   worldpop:
     nombre: "WorldPop — Población Venezuela 100m (CC-BY 4.0)"
     nombre_en: "WorldPop — Venezuela population 100m (CC-BY 4.0)"
