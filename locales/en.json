@@ -111,5 +111,7 @@
   "clima_col_hora": "Time (VET)",
   "clima_col_prob": "💧 Prob.",
   "clima_col_lluvia": "Rain mm",
-  "clima_caption": "🕒 Weather:"
+  "clima_caption": "🕒 Weather:",
+
+  "expander_ayuda_financiera": "💰 International Financial Aid Deployed"
 }

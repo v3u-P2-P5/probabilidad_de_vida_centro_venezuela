@@ -220,15 +220,15 @@ def home():
         _perros_lbl    = "🐕 Dogs"           if lang == "en" else "🐕 Perros"
         rc[0].metric(_paises_lbl,    "27")
         rc[1].metric(_equipos_lbl,   "44")
-        rc[2].metric(_rescatist_lbl, "2,245" if lang == "en" else "2.245")
-        rc[3].metric(_perros_lbl,    "140")
+        rc[2].metric(_rescatist_lbl, "2,624" if lang == "en" else "2.624")
+        rc[3].metric(_perros_lbl,    "137")
         _na = "n/a" if lang == "en" else "s/d"
         if lang == "en":
             st.warning(
-                "⚠️ **The OCHA total (2,245 rescue workers · 140 dogs) is the official "
-                "consolidated figure from all 44 teams across 27 countries.** Individual "
+                "⚠️ **The official total (2,624 rescue workers · 137 dogs) is the consolidated "
+                "figure reported by Jorge Rodríguez on 28 Jun 2026.** Individual "
                 "country figures are those published separately — most have not released "
-                "detailed breakdowns, which is why the table sum is lower than the UN total."
+                "detailed breakdowns, which is why the table sum is lower than the official total."
             )
             _col_pais = "Country"
             _col_resc = "🧑‍🚒 Rescue Workers"
@@ -236,10 +236,10 @@ def home():
             _otros    = "Other 13 countries ✝"
         else:
             st.warning(
-                "⚠️ **El total de OCHA (2.245 rescatistas · 140 perros) es el dato oficial "
-                "consolidado de los 44 equipos de 27 países.** Las cifras por país son las "
+                "⚠️ **El total oficial (2.624 rescatistas · 137 perros) es el dato consolidado "
+                "reportado por Jorge Rodríguez el 28 jun 2026.** Las cifras por país son las "
                 "publicadas individualmente — la mayoría no ha dado un desglose detallado, "
-                "por eso la suma de la tabla es menor que el total oficial de la ONU."
+                "por eso la suma de la tabla es menor que el total oficial."
             )
             _col_pais = "País"
             _col_resc = "🧑‍🚒 Rescatistas"
@@ -247,6 +247,8 @@ def home():
             _otros    = "Otros 13 países ✝"
         _rescate_rows = [
             {_col_pais: "El Salvador",   _col_resc: "300", _col_perr: "—"},
+            {_col_pais: "United States" if lang == "en" else "Estados Unidos",
+                                         _col_resc: "151", _col_perr: "12"},
             {_col_pais: "France" if lang == "en" else "Francia",
                                          _col_resc: "85",  _col_perr: "—"},
             {_col_pais: "Switzerland" if lang == "en" else "Suiza",
@@ -279,17 +281,23 @@ def home():
             st.caption(
                 "✝ Argentina, Canada, Colombia, Ecuador, Guatemala, Mexico, Panama, Peru, "
                 "Germany, Czech Rep., Jordan, Lithuania, Qatar · "
+                "US: VA-TF1 (80p·6🐕) + LA County (71p·6🐕) · "
                 "n/a = no figure published · "
-                "Source: [OCHA/UN](https://news.un.org/en/story/2026/06/1167825) · "
-                "[Wikipedia](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes) · 27 Jun 2026"
+                "Total workers & dogs: [J. Rodríguez 28 Jun](https://www.univision.com/noticias/america-latina/ultimas-noticias-del-terremoto-en-venezuela-un-nuevo-sismo-de-4-2-vuelve-a-impactar-la-zona-norte-de-venezuela-en-medio-de-la-busqueda-de-mas-de-50-000-personas-atrapadas-hoy-29-de-junio-de-2026) · "
+                "countries & teams: [OCHA 27 Jun](https://news.un.org/en/story/2026/06/1167825) · "
+                "[State Dept.](https://www.state.gov/responding-to-venezuela-earthquakes) · "
+                "[Wikipedia](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes)"
             )
         else:
             st.caption(
                 "✝ Argentina, Canadá, Colombia, Ecuador, Guatemala, México, Panamá, Perú, "
                 "Alemania, Rep. Checa, Jordania, Lituania, Qatar · "
+                "EE.UU.: VA-TF1 (80p·6🐕) + Condado LA (71p·6🐕) · "
                 "s/d = sin dato publicado · "
-                "Fuente: [OCHA/ONU](https://news.un.org/en/story/2026/06/1167825) · "
-                "[Wikipedia](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes) · 27 jun 2026"
+                "Total rescatistas y perros: [J. Rodríguez 28 jun](https://www.univision.com/noticias/america-latina/ultimas-noticias-del-terremoto-en-venezuela-un-nuevo-sismo-de-4-2-vuelve-a-impactar-la-zona-norte-de-venezuela-en-medio-de-la-busqueda-de-mas-de-50-000-personas-atrapadas-hoy-29-de-junio-de-2026) · "
+                "países y equipos: [OCHA 27 jun](https://news.un.org/en/story/2026/06/1167825) · "
+                "[Depto. de Estado](https://www.state.gov/responding-to-venezuela-earthquakes) · "
+                "[Wikipedia](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes)"
             )
 
     # ── RÉPLICAS ──────────────────────────────────────────────────────────────
@@ -401,6 +409,53 @@ def home():
             st.markdown(f"🔗 [{fuente_nombre(cofu['centros_ayuda_vzla'], lang)}]({cofu['centros_ayuda_vzla']['url']})")
         if "caritas_venezuela" in cofu:
             st.markdown(f"🔗 [{fuente_nombre(cofu['caritas_venezuela'], lang)}]({cofu['caritas_venezuela']['url']})")
+
+    # ── AYUDA FINANCIERA INTERNACIONAL ───────────────────────────────────────
+    with st.expander(t("expander_ayuda_financiera", lang), expanded=False):
+        if lang == "en":
+            st.markdown("Financial commitments from governments and international organizations (as of 29 Jun 2026):")
+            _fin_rows = [
+                {"Country / Organization": "🇺🇸 United States",  "Amount": ">$300 M",          "Channel": "USAID / OCHA / WFP / partners"},
+                {"Country / Organization": "🇨🇳 China",           "Amount": "$14.7 M (¥100 M)", "Channel": "Govt + Red Cross China"},
+                {"Country / Organization": "🇪🇺 European Union",  "Amount": "€5 M (~$5.7 M)",   "Channel": "EU ECHO humanitarian aid"},
+                {"Country / Organization": "🇰🇷 South Korea",     "Amount": "$5 M",              "Channel": "International organizations"},
+                {"Country / Organization": "🇨🇦 Canada",          "Amount": "$5 M",              "Channel": "Humanitarian aid"},
+                {"Country / Organization": "🏳 IFRC",             "Amount": "$2.5 M",            "Channel": "Red Cross Emergency Fund"},
+                {"Country / Organization": "🇳🇱 Netherlands",     "Amount": "€2 M (~$2.3 M)",   "Channel": "Humanitarian operations"},
+                {"Country / Organization": "🇪🇸 Spain",           "Amount": "€1 M (~$1.1 M)",   "Channel": "Emergency aid"},
+                {"Country / Organization": "🕊 Vatican",          "Amount": "€100 K (~$114 K)",  "Channel": "Church structures in Venezuela"},
+            ]
+            st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>', unsafe_allow_html=True)
+            st.dataframe(pd.DataFrame(_fin_rows), hide_index=True, use_container_width=True)
+            st.caption(
+                "⚠️ Figures reflect announced pledges; disbursements may differ. "
+                "Sources: [State Dept.](https://www.state.gov/responding-to-venezuela-earthquakes) · "
+                "[Al Jazeera](https://www.aljazeera.com/news/2026/6/26/which-countries-have-pledged-aid-to-venezuela-after-powerful-earthquakes) · "
+                "[EU ECHO](https://civil-protection-humanitarian-aid.ec.europa.eu/news-stories/news/eu-delivers-emergency-aid-and-organises-humanitarian-flight-response-earthquakes-venezuela-2026-06-29_en) · "
+                "[Korea Herald](https://www.koreaherald.com/article/10789913) · 29 Jun 2026"
+            )
+        else:
+            st.markdown("Compromisos financieros de gobiernos y organismos internacionales (al 29 jun 2026):")
+            _fin_rows = [
+                {"País / Organismo": "🇺🇸 Estados Unidos", "Monto": ">$300 M",           "Canal": "USAID / OCHA / WFP / socios"},
+                {"País / Organismo": "🇨🇳 China",           "Monto": "$14,7 M (¥100 M)", "Canal": "Gob. + Cruz Roja China"},
+                {"País / Organismo": "🇪🇺 Unión Europea",  "Monto": "€5 M (~$5,7 M)",   "Canal": "EU ECHO ayuda humanitaria"},
+                {"País / Organismo": "🇰🇷 Corea del Sur",  "Monto": "$5 M",              "Canal": "Organizaciones internacionales"},
+                {"País / Organismo": "🇨🇦 Canadá",         "Monto": "$5 M",              "Canal": "Ayuda humanitaria"},
+                {"País / Organismo": "🏳 FICR",             "Monto": "$2,5 M",            "Canal": "Fondo emergencias Cruz Roja"},
+                {"País / Organismo": "🇳🇱 Países Bajos",   "Monto": "€2 M (~$2,3 M)",   "Canal": "Operaciones humanitarias"},
+                {"País / Organismo": "🇪🇸 España",         "Monto": "€1 M (~$1,1 M)",   "Canal": "Ayuda de emergencia"},
+                {"País / Organismo": "🕊 Vaticano",         "Monto": "€100 K (~$114 K)",  "Canal": "Estructuras eclesiásticas en VZ"},
+            ]
+            st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>', unsafe_allow_html=True)
+            st.dataframe(pd.DataFrame(_fin_rows), hide_index=True, use_container_width=True)
+            st.caption(
+                "⚠️ Cifras corresponden a compromisos anunciados; los desembolsos pueden diferir. "
+                "Fuentes: [Depto. de Estado](https://www.state.gov/responding-to-venezuela-earthquakes) · "
+                "[Al Jazeera](https://www.aljazeera.com/news/2026/6/26/which-countries-have-pledged-aid-to-venezuela-after-powerful-earthquakes) · "
+                "[EU ECHO](https://civil-protection-humanitarian-aid.ec.europa.eu/news-stories/news/eu-delivers-emergency-aid-and-organises-humanitarian-flight-response-earthquakes-venezuela-2026-06-29_en) · "
+                "[Korea Herald](https://www.koreaherald.com/article/10789913) · 29 jun 2026"
+            )
 
     # ── CONSEJOS POST-TERREMOTO (página aparte) ───────────────────────────────
     st.subheader("🧭 " + t("consejos_titulo", lang))
