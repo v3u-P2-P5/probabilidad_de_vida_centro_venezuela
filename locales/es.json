@@ -74,7 +74,7 @@
 
   "subtitulo_zona": "Intensidad sentida, peligros y dónde obtener ayuda",
   "banner_sin_shakemap": "⛔ El ShakeMap de USGS no está disponible ahora. La intensidad de esta zona no puede mostrarse hasta restablecer la fuente.",
-  "leyenda_intensidad": "🔴 Mapa de calor = zonas más afectadas (sacudimiento USGS × población expuesta): a dónde concentrar la ayuda. 🏥 Marcadores = hospitales, bomberos y refugios (OSM). No localiza personas atrapadas.",
+  "leyenda_intensidad": "🔴 Mapa de calor = zonas más afectadas (sacudimiento USGS × población expuesta): a dónde concentrar la ayuda. 🏥 Marcadores = hospitales, bomberos y refugios (OSM).",
   "recursos_titulo": "Recursos cercanos (OSM)",
   "ayuda_titulo": "Dónde obtener ayuda",
   "recursos_ninguno": "Sin recursos mapeados en OSM para esta zona. Consulta a Protección Civil (171).",
