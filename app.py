@@ -144,6 +144,9 @@ def home():
             "[Ecoosfera](https://ecoosfera.com/noticias/sismos-venezuela-2026-teoria-placas/) · "
             "[Univision (29 jun)](https://www.univision.com/noticias/america-latina/ultimas-noticias-del-terremoto-en-venezuela-un-nuevo-sismo-de-4-2-vuelve-a-impactar-la-zona-norte-de-venezuela-en-medio-de-la-busqueda-de-mas-de-50-000-personas-atrapadas-hoy-29-de-junio-de-2026)"
         )
+        st.page_link("pages/8_Replicas_en_vivo.py",
+                     label="🌎 " + ("Live aftershocks — chart + map →" if lang == "en"
+                                    else "Réplicas en vivo — gráfico + mapa →"))
     # ── Evento (compacto) ─────────────────────────────────────────────────────
     s = ctx["sismo"]
     adic = ctx.get("sismos_adicionales", [])
@@ -480,6 +483,7 @@ def home():
 # ── Navegación (la página principal se muestra como "Home") ───────────────────
 pages = [
     st.Page(home, title="Home", icon="🏠", default=True),
+    st.Page("pages/8_Replicas_en_vivo.py",         title="Réplicas en vivo / Live aftershocks", icon="🌎"),
     st.Page("pages/1_Caracas_Libertador.py",       title="Caracas — Libertador", icon="📍"),
     st.Page("pages/2_Caracas_Sucre_Petare.py",     title="Caracas — Sucre / Petare", icon="📍"),
     st.Page("pages/3_Caracas_Baruta_ElHatillo.py", title="Caracas — Baruta / Hatillo / Chacao", icon="📍"),

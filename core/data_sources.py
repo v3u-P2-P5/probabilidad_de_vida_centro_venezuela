@@ -4,7 +4,7 @@ Soporta secuencia sísmica (sismo doble): get_sismos() devuelve todos los evento
 principales; get_sismo() devuelve el de mayor magnitud como referencia.
 Datos OFICIALES y en vivo (FDSN event API).
 """
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import numpy as np
 import requests
 import streamlit as st
@@ -12,6 +12,13 @@ import streamlit as st
 from core.geo import haversine_m
 
 USGS_EVENT_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query"
+USGS_COUNT_URL = "https://earthquake.usgs.gov/fdsnws/event/1/count"
+
+# Centro de la secuencia (epicentro M7.5) y ids de los DOS sismos principales:
+# se usan para anclar la consulta de réplicas y para NO etiquetar los mainshocks
+# como réplicas.
+EPICENTRO_REF = (10.4351, -68.4716)            # (lat, lon)
+MAINSHOCK_IDS = frozenset({"us6000t7zp", "us6000t7zc"})
 
 
 def get_event(event_id: str, timeout: float = 12.0) -> dict | None:
@@ -100,6 +107,99 @@ def get_sismo(config: dict) -> dict:
             return sismo
     sismo.setdefault("fuente", "respaldo (config)")
     return sismo
+
+
+@st.cache_data(ttl=120, show_spinner=False)
+def get_aftershocks(dias_atras: int = 3, min_magnitud: float = 2.5,
+                    radio_km: int = 200, limite: int = 50,
+                    timeout: float = 12.0) -> dict:
+    """Réplicas (y mainshocks) reales EN VIVO cerca del epicentro, vía USGS FDSN.
+
+    Devuelve solo eventos que USGS reporta; lista vacía si no hay ninguno en la
+    ventana (nunca inventa). Marca es_evento_principal para no confundir los
+    sismos M7.5/M7.2 con réplicas. Caché 2 min para no martillar USGS.
+    """
+    now = datetime.now(timezone.utc)
+    lat0, lon0 = EPICENTRO_REF
+    starttime = (now - timedelta(days=dias_atras)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    params = {"format": "geojson", "latitude": lat0, "longitude": lon0,
+              "maxradiuskm": radio_km, "starttime": starttime,
+              "minmagnitude": min_magnitud, "orderby": "time", "limit": limite}
+    base = {"fuente": "USGS FDSN Event API", "url": USGS_EVENT_URL,
+            "hora_consulta": now.isoformat(),
+            "parametros_usados": {"dias_atras": dias_atras, "min_magnitud": min_magnitud,
+                                  "radio_km": radio_km}}
+    try:
+        r = requests.get(USGS_EVENT_URL, params=params, timeout=timeout)
+        r.raise_for_status()
+        d = r.json()
+    except Exception:
+        return {**base, "disponible": False, "replicas": [], "total": 0, "error": "fallo de red"}
+
+    reps = []
+    for f in d.get("features", []):
+        p = f.get("properties", {}) or {}
+        coords = (f.get("geometry", {}) or {}).get("coordinates") or [None, None, None]
+        lon, lat, depth = (list(coords) + [None, None, None])[:3]
+        t = p.get("time")
+        hora = (datetime.fromtimestamp(t / 1000, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+                if t else None)
+        dist = (round(haversine_m(lat, lon, lat0, lon0) / 1000.0, 1)
+                if lat is not None and lon is not None else None)
+        eid = f.get("id")
+        reps.append({
+            "id": eid, "magnitud": p.get("mag"), "magType": p.get("magType"),
+            "hora_utc": hora, "lugar": p.get("place"), "profundidad_km": depth,
+            "lat": lat, "lon": lon, "distancia_epicentro_km": dist,
+            "tsunami": p.get("tsunami"), "status": p.get("status"),
+            "evento_url": p.get("url"), "es_evento_principal": eid in MAINSHOCK_IDS,
+        })
+    return {**base, "disponible": True, "replicas": reps, "total": len(reps),
+            "url": (d.get("metadata", {}) or {}).get("url", USGS_EVENT_URL)}
+
+
+@st.cache_data(ttl=120, show_spinner=False)
+def get_aftershock_resumen(dias_atras: int = 7, min_magnitud: float = 2.5,
+                           radio_km: int = 200, timeout: float = 12.0) -> dict:
+    """Conteo REAL de sismos en la ventana + el de mayor magnitud (USGS count+query)."""
+    now = datetime.now(timezone.utc)
+    lat0, lon0 = EPICENTRO_REF
+    starttime = (now - timedelta(days=dias_atras)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    base_params = {"format": "geojson", "latitude": lat0, "longitude": lon0,
+                   "maxradiuskm": radio_km, "starttime": starttime, "minmagnitude": min_magnitud}
+    out = {"fuente": "USGS FDSN Event API (count + query)", "url": USGS_EVENT_URL,
+           "hora_consulta": now.isoformat(),
+           "ventana": {"dias_atras": dias_atras, "min_magnitud": min_magnitud, "radio_km": radio_km}}
+    try:
+        rc = requests.get(USGS_COUNT_URL, params=base_params, timeout=timeout)
+        rc.raise_for_status()
+        total = int(rc.json().get("count", 0))
+    except Exception:
+        return {**out, "disponible": False, "total_replicas": None, "max_magnitud": None}
+    res = {**out, "disponible": True, "total_replicas": total, "max_magnitud": None,
+           "max_magnitud_hora_utc": None, "max_magnitud_lugar": None,
+           "max_magnitud_evento_url": None, "max_es_evento_principal": None}
+    if total > 0:
+        try:
+            rq = requests.get(USGS_EVENT_URL,
+                              params={**base_params, "orderby": "magnitude", "limit": 1},
+                              timeout=timeout)
+            rq.raise_for_status()
+            feats = rq.json().get("features", [])
+            if feats:
+                top = feats[0]; p = top.get("properties", {}) or {}
+                t = p.get("time"); eid = top.get("id")
+                res.update({
+                    "max_magnitud": p.get("mag"),
+                    "max_magnitud_hora_utc": (datetime.fromtimestamp(t / 1000, timezone.utc)
+                                              .strftime("%Y-%m-%dT%H:%M:%SZ") if t else None),
+                    "max_magnitud_lugar": p.get("place"),
+                    "max_magnitud_evento_url": p.get("url"),
+                    "max_es_evento_principal": eid in MAINSHOCK_IDS,
+                })
+        except Exception:
+            pass
+    return res
 
 
 def synthetic_mmi(lat, lon, sismo: dict):
