@@ -10,6 +10,7 @@ data/cache/
 scripts/_*.log
 scripts/_*.py
 .streamlit/secrets.toml
+docs/
 .DS_Store
 
 # Claude: versionar la memoria del proyecto, ignorar settings locales
