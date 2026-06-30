@@ -23,12 +23,13 @@ osm_ttl_segundos: 1800          # relee recursos OSM cada N segundos
 # activo=false, la página del asistente se auto-deshabilita y enlaza fuentes oficiales.
 chat:
   activo: true
-  # Modelos GRATUITOS (Google Gemma 4 + Llama 3.3 70B). El grounding anti-alucinación
-  # lo imponen el system prompt + los guardrails deterministas, no el modelo.
-  # OJO: los tiers ':free' tienen límite de peticiones agresivo; para tráfico real
-  # conviene un modelo de bajo costo (p.ej. google/gemini-2.5-flash-lite, ~$0.10/M).
-  modelo: "google/gemma-4-31b-it:free"             # Google, gratuito
-  modelo_fallback: "meta-llama/llama-3.3-70b-instruct:free"   # respaldo gratuito
+  # Primario: Google Gemini de pago MUY barato (~$0.10/M tokens, sin el rate-limit
+  # agresivo de los ':free'). Respaldo: modelo gratuito, por si falta crédito en la
+  # cuenta de OpenRouter (un 402 cae automáticamente al respaldo). El grounding
+  # anti-alucinación lo imponen el system prompt + los guardrails, no el modelo.
+  # Requiere crédito en openrouter.ai/credits para usar el primario de pago.
+  modelo: "google/gemini-2.5-flash-lite"                      # Google Gemini, de pago muy barato
+  modelo_fallback: "meta-llama/llama-3.3-70b-instruct:free"   # respaldo gratuito si falta crédito
   max_tokens: 600
   temperatura: 0.0                         # 0 = máxima fidelidad al contexto (anti-alucinación)
   max_input_chars: 600                     # trunca preguntas largas (anti-abuso)

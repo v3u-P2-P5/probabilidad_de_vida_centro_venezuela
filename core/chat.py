@@ -73,8 +73,10 @@ def stream_chat(messages, api_key, model, *, referer="", title="",
     except requests.RequestException as e:
         raise ChatUnavailable(str(e))
 
-    if r.status_code in (401, 402, 403):
+    if r.status_code in (401, 403):
         raise ChatAuthError(f"HTTP {r.status_code}")
+    if r.status_code == 402:                       # sin crédito → permite caer al modelo de respaldo
+        raise ChatUnavailable("HTTP 402 (sin credito)")
     if r.status_code == 429:
         raise ChatRateLimitError("HTTP 429")
     if r.status_code >= 500:
@@ -82,10 +84,15 @@ def stream_chat(messages, api_key, model, *, referer="", title="",
     if r.status_code != 200:
         raise ChatError(f"HTTP {r.status_code}: {r.text[:200]}")
 
-    for raw in r.iter_lines(decode_unicode=True):
-        if not raw or not raw.startswith("data:"):
+    # Decodificamos cada línea como UTF-8 explícitamente: ante 'text/event-stream'
+    # sin charset, requests asume latin-1 y produce mojibake (p.ej. 'poblaciÃ³n').
+    for raw in r.iter_lines():
+        if not raw:
             continue
-        data = raw[5:].strip()
+        line = raw.decode("utf-8", "replace") if isinstance(raw, bytes) else raw
+        if not line.startswith("data:"):
+            continue
+        data = line[5:].strip()
         if data == "[DONE]":
             break
         try:

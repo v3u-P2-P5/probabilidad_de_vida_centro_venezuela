@@ -114,9 +114,9 @@ if prompt:
                 except ChatAuthError:
                     err = "auth"; break
                 except ChatRateLimitError:
-                    err = "rate"; break
+                    err = "rate"; continue   # 429 → prueba el modelo de respaldo
                 except (ChatUnavailable, ChatError):
-                    err = "api"; continue   # intenta el modelo de respaldo
+                    err = "api"; continue    # error/sin crédito → prueba el respaldo
 
             if answer:
                 st.caption("ℹ️ " + t("chat_pie_ia", lang))
@@ -125,6 +125,6 @@ if prompt:
                 st.info(t("chat_sin_clave", lang))
                 st.markdown(_links_md(links))
             elif err == "rate":
-                st.warning(t("chat_rate_limit", lang))
+                st.warning(t("chat_ocupado", lang))
             else:
                 st.error(t("chat_error_api", lang))
