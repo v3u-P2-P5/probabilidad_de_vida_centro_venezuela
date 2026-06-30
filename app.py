@@ -321,6 +321,7 @@ def home():
                                          _col_resc: "20",  _col_perr: "4"},
             {_col_pais: "Japan" if lang == "en" else "Japón",
                                          _col_resc: "7",   _col_perr: "—"},
+            {_col_pais: "India",         _col_resc: "41",  _col_perr: "—"},
             {_col_pais: "Dominican Rep." if lang == "en" else "Rep. Dominicana",
                                          _col_resc: _na,   _col_perr: "—"},
             {_col_pais: "Netherlands" if lang == "en" else "Países Bajos",
@@ -351,6 +352,57 @@ def home():
                 "países y equipos: [OCHA 27 jun](https://news.un.org/en/story/2026/06/1167825) · "
                 "[Depto. de Estado](https://www.state.gov/responding-to-venezuela-earthquakes) · "
                 "[Wikipedia](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes)"
+            )
+
+    # ── AYUDA FINANCIERA INTERNACIONAL ───────────────────────────────────────
+    with st.expander(t("expander_ayuda_financiera", lang), expanded=False):
+        if lang == "en":
+            st.markdown("Financial commitments from governments and international organizations (as of 30 Jun 2026):")
+            _fin_rows = [
+                {"Country / Organization": "🇺🇸 United States",     "Amount": ">$300 M",          "Channel": "USAID / OCHA / WFP / partners"},
+                {"Country / Organization": "🇨🇳 China",              "Amount": "$14.7 M (¥100 M)", "Channel": "Govt + Red Cross China"},
+                {"Country / Organization": "🇪🇺 European Union",     "Amount": "€5 M (~$5.7 M)",   "Channel": "EU ECHO humanitarian aid"},
+                {"Country / Organization": "🇰🇷 South Korea",        "Amount": "$5 M",              "Channel": "International organizations"},
+                {"Country / Organization": "🇨🇦 Canada",             "Amount": "$5 M",              "Channel": "Humanitarian aid"},
+                {"Country / Organization": "🏳 IFRC",                "Amount": "$2.5 M",            "Channel": "Red Cross Emergency Fund"},
+                {"Country / Organization": "🇳🇱 Netherlands",        "Amount": "€2 M (~$2.3 M)",   "Channel": "Humanitarian operations"},
+                {"Country / Organization": "🇪🇸 Spain",              "Amount": "€1 M (~$1.1 M)",   "Channel": "Emergency aid"},
+                {"Country / Organization": "🕊 Vatican",             "Amount": "€100 K (~$114 K)",  "Channel": "Church structures in Venezuela"},
+                {"Country / Organization": "🇷🇺 Russia",             "Amount": "n/a",               "Channel": "Humanitarian aid (announced)"},
+                {"Country / Organization": "🏢 GEM + Walmart (US)", "Amount": "In-kind",            "Channel": "Supply logistics via USAID / State Dept."},
+            ]
+            st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>', unsafe_allow_html=True)
+            st.dataframe(pd.DataFrame(_fin_rows), hide_index=True, use_container_width=True)
+            st.caption(
+                "⚠️ Figures reflect announced pledges; disbursements may differ. "
+                "Sources: [State Dept.](https://www.state.gov/responding-to-venezuela-earthquakes) · "
+                "[Al Jazeera](https://www.aljazeera.com/news/2026/6/26/which-countries-have-pledged-aid-to-venezuela-after-powerful-earthquakes) · "
+                "[EU ECHO](https://civil-protection-humanitarian-aid.ec.europa.eu/news-stories/news/eu-delivers-emergency-aid-and-organises-humanitarian-flight-response-earthquakes-venezuela-2026-06-29_en) · "
+                "[Korea Herald](https://www.koreaherald.com/article/10789913) · 30 Jun 2026"
+            )
+        else:
+            st.markdown("Compromisos financieros de gobiernos y organismos internacionales (al 30 jun 2026):")
+            _fin_rows = [
+                {"País / Organismo": "🇺🇸 Estados Unidos",        "Monto": ">$300 M",           "Canal": "USAID / OCHA / WFP / socios"},
+                {"País / Organismo": "🇨🇳 China",                  "Monto": "$14,7 M (¥100 M)", "Canal": "Gob. + Cruz Roja China"},
+                {"País / Organismo": "🇪🇺 Unión Europea",         "Monto": "€5 M (~$5,7 M)",   "Canal": "EU ECHO ayuda humanitaria"},
+                {"País / Organismo": "🇰🇷 Corea del Sur",         "Monto": "$5 M",              "Canal": "Organizaciones internacionales"},
+                {"País / Organismo": "🇨🇦 Canadá",                "Monto": "$5 M",              "Canal": "Ayuda humanitaria"},
+                {"País / Organismo": "🏳 FICR",                    "Monto": "$2,5 M",            "Canal": "Fondo emergencias Cruz Roja"},
+                {"País / Organismo": "🇳🇱 Países Bajos",          "Monto": "€2 M (~$2,3 M)",   "Canal": "Operaciones humanitarias"},
+                {"País / Organismo": "🇪🇸 España",                "Monto": "€1 M (~$1,1 M)",   "Canal": "Ayuda de emergencia"},
+                {"País / Organismo": "🕊 Vaticano",                "Monto": "€100 K (~$114 K)", "Canal": "Estructuras eclesiásticas en VZ"},
+                {"País / Organismo": "🇷🇺 Rusia",                 "Monto": "s/d",               "Canal": "Ayuda humanitaria (anunciado)"},
+                {"País / Organismo": "🏢 GEM + Walmart (EE.UU.)", "Monto": "En especie",        "Canal": "Logística de suministros vía USAID / Depto. Estado"},
+            ]
+            st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>', unsafe_allow_html=True)
+            st.dataframe(pd.DataFrame(_fin_rows), hide_index=True, use_container_width=True)
+            st.caption(
+                "⚠️ Cifras corresponden a compromisos anunciados; los desembolsos pueden diferir. "
+                "Fuentes: [Depto. de Estado](https://www.state.gov/responding-to-venezuela-earthquakes) · "
+                "[Al Jazeera](https://www.aljazeera.com/news/2026/6/26/which-countries-have-pledged-aid-to-venezuela-after-powerful-earthquakes) · "
+                "[EU ECHO](https://civil-protection-humanitarian-aid.ec.europa.eu/news-stories/news/eu-delivers-emergency-aid-and-organises-humanitarian-flight-response-earthquakes-venezuela-2026-06-29_en) · "
+                "[Korea Herald](https://www.koreaherald.com/article/10789913) · 30 jun 2026"
             )
 
     # ── PERSONAS DESAPARECIDAS ────────────────────────────────────────────────
@@ -417,53 +469,6 @@ def home():
             st.markdown(f"🔗 [{fuente_nombre(cofu['centros_ayuda_vzla'], lang)}]({cofu['centros_ayuda_vzla']['url']})")
         if "caritas_venezuela" in cofu:
             st.markdown(f"🔗 [{fuente_nombre(cofu['caritas_venezuela'], lang)}]({cofu['caritas_venezuela']['url']})")
-
-    # ── AYUDA FINANCIERA INTERNACIONAL ───────────────────────────────────────
-    with st.expander(t("expander_ayuda_financiera", lang), expanded=False):
-        if lang == "en":
-            st.markdown("Financial commitments from governments and international organizations (as of 29 Jun 2026):")
-            _fin_rows = [
-                {"Country / Organization": "🇺🇸 United States",  "Amount": ">$300 M",          "Channel": "USAID / OCHA / WFP / partners"},
-                {"Country / Organization": "🇨🇳 China",           "Amount": "$14.7 M (¥100 M)", "Channel": "Govt + Red Cross China"},
-                {"Country / Organization": "🇪🇺 European Union",  "Amount": "€5 M (~$5.7 M)",   "Channel": "EU ECHO humanitarian aid"},
-                {"Country / Organization": "🇰🇷 South Korea",     "Amount": "$5 M",              "Channel": "International organizations"},
-                {"Country / Organization": "🇨🇦 Canada",          "Amount": "$5 M",              "Channel": "Humanitarian aid"},
-                {"Country / Organization": "🏳 IFRC",             "Amount": "$2.5 M",            "Channel": "Red Cross Emergency Fund"},
-                {"Country / Organization": "🇳🇱 Netherlands",     "Amount": "€2 M (~$2.3 M)",   "Channel": "Humanitarian operations"},
-                {"Country / Organization": "🇪🇸 Spain",           "Amount": "€1 M (~$1.1 M)",   "Channel": "Emergency aid"},
-                {"Country / Organization": "🕊 Vatican",          "Amount": "€100 K (~$114 K)",  "Channel": "Church structures in Venezuela"},
-            ]
-            st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>', unsafe_allow_html=True)
-            st.dataframe(pd.DataFrame(_fin_rows), hide_index=True, use_container_width=True)
-            st.caption(
-                "⚠️ Figures reflect announced pledges; disbursements may differ. "
-                "Sources: [State Dept.](https://www.state.gov/responding-to-venezuela-earthquakes) · "
-                "[Al Jazeera](https://www.aljazeera.com/news/2026/6/26/which-countries-have-pledged-aid-to-venezuela-after-powerful-earthquakes) · "
-                "[EU ECHO](https://civil-protection-humanitarian-aid.ec.europa.eu/news-stories/news/eu-delivers-emergency-aid-and-organises-humanitarian-flight-response-earthquakes-venezuela-2026-06-29_en) · "
-                "[Korea Herald](https://www.koreaherald.com/article/10789913) · 29 Jun 2026"
-            )
-        else:
-            st.markdown("Compromisos financieros de gobiernos y organismos internacionales (al 29 jun 2026):")
-            _fin_rows = [
-                {"País / Organismo": "🇺🇸 Estados Unidos", "Monto": ">$300 M",           "Canal": "USAID / OCHA / WFP / socios"},
-                {"País / Organismo": "🇨🇳 China",           "Monto": "$14,7 M (¥100 M)", "Canal": "Gob. + Cruz Roja China"},
-                {"País / Organismo": "🇪🇺 Unión Europea",  "Monto": "€5 M (~$5,7 M)",   "Canal": "EU ECHO ayuda humanitaria"},
-                {"País / Organismo": "🇰🇷 Corea del Sur",  "Monto": "$5 M",              "Canal": "Organizaciones internacionales"},
-                {"País / Organismo": "🇨🇦 Canadá",         "Monto": "$5 M",              "Canal": "Ayuda humanitaria"},
-                {"País / Organismo": "🏳 FICR",             "Monto": "$2,5 M",            "Canal": "Fondo emergencias Cruz Roja"},
-                {"País / Organismo": "🇳🇱 Países Bajos",   "Monto": "€2 M (~$2,3 M)",   "Canal": "Operaciones humanitarias"},
-                {"País / Organismo": "🇪🇸 España",         "Monto": "€1 M (~$1,1 M)",   "Canal": "Ayuda de emergencia"},
-                {"País / Organismo": "🕊 Vaticano",         "Monto": "€100 K (~$114 K)",  "Canal": "Estructuras eclesiásticas en VZ"},
-            ]
-            st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>', unsafe_allow_html=True)
-            st.dataframe(pd.DataFrame(_fin_rows), hide_index=True, use_container_width=True)
-            st.caption(
-                "⚠️ Cifras corresponden a compromisos anunciados; los desembolsos pueden diferir. "
-                "Fuentes: [Depto. de Estado](https://www.state.gov/responding-to-venezuela-earthquakes) · "
-                "[Al Jazeera](https://www.aljazeera.com/news/2026/6/26/which-countries-have-pledged-aid-to-venezuela-after-powerful-earthquakes) · "
-                "[EU ECHO](https://civil-protection-humanitarian-aid.ec.europa.eu/news-stories/news/eu-delivers-emergency-aid-and-organises-humanitarian-flight-response-earthquakes-venezuela-2026-06-29_en) · "
-                "[Korea Herald](https://www.koreaherald.com/article/10789913) · 29 jun 2026"
-            )
 
     # ── CONSEJOS POST-TERREMOTO (página aparte) ───────────────────────────────
     st.subheader("🧭 " + t("consejos_titulo", lang))
