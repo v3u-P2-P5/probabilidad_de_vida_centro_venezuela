@@ -7,14 +7,15 @@ elegante si falta la clave o el servicio cae. La autorrefresco se desactiva para
 no re-disparar la última llamada al modelo en cada ciclo.
 """
 import os
+from datetime import datetime, timezone
 
 import streamlit as st
 
 from core.chat import (ChatAuthError, ChatError, ChatRateLimitError,
                        ChatUnavailable, stream_chat)
 from core.chat_context import build_chat_context, reunification_links
-from core.chat_prompt import (classify_intent, sanitize_user_input,
-                              system_prompt, system_prompt_v2)
+from core.chat_prompt import (build_session_memory, classify_intent,
+                              sanitize_user_input, system_prompt, system_prompt_v2)
 from core.config import load_config
 from core.i18n import t
 from core.ui import apply_chrome
@@ -91,7 +92,12 @@ if prompt:
         st.session_state.chat_history.append({"role": "assistant", "content": answer})
     else:
         st.session_state.chat_calls += 1
-        history = st.session_state.chat_history[-6:]
+        n_hist = int(chat_cfg.get("historial_mensajes", 16))
+        history = st.session_state.chat_history[-n_hist:]
+        # Memoria de conversación: nota de continuidad derivada de lo que el usuario
+        # ya dijo (zonas, si busca a un familiar). Solo sesión, sin datos personales.
+        memoria = build_session_memory(st.session_state.chat_history, lang)
+        now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
         referer = _secret("OPENROUTER_APP_URL")
         title = _secret("OPENROUTER_APP_TITLE")
         temperature = float(chat_cfg.get("temperatura", 0.0))
@@ -102,9 +108,12 @@ if prompt:
         tools_on = bool(tools_cfg.get("activo", False))
         modelos_tools = tools_cfg.get("modelos_con_tools", [])
 
+        def _sys(content):
+            return content + (("\n\n" + memoria) if memoria else "")
+
         def _messages_v1():
             ctx_block = build_chat_context(lang)
-            return [{"role": "system", "content": system_prompt(lang, ctx_block)}] + history
+            return [{"role": "system", "content": _sys(system_prompt(lang, ctx_block))}] + history
 
         with st.chat_message("assistant"):
             answer, err = None, None
@@ -113,7 +122,7 @@ if prompt:
             if tools_on:
                 from core.chat import agentic_chat
                 from core.chat_tools import TOOLS_SCHEMA, dispatch
-                base_v2 = [{"role": "system", "content": system_prompt_v2(lang)}] + history
+                base_v2 = [{"role": "system", "content": _sys(system_prompt_v2(lang, now_iso))}] + history
                 for model_id in [m for m in (model, fallback) if m in modelos_tools]:
                     try:
                         enriched = agentic_chat(

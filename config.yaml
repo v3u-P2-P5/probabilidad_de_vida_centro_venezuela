@@ -43,6 +43,7 @@ chat:
   temperatura: 0.0                         # 0 = máxima fidelidad al contexto (anti-alucinación)
   max_input_chars: 600                     # trunca preguntas largas (anti-abuso)
   rate_limit_por_sesion: 30                # nº máx de preguntas por sesión de navegador
+  historial_mensajes: 16                   # nº de mensajes recientes que recuerda (memoria de sesión)
   # --- Skills (tool-calling): el modelo consulta DATOS REALES en vivo por pregunta ---
   # Si activo=false, o el modelo no está en modelos_con_tools, o las tools fallan,
   # el asistente cae al modo v1 (context-pack estático). Nunca queda sin responder.

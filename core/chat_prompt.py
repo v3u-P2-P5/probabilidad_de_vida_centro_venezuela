@@ -44,6 +44,53 @@ def sanitize_user_input(text: str, max_chars: int = 600) -> str:
     return text.strip()
 
 
+# Pistas de texto → zona, para recordar de qué zona(s) habla el usuario.
+_ZONE_HINTS = {
+    "Caracas — Libertador": ["libertador", "catia", "el valle", "antímano", "antimano",
+                             "caricuao", "coche", "23 de enero", "la pastora"],
+    "Caracas — Sucre / Petare": ["petare", "sucre", "caucagüito", "caucaguito", "mariche", "filas de mariche"],
+    "Caracas — Baruta / Hatillo / Chacao": ["baruta", "hatillo", "chacao", "chacaíto", "chacaito",
+                                            "las mercedes", "el cafetal", "la trinidad"],
+    "La Guaira — Litoral": ["la guaira", "guaira", "macuto", "caraballeda", "maiquetía", "maiquetia",
+                            "catia la mar", "naiguatá", "naiguata", "tanaguarena", "litoral", "vargas"],
+}
+
+
+def build_session_memory(history: list, lang: str = "es") -> str:
+    """Nota corta de CONTINUIDAD derivada de lo que el usuario YA dijo en la sesión.
+
+    No inventa nada ni guarda datos personales: solo resume, de los mensajes del
+    propio usuario, qué zona(s) le interesan y si está buscando a un familiar, para
+    que el asistente mantenga el hilo. Devuelve "" si no hay nada relevante.
+    """
+    user_text = " ".join(m.get("content", "") for m in (history or [])
+                         if m.get("role") == "user").lower()
+    if not user_text.strip():
+        return ""
+    zonas = [nombre for nombre, hints in _ZONE_HINTS.items()
+             if any(h in user_text for h in hints)]
+    buscando = classify_intent(user_text) == "paradero_persona"
+    n_user = sum(1 for m in (history or []) if m.get("role") == "user")
+    if not zonas and not buscando and n_user <= 1:
+        return ""
+
+    en = lang == "en"
+    lines = ["## " + ("Conversation memory (continuity context about THIS user; NOT data to cite, "
+                      "just to keep the thread and avoid re-asking):" if en
+                      else "Memoria de la conversación (contexto de ESTE usuario; NO son datos para "
+                           "citar, solo para dar continuidad y no repreguntar):")]
+    if zonas:
+        lines.append(("- Zones the user has mentioned: " if en
+                      else "- Zonas que el usuario ha mencionado: ") + ", ".join(zonas) + ".")
+    if buscando:
+        lines.append("- The user is searching for a relative; reunification channels were already offered."
+                     if en else
+                     "- El usuario está buscando a un familiar; ya se ofrecieron los canales de reunificación.")
+    lines.append((f"- Questions so far this session: {n_user}." if en
+                  else f"- Preguntas en esta sesión: {n_user}."))
+    return "\n".join(lines)
+
+
 def system_prompt(lang: str, context_block: str) -> str:
     """Contrato anti-alucinación + el bloque de CONTEXTO factual."""
     if lang == "en":
