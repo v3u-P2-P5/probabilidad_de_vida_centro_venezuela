@@ -473,6 +473,9 @@ def home():
         if "caritas_venezuela" in cofu:
             st.markdown(f"🔗 [{fuente_nombre(cofu['caritas_venezuela'], lang)}]({cofu['caritas_venezuela']['url']})")
 
+    # ── RECURSOS PARA DAMNIFICADOS (página aparte) ────────────────────────────
+    st.page_link("pages/9_Damnificados.py", label="🆘 " + t("ver_damnificados", lang), icon="🆘")
+
     # ── CONSEJOS POST-TERREMOTO (página aparte) ───────────────────────────────
     st.subheader("🧭 " + t("consejos_titulo", lang))
     st.page_link("pages/5_Consejos_post_terremoto.py", label="🧭 " + t("ver_consejos", lang))
@@ -491,5 +494,6 @@ pages = [
     st.Page("pages/5_Consejos_post_terremoto.py",  title="Safety Tips / Consejos", icon="🧭"),
     st.Page("pages/6_Mapa_NASA.py",                title="NASA Satellite Map",       icon="🛰️"),
     st.Page("pages/7_Asistente.py",                title="Asistente / Assistant",    icon="💬"),
+    st.Page("pages/9_Damnificados.py",             title="Ayuda Damnificados / Help",icon="🆘"),
 ]
 st.navigation(pages).run()
