@@ -416,7 +416,6 @@ def home():
     ):
         if key in cofu:
             col.markdown(f"🔗 [{fuente_nombre(cofu[key], lang)}]({cofu[key]['url']})")
-    st.page_link("pages/7_Asistente.py", label=t("ver_asistente", lang), icon="💬")
 
     # ── ENCUENTRA AYUDA EN TU ZONA (color por intensidad) ─────────────────────
     st.subheader("🆘 " + t("ayuda_zona_titulo", lang))
@@ -459,6 +458,7 @@ def home():
 </div>""", unsafe_allow_html=True)
                 st.page_link(path, label="🆘 " + t("ver_ayuda_zona", lang))
     st.caption(t("leyenda_zonas", lang))
+    st.page_link("pages/7_Asistente.py", label=t("ver_asistente", lang), icon="💬")
     st.image("assets/perros.jpg", use_container_width=True,
              caption=t("img_perros", lang))
 
