@@ -474,7 +474,7 @@ def home():
             st.markdown(f"🔗 [{fuente_nombre(cofu['caritas_venezuela'], lang)}]({cofu['caritas_venezuela']['url']})")
 
     # ── RECURSOS PARA DAMNIFICADOS (página aparte) ────────────────────────────
-    st.page_link("pages/9_Damnificados.py", label="🆘 " + t("ver_damnificados", lang), icon="🆘")
+    st.page_link("pages/9_Damnificados.py", label=t("ver_damnificados", lang), icon="🆘")
 
     # ── CONSEJOS POST-TERREMOTO (página aparte) ───────────────────────────────
     st.subheader("🧭 " + t("consejos_titulo", lang))
