@@ -39,10 +39,20 @@ chat:
   # Requiere crédito en openrouter.ai/credits para usar el primario de pago.
   modelo: "google/gemini-2.5-flash-lite"                      # Google Gemini, de pago muy barato
   modelo_fallback: "meta-llama/llama-3.3-70b-instruct:free"   # respaldo gratuito si falta crédito
-  max_tokens: 600
+  max_tokens: 700                          # margen para citar fuentes en las respuestas
   temperatura: 0.0                         # 0 = máxima fidelidad al contexto (anti-alucinación)
   max_input_chars: 600                     # trunca preguntas largas (anti-abuso)
   rate_limit_por_sesion: 30                # nº máx de preguntas por sesión de navegador
+  # --- Skills (tool-calling): el modelo consulta DATOS REALES en vivo por pregunta ---
+  # Si activo=false, o el modelo no está en modelos_con_tools, o las tools fallan,
+  # el asistente cae al modo v1 (context-pack estático). Nunca queda sin responder.
+  tools:
+    activo: true
+    max_iteraciones: 5                     # rondas máximas de tool-calling por pregunta
+    max_tools_por_turno: 8                 # tope de llamadas a skills por pregunta (anti-abuso)
+    modelos_con_tools:                     # modelos que soportan function-calling
+      - "google/gemini-2.5-flash-lite"
+      - "meta-llama/llama-3.3-70b-instruct:free"
 
 # --- Secuencia sísmica REAL (USGS) — SISMO DOBLE ---
 # Dos eventos en 38 segundos, epicentros separados ~5.5 km. Se combinan sus

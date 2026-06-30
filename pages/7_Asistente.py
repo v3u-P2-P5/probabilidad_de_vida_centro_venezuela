@@ -13,7 +13,8 @@ import streamlit as st
 from core.chat import (ChatAuthError, ChatError, ChatRateLimitError,
                        ChatUnavailable, stream_chat)
 from core.chat_context import build_chat_context, reunification_links
-from core.chat_prompt import classify_intent, sanitize_user_input, system_prompt
+from core.chat_prompt import (classify_intent, sanitize_user_input,
+                              system_prompt, system_prompt_v2)
 from core.config import load_config
 from core.i18n import t
 from core.ui import apply_chrome
@@ -90,33 +91,66 @@ if prompt:
         st.session_state.chat_history.append({"role": "assistant", "content": answer})
     else:
         st.session_state.chat_calls += 1
-        context_block = build_chat_context(lang)
-        api_messages = [{"role": "system", "content": system_prompt(lang, context_block)}]
-        api_messages += st.session_state.chat_history[-6:]   # historial reciente
-
-        model = chat_cfg.get("modelo", "anthropic/claude-3.5-sonnet")
-        fallback = chat_cfg.get("modelo_fallback", "openai/gpt-4o-mini")
+        history = st.session_state.chat_history[-6:]
         referer = _secret("OPENROUTER_APP_URL")
         title = _secret("OPENROUTER_APP_TITLE")
+        temperature = float(chat_cfg.get("temperatura", 0.0))
+        max_tokens = int(chat_cfg.get("max_tokens", 700))
+        model = chat_cfg.get("modelo", "google/gemini-2.5-flash-lite")
+        fallback = chat_cfg.get("modelo_fallback", "")
+        tools_cfg = chat_cfg.get("tools", {}) or {}
+        tools_on = bool(tools_cfg.get("activo", False))
+        modelos_tools = tools_cfg.get("modelos_con_tools", [])
 
-        def _gen(model_id):
-            return stream_chat(api_messages, api_key, model_id,
-                               referer=referer, title=title,
-                               temperature=float(chat_cfg.get("temperatura", 0.1)),
-                               max_tokens=int(chat_cfg.get("max_tokens", 600)))
+        def _messages_v1():
+            ctx_block = build_chat_context(lang)
+            return [{"role": "system", "content": system_prompt(lang, ctx_block)}] + history
 
         with st.chat_message("assistant"):
             answer, err = None, None
-            for model_id in (model, fallback):
-                try:
-                    answer = st.write_stream(_gen(model_id))
-                    break
-                except ChatAuthError:
-                    err = "auth"; break
-                except ChatRateLimitError:
-                    err = "rate"; continue   # 429 → prueba el modelo de respaldo
-                except (ChatUnavailable, ChatError):
-                    err = "api"; continue    # error/sin crédito → prueba el respaldo
+
+            # Camino AGÉNTICO (skills/tool-calling) con modelos que soportan tools.
+            if tools_on:
+                from core.chat import agentic_chat
+                from core.chat_tools import TOOLS_SCHEMA, dispatch
+                base_v2 = [{"role": "system", "content": system_prompt_v2(lang)}] + history
+                for model_id in [m for m in (model, fallback) if m in modelos_tools]:
+                    try:
+                        enriched = agentic_chat(
+                            base_v2, api_key, model_id, TOOLS_SCHEMA, dispatch,
+                            referer=referer, title=title, temperature=temperature,
+                            max_tokens=max_tokens,
+                            max_iters=int(tools_cfg.get("max_iteraciones", 5)),
+                            max_tools=int(tools_cfg.get("max_tools_por_turno", 8)))
+                        answer = st.write_stream(stream_chat(
+                            enriched, api_key, model_id, referer=referer, title=title,
+                            temperature=temperature, max_tokens=max_tokens))
+                        err = None
+                        break
+                    except ChatAuthError:
+                        err = "auth"; break
+                    except ChatRateLimitError:
+                        err = "rate"; continue
+                    except (ChatUnavailable, ChatError):
+                        err = "api"; continue
+
+            # Camino v1 (context-pack) si tools off, modelo no apto o todos fallaron.
+            if answer is None and err != "auth":
+                for model_id in (model, fallback):
+                    if not model_id:
+                        continue
+                    try:
+                        answer = st.write_stream(stream_chat(
+                            _messages_v1(), api_key, model_id, referer=referer, title=title,
+                            temperature=temperature, max_tokens=max_tokens))
+                        err = None
+                        break
+                    except ChatAuthError:
+                        err = "auth"; break
+                    except ChatRateLimitError:
+                        err = "rate"; continue
+                    except (ChatUnavailable, ChatError):
+                        err = "api"; continue
 
             if answer:
                 st.caption("ℹ️ " + t("chat_pie_ia", lang))

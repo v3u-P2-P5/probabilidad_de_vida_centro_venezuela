@@ -4,6 +4,16 @@ import pandas as pd
 
 M_PER_DEG_LAT = 111_320.0  # metros por grado de latitud (aprox.)
 
+# Ciudades grandes de referencia (lat, lon) para dar contexto geográfico al
+# público y a las skills, sin tener que importar app.py.
+CIUDADES_REF = {
+    "Puerto Cabello": (10.4731, -68.0125),
+    "Valencia":       (10.1620, -68.0077),
+    "Maracay":        (10.2469, -67.5958),
+    "Barquisimeto":   (10.0647, -69.3301),
+    "Caracas":        (10.4806, -66.9036),
+}
+
 
 def make_grid(bbox, cell_m: float) -> pd.DataFrame:
     """Genera centros de celda en una rejilla regular sobre el bbox.
