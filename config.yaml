@@ -4,6 +4,15 @@
 #  Editable EN CALIENTE (la app recarga sin reiniciar código).
 # ============================================================================
 
+# --- Asistente de IA (OpenRouter) ---
+# Para cambiar el modelo: editar chat → modelo (recarga en caliente, sin tocar código).
+# Modelos gratuitos en openrouter.ai/models?q=free
+chat:
+  modelo:          "google/gemma-3-27b-it:free"               # Gemma 3 27B (primario)
+  modelo_respaldo: "meta-llama/llama-3.3-70b-instruct:free"   # Llama 3.3 70B (respaldo)
+  max_tokens:      400
+  temperatura:     0.2
+
 # --- Modo ---
 # operativo=true  => SOLO datos reales (USGS, OSM, ReliefWeb, GDACS). Si una capa
 #                    no está disponible se marca NO DISPONIBLE; NUNCA se inventan datos.
