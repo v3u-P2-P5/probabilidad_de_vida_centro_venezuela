@@ -230,8 +230,20 @@ def get_gdacs_alert():
 
 def get_reliefweb_situation_reports(limit=6):
     rw = get_reliefweb_reports(load_config(), limit=int(limit))
-    return {"disponible": bool(rw.get("reports")), "reports": rw.get("reports", []),
-            "needs_appname": rw.get("needs_appname", False),
+    reports = rw.get("reports", [])
+    needs = rw.get("needs_appname", False)
+    if reports:
+        estado, nota = "ok", ""
+    elif needs:
+        estado = "feed_no_configurado"
+        nota = ("El feed automático de ReliefWeb requiere un appname aprobado (aún no "
+                "configurado en la app). Hay reportes oficiales del desastre en la url; "
+                "ofrécela en vez de decir que no hay información.")
+    else:
+        estado = "sin_reportes"
+        nota = "Sin reportes recientes en el feed; consulta la url oficial del desastre."
+    return {"disponible": bool(reports), "estado": estado, "reports": reports,
+            "needs_appname": needs, "nota": nota,
             "fuente": "ReliefWeb (OCHA) — Reportes de situación", "url": rw.get("url"),
             "hora_consulta": rw.get("fetched_at") or _now()}
 
@@ -477,17 +489,32 @@ def _validate(name, args):
     for req in schema.get("required", []):
         if req not in args:
             return False, f"falta el parámetro requerido: {req}"
-    for k, v in args.items():
+    for k, v in list(args.items()):
         spec = props.get(k)
         if spec is None:
             return False, f"parámetro no permitido: {k}"
-        if "enum" in spec and v not in spec["enum"]:
-            return False, f"{k} debe ser uno de {spec['enum']}"
-        if spec.get("type") in ("number", "integer") and isinstance(v, (int, float)):
+        t = spec.get("type")
+        if t in ("number", "integer"):
+            if isinstance(v, bool):                       # bool es subclase de int → rechazar
+                return False, f"{k} debe ser numérico"
+            if isinstance(v, str):                        # el modelo a veces manda "10.5"
+                try:
+                    v = float(v)
+                except ValueError:
+                    return False, f"{k} debe ser numérico"
+            if not isinstance(v, (int, float)):
+                return False, f"{k} debe ser numérico"
+            if t == "integer":
+                if float(v) != int(v):
+                    return False, f"{k} debe ser un entero"
+                v = int(v)
+            args[k] = v                                   # coerción → fluye a la skill
             if "minimum" in spec and v < spec["minimum"]:
                 return False, f"{k} por debajo del mínimo"
             if "maximum" in spec and v > spec["maximum"]:
                 return False, f"{k} por encima del máximo"
+        if "enum" in spec and v not in spec["enum"]:
+            return False, f"{k} debe ser uno de {spec['enum']}"
     return True, ""
 
 

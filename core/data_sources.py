@@ -175,9 +175,13 @@ def get_aftershock_resumen(dias_atras: int = 7, min_magnitud: float = 2.5,
         rc.raise_for_status()
         total = int(rc.json().get("count", 0))
     except Exception:
-        return {**out, "disponible": False, "total_replicas": None, "max_magnitud": None}
-    res = {**out, "disponible": True, "total_replicas": total, "max_magnitud": None,
-           "max_magnitud_hora_utc": None, "max_magnitud_lugar": None,
+        return {**out, "disponible": False, "total_sismos": None, "max_magnitud": None}
+    # 'total_sismos' cuenta TODOS los eventos de la ventana, incluidos los 2
+    # principales (M7.5/M7.2) si caen dentro: NO es solo réplicas ni una predicción.
+    res = {**out, "disponible": True, "total_sismos": total, "incluye_principales": True,
+           "nota_conteo": ("Conteo PASADO de sismos en la ventana; incluye los 2 sismos "
+                           "principales si caen dentro. No es una predicción de réplicas futuras."),
+           "max_magnitud": None, "max_magnitud_hora_utc": None, "max_magnitud_lugar": None,
            "max_magnitud_evento_url": None, "max_es_evento_principal": None}
     if total > 0:
         try:
