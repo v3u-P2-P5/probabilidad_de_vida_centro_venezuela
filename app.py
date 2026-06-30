@@ -72,7 +72,7 @@ def home():
     with st.expander(t("expander_replicas", lang), expanded=False):
         if lang == "en":
             st.markdown(
-                "Since the double earthquake on **24 Jun 2026**, **more than 130 aftershocks** "
+                "Since the double earthquake on **24 Jun 2026**, **more than 609 aftershocks** "
                 "have been recorded (largest M4.8). They are expected and are part of the natural "
                 "process of post-rupture crustal stabilization."
             )
@@ -82,7 +82,7 @@ def home():
                 {"Date": "29 Jun 2026", "Magnitude": "M4.6", "Area": "N. Venezuela",
                  "Note": "Felt in Caracas and coastal area"},
                 {"Date": "24–29 Jun",   "Magnitude": "≤M4.8", "Area": "Epicentral region",
-                 "Note": "130+ aftershocks recorded; largest M4.8 (USGS)"},
+                 "Note": "609+ aftershocks recorded; largest M4.8 (USGS/Wikipedia, Jun 29)"},
             ]
             st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
             st.markdown("**USGS forecast (first week):**")
@@ -104,7 +104,7 @@ def home():
             )
         else:
             st.markdown(
-                "Tras el doble sismo del **24 jun 2026** se han registrado **más de 130 réplicas** "
+                "Tras el doble sismo del **24 jun 2026** se han registrado **más de 609 réplicas** "
                 "(la mayor en M4.8). Son esperables y forman parte del proceso natural de "
                 "estabilización cortical post-ruptura."
             )
@@ -114,7 +114,7 @@ def home():
                 {"Fecha": "29 jun 2026", "Magnitud": "M4.6", "Zona": "Norte de Venezuela",
                  "Nota": "Sentida en Caracas y zona costera"},
                 {"Fecha": "24–29 jun",   "Magnitud": "≤M4.8", "Zona": "Región epicentral",
-                 "Nota": "Más de 130 réplicas registradas; mayor en M4.8 (USGS)"},
+                 "Nota": "Más de 609 réplicas registradas; mayor en M4.8 (USGS/Wikipedia, 29 jun)"},
             ]
             st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
             st.markdown("**Pronóstico USGS (primera semana):**")
