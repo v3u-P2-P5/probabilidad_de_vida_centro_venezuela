@@ -123,8 +123,8 @@
 
   "ver_asistente": "Pregúntale al asistente cómo usar la app correctamente",
   "chat_titulo": "Asistente — Pregunta sobre las zonas",
-  "chat_intro": "Pregunta sobre la intensidad, la población, los hospitales y refugios, las cifras oficiales y dónde buscar a un familiar. El asistente responde **solo con los datos reales de esta app** y cita sus fuentes; si un dato no está disponible, lo dice.",
-  "chat_disclaimer": "ℹ️ Asistente informativo. **No localiza personas** ni confirma el paradero o estado de nadie. Puede equivocarse: verifica siempre en las fuentes citadas. Emergencias: 171 o 911.",
+  "chat_intro": "Pregunta sobre las zonas cubiertas por esta app: la intensidad, la población, los hospitales y refugios, las cifras oficiales y dónde buscar a un familiar. El asistente responde **solo con los datos reales de esta app** y cita sus fuentes.",
+  "chat_disclaimer": "ℹ️ Asistente informativo. **No localiza personas**. Puede equivocarse: verifica siempre en las fuentes citadas. Emergencias: 171 o 911.",
   "chat_cobertura": "Cobertura: Caracas (Libertador · Sucre/Petare · Baruta/Hatillo/Chacao) y La Guaira (litoral). Otras zonas: sin datos en esta app.",
   "chat_placeholder": "Escribe tu pregunta…",
   "chat_pensando": "Consultando los datos de la app…",

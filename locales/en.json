@@ -123,8 +123,8 @@
 
   "ver_asistente": "Ask the assistant how to use the app correctly",
   "chat_titulo": "Assistant — Ask about the areas",
-  "chat_intro": "Ask about shaking intensity, population, hospitals and shelters, official figures and where to look for a relative. The assistant answers **only from the real data in this app** and cites its sources; if a figure isn't available, it says so.",
-  "chat_disclaimer": "ℹ️ Informational assistant. It **does not locate people** or confirm anyone's whereabouts or status. It can make mistakes: always verify against the cited sources. Emergencies: 171 or 911.",
+  "chat_intro": "Ask about the areas covered by this app: shaking intensity, population, hospitals and shelters, official figures and where to look for a relative. The assistant answers **only from the real data in this app** and cites its sources.",
+  "chat_disclaimer": "ℹ️ Informational assistant. It **does not locate people**. It can make mistakes: always verify against the cited sources. Emergencies: 171 or 911.",
   "chat_cobertura": "Coverage: Caracas (Libertador · Sucre/Petare · Baruta/Hatillo/Chacao) and La Guaira (coast). Other areas: no data in this app.",
   "chat_placeholder": "Type your question…",
   "chat_pensando": "Checking the app's data…",
