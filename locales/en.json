@@ -134,7 +134,7 @@
   "chat_error_api": "The assistant is unavailable right now. Try again in a few minutes or use the official sources.",
   "chat_rate_limit": "You've reached this session's question limit. Reload the page later to continue.",
   "chat_ocupado": "The assistant is receiving many requests right now. Wait a few seconds and try again.",
-  "chat_rechazo_persona": "I can't confirm a person's whereabouts or status: that information is handled confidentially through official channels. To **search for or register a relative**, use these channels:",
+  "chat_rechazo_persona": "I **do not locate people** or confirm anyone's whereabouts — that is handled confidentially through official channels. To **search for or register a missing relative**, use these channels:",
   "chat_aviso_emergencia": "If this is an emergency, call **171** or **911**.",
   "chat_limpiar": "Clear conversation",
   "chat_ejemplos_titulo": "Example questions:",

@@ -363,15 +363,15 @@ def home():
             st.markdown("Financial commitments from governments and international organizations (as of 30 Jun 2026):")
             _fin_rows = [
                 {"Country / Organization": "🇺🇸 United States",     "Amount": ">$300 M",          "Channel": "USAID / OCHA / WFP / partners"},
-                {"Country / Organization": "🇨🇳 China",              "Amount": "$14.7 M (¥100 M)", "Channel": "Govt + Red Cross China"},
+                {"Country / Organization": "🇨🇳 China",              "Amount": "$14.7 M (¥100 M)", "Channel": "Government + Red Cross China"},
                 {"Country / Organization": "🇪🇺 European Union",     "Amount": "€5 M (~$5.7 M)",   "Channel": "EU ECHO humanitarian aid"},
                 {"Country / Organization": "🇰🇷 South Korea",        "Amount": "$5 M",              "Channel": "International organizations"},
                 {"Country / Organization": "🇨🇦 Canada",             "Amount": "$5 M",              "Channel": "Humanitarian aid"},
                 {"Country / Organization": "🏳 IFRC",                "Amount": "$2.5 M",            "Channel": "Red Cross Emergency Fund"},
                 {"Country / Organization": "🇳🇱 Netherlands",        "Amount": "€2 M (~$2.3 M)",   "Channel": "Humanitarian operations"},
                 {"Country / Organization": "🇪🇸 Spain",              "Amount": "€1 M (~$1.1 M)",   "Channel": "Emergency aid"},
-                {"Country / Organization": "🕊 Vatican",             "Amount": "€100 K (~$114 K)",  "Channel": "Church structures in Venezuela"},
-                {"Country / Organization": "🇷🇺 Russia",             "Amount": "n/a",               "Channel": "Humanitarian aid (announced)"},
+                {"Country / Organization": "🕊 Vatican",             "Amount": "€100 K (~$114 K)",  "Channel": "Catholic aid structures in Venezuela"},
+                {"Country / Organization": "🇷🇺 Russia",             "Amount": "not announced",      "Channel": "Humanitarian aid (announced)"},
                 {"Country / Organization": "🏢 GEM + Walmart (US)", "Amount": "In-kind",            "Channel": "Supply logistics via USAID / State Dept."},
             ]
             st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>', unsafe_allow_html=True)
