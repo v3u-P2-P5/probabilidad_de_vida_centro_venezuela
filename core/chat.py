@@ -10,6 +10,20 @@ import requests
 
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
+# Los valores de cabecera HTTP deben ser latin-1. Normaliza la puntuación
+# tipográfica (— “ ” ’ …) y descarta lo no codificable, para que un título o
+# URL con guion largo no rompa la petición (UnicodeEncodeError en http.client).
+_PUNCT = {"—": "-", "–": "-", "‒": "-", "‘": "'", "’": "'",
+          "“": '"', "”": '"', "…": "...", " ": " "}
+
+
+def _latin1(value: str) -> str:
+    if not value:
+        return ""
+    for bad, good in _PUNCT.items():
+        value = value.replace(bad, good)
+    return value.encode("latin-1", "ignore").decode("latin-1")
+
 
 class ChatError(Exception):
     """Error genérico del asistente."""
@@ -41,9 +55,9 @@ def stream_chat(messages, api_key, model, *, referer="", title="",
 
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     if referer:
-        headers["HTTP-Referer"] = referer
+        headers["HTTP-Referer"] = _latin1(referer)
     if title:
-        headers["X-Title"] = title
+        headers["X-Title"] = _latin1(title)
 
     payload = {
         "model": model,
