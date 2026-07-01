@@ -219,6 +219,14 @@ def home():
                     f'opacity:0.85;margin-top:6px;">{x.get("notas", "")}</div>'
                     if x.get("notas") else ""
                 )
+                _campos = [
+                    (t("col_fallecidos", lang), x.get("fallecidos")),
+                    (t("col_heridos", lang), x.get("heridos")),
+                    (t("col_desaparecidos", lang), x.get("desaparecidos")),
+                ]
+                _cifras_html = "<br>".join(
+                    f"<b>{label}:</b> {valor}" for label, valor in _campos if valor
+                )
                 st.markdown(f"""
 <div style="border:1px solid var(--border-color,#e6dada);border-left:6px solid #b3261e;
   border-radius:10px;padding:10px 14px;margin-bottom:10px;
@@ -226,9 +234,7 @@ def home():
   <div style="font-weight:700;color:var(--text-color,#1a1a1a);">{x.get('fuente', '')}</div>
   <div style="font-size:0.78rem;color:var(--text-color,#1a1a1a);opacity:0.7;margin-bottom:6px;">{x.get('fecha', '')}</div>
   <div style="font-size:0.92rem;line-height:1.6;color:var(--text-color,#1a1a1a);">
-    <b>{t('col_fallecidos', lang)}:</b> {x.get('fallecidos', '—')}<br>
-    <b>{t('col_heridos', lang)}:</b> {x.get('heridos', '—')}<br>
-    <b>{t('col_desaparecidos', lang)}:</b> {x.get('desaparecidos', '—')}
+    {_cifras_html}
   </div>
   {_notas_html}
 </div>""", unsafe_allow_html=True)
