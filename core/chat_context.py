@@ -4,7 +4,7 @@ Reúne, de las MISMAS fuentes que muestra la UI (sin duplicar literales ni
 inventar nada):
   - Evento(s) USGS, alerta PAGER, horas transcurridas.
   - Por zona: intensidad MMI, población residente, barrios más intensos y
-    recursos OSM (hospitales, bomberos, refugios) con teléfono/área.
+    recursos OSM (hospitales, clínicas, bomberos, ambulancias) con teléfono/área.
   - Cifras oficiales y daños materiales (verbatim, con fuente + fecha + URL).
   - Canales oficiales de reunificación familiar (CICR, Cruz Roja, etc.).
 Las capas no disponibles se marcan "NO DISPONIBLE" explícitamente, nunca se omiten.

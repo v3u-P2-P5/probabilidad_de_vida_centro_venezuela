@@ -1,7 +1,10 @@
 """Recursos críticos reales desde OpenStreetMap (Overpass API).
 
-Hospitales, clínicas, estaciones de bomberos/ambulancias y refugios: a dónde
+Hospitales, clínicas y estaciones de bomberos/ambulancias: a dónde
 llevar sobrevivientes y qué activos de rescate hay cerca. Datos en vivo.
+No incluye refugios (amenity=shelter en OSM son estructuras menores tipo
+caseta, no centros de evacuación reales; podían confundirse con sitios
+donde la gente duerme al aire libre).
 © colaboradores de OpenStreetMap.
 """
 import pandas as pd
@@ -43,16 +46,14 @@ def _post_overpass(endpoints, query, timeout):
 KIND_LABELS = {
     "hospital": "🏥 Hospital", "clinic": "🏥 Clínica",
     "fire_station": "🚒 Bomberos", "ambulance_station": "🚑 Ambulancias",
-    "shelter": "⛺ Refugio",
 }
 KIND_LABELS_EN = {
     "hospital": "🏥 Hospital", "clinic": "🏥 Clinic",
     "fire_station": "🚒 Fire Station", "ambulance_station": "🚑 Ambulance Station",
-    "shelter": "⛺ Shelter",
 }
 
 # Orden de presentación por tipo (prioridad SAR)
-KIND_ORDER = ["hospital", "ambulance_station", "clinic", "fire_station", "shelter"]
+KIND_ORDER = ["hospital", "ambulance_station", "clinic", "fire_station"]
 
 
 _SECTOR_GRID = [
@@ -112,7 +113,6 @@ def fetch_resources(bbox, endpoint: str, ttl: float = 1800.0,
     (
       nwr["amenity"~"^(hospital|clinic|fire_station)$"]({bb});
       nwr["emergency"="ambulance_station"]({bb});
-      nwr["amenity"="shelter"]["social_facility"!~"."]({bb});
     );
     out center tags;
     """
@@ -121,7 +121,9 @@ def fetch_resources(bbox, endpoint: str, ttl: float = 1800.0,
         data = _post_overpass([endpoint] + MIRRORS, query, timeout)
         for el in data.get("elements", []):
             tags = el.get("tags", {})
-            kind = tags.get("amenity") or tags.get("emergency") or "shelter"
+            kind = tags.get("amenity") or tags.get("emergency")
+            if not kind:
+                continue
             lat = el.get("lat") or el.get("center", {}).get("lat")
             lon = el.get("lon") or el.get("center", {}).get("lon")
             if lat is None or lon is None:

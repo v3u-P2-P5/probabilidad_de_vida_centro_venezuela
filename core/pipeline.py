@@ -4,7 +4,7 @@ Solo datos reales y atribuidos:
 - ShakeMap USGS (intensidad MMI por celda, sismo doble combinado).
 - Población residente (WorldPop precomputado / censo INE).
 - Ground-failure USGS (licuefacción/deslizamiento por celda) cuando está precomputado.
-- Recursos críticos OSM (hospitales, refugios, bomberos) por área.
+- Recursos críticos OSM (hospitales, clínicas, bomberos, ambulancias) por área.
 
 NO modela probabilidad de sobrevivientes. Produce agregados por barrio/área para
 la vista informativa orientada al público.

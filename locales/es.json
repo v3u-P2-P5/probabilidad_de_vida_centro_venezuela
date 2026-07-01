@@ -60,7 +60,7 @@
   "col_ofrece": "Qué ofrece",
 
   "ayuda_zona_titulo": "Hospitales cercanos a las zonas más afectadas",
-  "ayuda_zona_nota": "Abre tu zona para ver hospitales, refugios y bomberos cercanos, con teléfono y dirección.",
+  "ayuda_zona_nota": "Abre tu zona para ver hospitales, clínicas y bomberos cercanos, con teléfono y dirección.",
   "ver_ayuda_zona": "Ver ayuda y mapa de la zona",
   "leyenda_zonas": "Color según intensidad sentida (USGS): 🔴 más afectada → 🟠 menos afectada. Todas las zonas resultaron afectadas.",
   "kpi_poblacion_residente": "Población residente",
@@ -74,7 +74,7 @@
 
   "subtitulo_zona": "Intensidad sentida, peligros y dónde obtener ayuda",
   "banner_sin_shakemap": "⛔ El ShakeMap de USGS no está disponible ahora. La intensidad de esta zona no puede mostrarse hasta restablecer la fuente.",
-  "leyenda_intensidad": "🔴 Mapa de calor = zonas más afectadas (sacudimiento USGS × población expuesta): a dónde concentrar la ayuda. 🏥 Marcadores = hospitales, bomberos y refugios (OSM).",
+  "leyenda_intensidad": "🔴 Mapa de calor = zonas más afectadas (sacudimiento USGS × población expuesta): a dónde concentrar la ayuda. 🏥 Marcadores = hospitales, clínicas, bomberos y ambulancias (OSM).",
   "recursos_titulo": "Recursos cercanos (OSM)",
   "ayuda_titulo": "Dónde obtener ayuda",
   "recursos_ninguno": "Sin recursos mapeados en OSM para esta zona. Consulta a Protección Civil (171).",
@@ -135,7 +135,7 @@
 
   "ver_asistente": "Pregúntale al asistente cómo usar la app correctamente",
   "chat_titulo": "Asistente — Pregunta sobre las zonas",
-  "chat_intro": "Pregunta sobre las zonas cubiertas por esta app: la intensidad, la población, los hospitales y refugios, las cifras oficiales y dónde buscar a un familiar. El asistente responde **solo con los datos reales de esta app** y cita sus fuentes.",
+  "chat_intro": "Pregunta sobre las zonas cubiertas por esta app: la intensidad, la población, los hospitales y clínicas, las cifras oficiales y dónde buscar a un familiar. El asistente responde **solo con los datos reales de esta app** y cita sus fuentes.",
   "chat_disclaimer": "ℹ️ Asistente informativo. **No localiza personas**. Puede equivocarse: verifica siempre en las fuentes citadas. Emergencias: 171 o 911.",
   "chat_cobertura": "Cobertura: Caracas (Libertador · Sucre/Petare · Baruta/Hatillo/Chacao) y La Guaira (litoral). Otras zonas: sin datos en esta app.",
   "chat_placeholder": "Escribe tu pregunta…",
