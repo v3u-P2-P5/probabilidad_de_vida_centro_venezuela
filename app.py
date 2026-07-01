@@ -451,19 +451,19 @@ def home():
                 "[PAHO/WHO Situation Report No. 1](https://www.paho.org/en/documents/situation-report-no1-earthquakes-venezuela-m72-and-m75)"
             )
             st.divider()
-            st.markdown("**Pre-existing humanitarian situation in Venezuela (independent of the earthquake):**")
+            st.markdown("**Separate emergency: flooding in Portuguesa state (independent of the earthquake):**")
             st.markdown(
-                "- 7.9 M people needed humanitarian assistance at the start of 2026, per the UN.\n"
-                "- Over 40% of the population faces moderate-to-severe food insecurity (OCHA/WFP).\n"
-                "- 7.6 M Venezuelans are displaced worldwide (UNHCR).\n"
-                "- Venezuela's 2025 Humanitarian Response Plan was among the least funded globally (17%), per OCHA."
+                "Heavy rains caused the Chabasquén and Chabasquencito rivers and several streams to overflow "
+                "in Portuguesa state on **28 Jun 2026**, flooding streets and homes in Chabasquén and affecting "
+                "over 100 families. A bridge on the Troncal 007 highway partially collapsed, cutting off more "
+                "than 20 sectors. Forecasts pointed to continued rain and flood risk in western and southern "
+                "Venezuela into July."
             )
             st.caption(
-                "ℹ️ Figures from neutral multilateral agencies (UN OCHA, UNHCR, IOM), cited for humanitarian "
-                "context only — not a political assessment. 🔗 Sources: "
-                "[OCHA Venezuela](https://www.unocha.org/venezuela) · "
-                "[UNHCR — Venezuela emergency](https://www.unrefugees.org/emergencies/venezuela/) · "
-                "[IOM Crisis Response Plan 2026](https://crisisresponse.iom.int/response/venezuela-bolivarian-republic-crisis-response-plan-2026)"
+                "🔗 Sources: "
+                "[El Tiempo (Colombia), 28 Jun](https://www.eltiempo.com/mundo/venezuela/nueva-emergencia-en-venezuela-fuertes-lluvias-e-inundaciones-aislan-poblaciones-en-el-estado-portuguesa-3567692) · "
+                "[El Heraldo, 28 Jun](https://www.elheraldo.co/mundo/2026/06/28/lluvias-e-inundaciones-agravan-la-emergencia-en-venezuela-tras-los-devastadores-terremotos/) · "
+                "[NOAA Climate Prediction Center — regional hazards outlook](https://www.cpc.ncep.noaa.gov/products/international/nsamerica/nsamerica_hazard.pdf)"
             )
         else:
             st.markdown("**Otros estados afectados por el sismo (no cubiertos por los mapas de esta app):**")
@@ -482,19 +482,19 @@ def home():
                 "[OPS/OMS, Reporte de Situación N.º 1](https://www.paho.org/en/documents/situation-report-no1-earthquakes-venezuela-m72-and-m75)"
             )
             st.divider()
-            st.markdown("**Situación humanitaria preexistente en Venezuela (independiente del sismo):**")
+            st.markdown("**Emergencia aparte: inundaciones en el estado Portuguesa (independiente del sismo):**")
             st.markdown(
-                "- 7,9 M de personas requerían asistencia humanitaria a inicios de 2026, según la ONU.\n"
-                "- Más del 40 % de la población enfrenta inseguridad alimentaria moderada o severa (OCHA/PMA).\n"
-                "- 7,6 M de venezolanos están desplazados a nivel mundial (ACNUR).\n"
-                "- El Plan de Respuesta Humanitaria 2025 de Venezuela fue de los menos financiados a nivel global (17 %), según OCHA."
+                "Fuertes lluvias provocaron el desbordamiento de los ríos Chabasquén y Chabasquencito y "
+                "varias quebradas en el estado Portuguesa el **28 jun 2026**, inundando calles y viviendas "
+                "en Chabasquén y afectando a más de 100 familias. Un puente de la Troncal 007 colapsó "
+                "parcialmente, dejando incomunicados más de 20 sectores. Los pronósticos meteorológicos "
+                "mantenían riesgo de más lluvias e inundaciones en el occidente y sur del país entrando julio."
             )
             st.caption(
-                "ℹ️ Cifras de agencias multilaterales neutrales (OCHA, ACNUR, OIM), citadas solo con fin "
-                "de contexto humanitario — no como evaluación política. 🔗 Fuentes: "
-                "[OCHA Venezuela](https://www.unocha.org/venezuela) · "
-                "[ACNUR — Emergencia Venezuela](https://www.unrefugees.org/emergencies/venezuela/) · "
-                "[OIM, Plan de Respuesta a la Crisis 2026](https://crisisresponse.iom.int/response/venezuela-bolivarian-republic-crisis-response-plan-2026)"
+                "🔗 Fuentes: "
+                "[El Tiempo (Colombia), 28 jun](https://www.eltiempo.com/mundo/venezuela/nueva-emergencia-en-venezuela-fuertes-lluvias-e-inundaciones-aislan-poblaciones-en-el-estado-portuguesa-3567692) · "
+                "[El Heraldo, 28 jun](https://www.elheraldo.co/mundo/2026/06/28/lluvias-e-inundaciones-agravan-la-emergencia-en-venezuela-tras-los-devastadores-terremotos/) · "
+                "[NOAA Climate Prediction Center — pronóstico regional de riesgos](https://www.cpc.ncep.noaa.gov/products/international/nsamerica/nsamerica_hazard.pdf)"
             )
 
     # ── PERSONAS DESAPARECIDAS ────────────────────────────────────────────────
