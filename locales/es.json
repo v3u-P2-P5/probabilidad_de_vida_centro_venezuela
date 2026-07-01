@@ -96,8 +96,8 @@
   "proyeccion_estadistica": "referencia (censo)",
   "atribucion": "Datos: USGS · GDACS · OCHA/ReliefWeb · OpenStreetMap (© colaboradores) · WorldPop · Copernicus EMS · UNOSAT · CICR",
 
-  "expander_sismo_doble": "🌍 Datos del Doble-Sismo",
-  "expander_respuesta_intl": "🌍 Respuesta internacional desplegada",
+  "expander_sismo_doble": "🌎 Datos del Doble-Sismo",
+  "expander_respuesta_intl": "🌎 Respuesta internacional desplegada",
   "expander_replicas": "📉 Réplicas registradas — Opinión de los expertos:",
   "swipe_hint": "desliza →",
 

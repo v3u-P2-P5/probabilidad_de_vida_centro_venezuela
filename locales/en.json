@@ -96,8 +96,8 @@
   "proyeccion_estadistica": "reference (census)",
   "atribucion": "Data: USGS · GDACS · OCHA/ReliefWeb · OpenStreetMap (© contributors) · WorldPop · Copernicus EMS · UNOSAT · ICRC",
 
-  "expander_sismo_doble": "🌍 Double Earthquake Data",
-  "expander_respuesta_intl": "🌍 International Response Deployed",
+  "expander_sismo_doble": "🌎 Double Earthquake Data",
+  "expander_respuesta_intl": "🌎 International Response Deployed",
   "expander_replicas": "📉 Recorded Aftershocks — Expert Assessment:",
   "swipe_hint": "scroll table →",
 
