@@ -65,8 +65,8 @@ def home():
 
     st.title(t("app_title", lang))
     st.caption(t("app_subtitle", lang))
-    st.image("assets/rescatistas.jpg", use_container_width=True,
-             caption=t("img_rescatistas", lang))
+    st.image("assets/caritas.webp", use_container_width=True,
+             caption=t("img_caritas", lang))
 
     # ── RÉPLICAS + OPINIÓN DE EXPERTOS (primera sección desplegable) ─────────
     with st.expander(t("expander_replicas", lang), expanded=False):
@@ -226,6 +226,13 @@ def home():
             st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
             st.caption("🔗 " + " · ".join(
                 f"[{x.get('fuente','fuente')}]({x['url']})" for x in cifras if x.get("url")))
+
+        st.markdown("**" + t("damnificados_stats_titulo", lang) + "**")
+        _dc = st.columns(3)
+        _dc[0].metric(t("damnificados_sin_hogar", lang),   "~16.000" if lang == "es" else "~16,000")
+        _dc[1].metric(t("damnificados_afectados", lang),   "~6,76 M" if lang == "es" else "~6.76 M")
+        _dc[2].metric(t("damnificados_en_calle", lang),    "39 %")
+        st.caption(t("damnificados_stats_nota", lang))
 
         if rw.get("reports"):
             st.markdown("**" + t("reportes_oficiales", lang) + "**")

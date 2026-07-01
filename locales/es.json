@@ -59,7 +59,7 @@
   "col_organismo": "Organismo",
   "col_ofrece": "Qué ofrece",
 
-  "ayuda_zona_titulo": "Encuentra ayuda en tu zona",
+  "ayuda_zona_titulo": "Hospitales cercanos a las zonas más afectadas",
   "ayuda_zona_nota": "Abre tu zona para ver hospitales, refugios y bomberos cercanos, con teléfono y dirección.",
   "ver_ayuda_zona": "Ver ayuda y mapa de la zona",
   "leyenda_zonas": "Color según intensidad sentida (USGS): 🔴 más afectada → 🟠 menos afectada. Todas las zonas resultaron afectadas.",
@@ -119,7 +119,14 @@
   "nasa_experimental_caption": "🛰️ Puntos coloreados: {n} edificios con probabilidad de daño ≥ 50 % según análisis Sentinel-1 SAR (NASA, experimental, sin validar en campo). Rojo ≥ 75 % · Naranja 50–75 % · Ámbar < 50 %. Cobertura parcial.",
   "ver_en_mapa": "📍 Ver en mapa",
   "img_rescatistas": "Equipos de rescate desplegados en Caracas y La Guaira — Venezuela, junio 2026",
+  "img_caritas": "Voluntarios de Cáritas Venezuela desplegados en las zonas afectadas — junio 2026",
   "img_perros": "Perros de búsqueda y rescate desplegados en las zonas afectadas — Venezuela, junio 2026",
+
+  "damnificados_stats_titulo": "Personas desplazadas y afectadas",
+  "damnificados_sin_hogar": "Sin hogar",
+  "damnificados_afectados": "Personas afectadas (OIM)",
+  "damnificados_en_calle": "Duermen en la calle",
+  "damnificados_stats_nota": "~16.000 sin hogar: 50% con familiares, 39% en la calle o espacios públicos, 11% en iglesias/escuelas. Estimación total de afectados: ~6,76 M (OIM). Fuentes: [ACNUR/El Estímulo, 30 jun](https://elestimulo.com/terremoto-en-venezuela/2026-06-30/acnur-alerta-sobre-un-rapido-deterioro-humanitario-y-miles-de-desplazados-en-las-calles/) · [NPR, 30 jun](https://www.npr.org/2026/06/30/nx-s1-5875282/one-chaos-after-another-thousands-left-homeless-after-venezuelan-earthquakes)",
 
   "damnificados_titulo": "Recursos para damnificados",
   "damnificados_page_intro": "Plataformas ciudadanas verificadas y organizaciones con respuesta activa para el doble sismo de Venezuela (24 jun 2026).",

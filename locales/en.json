@@ -59,7 +59,7 @@
   "col_organismo": "Organization",
   "col_ofrece": "What it offers",
 
-  "ayuda_zona_titulo": "Find help near you",
+  "ayuda_zona_titulo": "Hospitals near the most affected areas",
   "ayuda_zona_nota": "Select your area to view nearby hospitals, shelters and fire stations, with contact numbers and addresses.",
   "ver_ayuda_zona": "View area map and help",
   "leyenda_zonas": "Color by felt intensity (USGS): 🔴 most affected → 🟠 least affected. All zones were affected.",
@@ -119,7 +119,14 @@
   "nasa_experimental_caption": "🛰️ Colored dots: {n} buildings with ≥ 50 % damage probability per Sentinel-1 SAR analysis (NASA, experimental, unvalidated in field). Red ≥ 75 % · Orange 50–75 % · Amber < 50 %. Partial coverage.",
   "ver_en_mapa": "📍 View on map",
   "img_rescatistas": "Rescue teams deployed in Caracas and La Guaira — Venezuela, June 2026",
+  "img_caritas": "Cáritas Venezuela volunteers deployed in the affected areas — June 2026",
   "img_perros": "Search and rescue dogs deployed in the affected areas — Venezuela, June 2026",
+
+  "damnificados_stats_titulo": "Displaced and affected persons",
+  "damnificados_sin_hogar": "Homeless",
+  "damnificados_afectados": "Total affected (IOM)",
+  "damnificados_en_calle": "Sleeping outdoors",
+  "damnificados_stats_nota": "~16,000 homeless: 50% with relatives, 39% on streets or public spaces, 11% in churches/schools. Total affected estimate: ~6.76 M (IOM). Sources: [UNHCR/El Estímulo, Jun 30](https://elestimulo.com/terremoto-en-venezuela/2026-06-30/acnur-alerta-sobre-un-rapido-deterioro-humanitario-y-miles-de-desplazados-en-las-calles/) · [NPR, Jun 30](https://www.npr.org/2026/06/30/nx-s1-5875282/one-chaos-after-another-thousands-left-homeless-after-venezuelan-earthquakes)",
 
   "damnificados_titulo": "Resources for Survivors",
   "damnificados_page_intro": "Verified citizen platforms and organizations with active response to the Venezuela double earthquake (Jun 24, 2026).",
