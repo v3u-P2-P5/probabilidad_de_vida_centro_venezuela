@@ -90,6 +90,12 @@ relief:
 # desaparecidos (texto), notas.
 cifras_oficiales:
   - fuente: "Jorge Rodríguez — Asamblea Nacional Venezuela"
+    fecha: "2026-07-01"
+    url: "https://www.eltiempo.com/mundo/venezuela/venezuela-hoy-1-de-julio-tras-terremotos-organizaciones-de-venezolanos-en-estados-unidos-denuncian-obstaculos-a-la-llegada-y-distribucion-de-ayuda-3568145"
+    fallecidos: "2.295"
+    heridos: "11.267"
+    notas: "12.841 desplazados. Delcy Rodríguez decretó duelo nacional. 782 réplicas registradas desde el 24 jun. Respuesta: 3.660 rescatistas extranjeros, 26.121 personal venezolano, 148 perros, 15.467 voluntarios, 80.870 familias asistidas."
+  - fuente: "Jorge Rodríguez — Asamblea Nacional Venezuela"
     fecha: "2026-06-30"
     url: "https://www.univision.com/noticias/america-latina/ultimas-noticias-terremotos-venezuela-hoy-martes-30-junio-2026-en-vivo"
     fallecidos: "1.943"

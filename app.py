@@ -72,7 +72,7 @@ def home():
     with st.expander(t("expander_replicas", lang), expanded=False):
         if lang == "en":
             st.markdown(
-                "Since the double earthquake on **24 Jun 2026**, **more than 609 aftershocks** "
+                "Since the double earthquake on **24 Jun 2026**, **more than 782 aftershocks** "
                 "have been recorded (largest M4.8). They are expected and are part of the natural "
                 "process of post-rupture crustal stabilization."
             )
@@ -81,8 +81,8 @@ def home():
                  "Note": "Bridge collapse in Caraballeda; additional damage in Caracas"},
                 {"Date": "29 Jun 2026", "Magnitude": "M4.6", "Area": "N. Venezuela",
                  "Note": "Felt in Caracas and coastal area"},
-                {"Date": "24–29 Jun",   "Magnitude": "≤M4.8", "Area": "Epicentral region",
-                 "Note": "609+ aftershocks recorded; largest M4.8 (USGS/Wikipedia, Jun 29)"},
+                {"Date": "24 Jun–1 Jul",   "Magnitude": "≤M4.8", "Area": "Epicentral region",
+                 "Note": "782+ aftershocks recorded; largest M4.8 (Nat'l Assembly, Jul 1)"},
             ]
             st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
             st.markdown("**USGS forecast (first week):**")
@@ -104,7 +104,7 @@ def home():
             )
         else:
             st.markdown(
-                "Tras el doble sismo del **24 jun 2026** se han registrado **más de 609 réplicas** "
+                "Tras el doble sismo del **24 jun 2026** se han registrado **más de 782 réplicas** "
                 "(la mayor en M4.8). Son esperables y forman parte del proceso natural de "
                 "estabilización cortical post-ruptura."
             )
@@ -113,8 +113,8 @@ def home():
                  "Nota": "Colapso de puente en Caraballeda; daños adicionales en Caracas"},
                 {"Fecha": "29 jun 2026", "Magnitud": "M4.6", "Zona": "Norte de Venezuela",
                  "Nota": "Sentida en Caracas y zona costera"},
-                {"Fecha": "24–29 jun",   "Magnitud": "≤M4.8", "Zona": "Región epicentral",
-                 "Nota": "Más de 609 réplicas registradas; mayor en M4.8 (USGS/Wikipedia, 29 jun)"},
+                {"Fecha": "24 jun–1 jul",   "Magnitud": "≤M4.8", "Zona": "Región epicentral",
+                 "Nota": "Más de 782 réplicas registradas; mayor en M4.8 (Asamblea Nacional, 1 jul)"},
             ]
             st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
             st.markdown("**Pronóstico USGS (primera semana):**")
@@ -142,7 +142,8 @@ def home():
             "[Wikipedia EN](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes) · "
             "[SkyAlert MX](https://skyalert.mx/articulos/actualizacion-sismos-venezuela-2026) · "
             "[Ecoosfera](https://ecoosfera.com/noticias/sismos-venezuela-2026-teoria-placas/) · "
-            "[Univision (29 jun)](https://www.univision.com/noticias/america-latina/ultimas-noticias-del-terremoto-en-venezuela-un-nuevo-sismo-de-4-2-vuelve-a-impactar-la-zona-norte-de-venezuela-en-medio-de-la-busqueda-de-mas-de-50-000-personas-atrapadas-hoy-29-de-junio-de-2026)"
+            "[Univision (29 jun)](https://www.univision.com/noticias/america-latina/ultimas-noticias-del-terremoto-en-venezuela-un-nuevo-sismo-de-4-2-vuelve-a-impactar-la-zona-norte-de-venezuela-en-medio-de-la-busqueda-de-mas-de-50-000-personas-atrapadas-hoy-29-de-junio-de-2026) · "
+            "[El Tiempo (1 jul)](https://www.eltiempo.com/mundo/venezuela/venezuela-hoy-1-de-julio-tras-terremotos-organizaciones-de-venezolanos-en-estados-unidos-denuncian-obstaculos-a-la-llegada-y-distribucion-de-ayuda-3568145)"
         )
         st.page_link("pages/8_Replicas_en_vivo.py",
                      label="🌎 " + ("Live aftershocks — chart + map →" if lang == "en"
