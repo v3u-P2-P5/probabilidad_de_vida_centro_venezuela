@@ -13,7 +13,7 @@ from core.relief import get_gdacs, get_reliefweb_reports
 from core.sources import fmt_vet_utc, parse_iso
 from core.ui import apply_chrome, render_sources, _cached_zone
 
-st.set_page_config(page_title="Venezuela 2026 — Doble Sismo / Double Earthquake", page_icon="🌍", layout="wide")
+st.set_page_config(page_title="Venezuela 2026 — Doble Sismo / Double Earthquake", page_icon="🌎", layout="wide")
 
 # Ciudades grandes y conocidas para dar referencia geográfica al público (el
 # epicentro real, cerca de Yumare, no le dice nada a la mayoría de la gente).
