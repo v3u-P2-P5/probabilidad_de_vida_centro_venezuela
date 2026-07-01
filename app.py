@@ -469,8 +469,8 @@ def home():
                 st.page_link(path, label="🆘 " + t("ver_ayuda_zona", lang))
     st.caption(t("leyenda_zonas", lang))
     st.page_link("pages/7_Asistente.py", label=t("ver_asistente", lang), icon="💬")
-    st.image("assets/perros.jpg", use_container_width=True,
-             caption=t("img_perros", lang))
+    st.image("assets/donar.png", use_container_width=True,
+             caption=t("img_donar", lang))
 
     # ── CÓMO AYUDAR (donaciones) ──────────────────────────────────────────────
     if "centros_acopio_vzla" in cofu or "caritas_venezuela" in cofu:
