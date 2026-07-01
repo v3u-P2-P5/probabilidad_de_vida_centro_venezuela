@@ -298,14 +298,15 @@ def home():
         _perros_lbl    = "🐕 Dogs"           if lang == "en" else "🐕 Perros"
         rc[0].metric(_paises_lbl,    "27")
         rc[1].metric(_equipos_lbl,   "44")
-        rc[2].metric(_rescatist_lbl, "2,624" if lang == "en" else "2.624")
-        rc[3].metric(_perros_lbl,    "137")
+        rc[2].metric(_rescatist_lbl, "3,660" if lang == "en" else "3.660")
+        rc[3].metric(_perros_lbl,    "148")
         _na = "n/a" if lang == "en" else "s/d"
         if lang == "en":
             st.warning(
-                "⚠️ **The official total (2,624 rescue workers · 137 dogs) is the consolidated "
-                "figure reported by Jorge Rodríguez on 28 Jun 2026.** Individual "
-                "country figures are those published separately — most have not released "
+                "⚠️ **The official total (3,660 foreign rescue workers · 148 dogs) is the consolidated "
+                "figure reported by Jorge Rodríguez on 1 Jul 2026** (plus 26,121 Venezuelan personnel "
+                "and 15,467 registered volunteers). Individual "
+                "country figures below are those published separately on 28 Jun — most have not released "
                 "detailed breakdowns, which is why the table sum is lower than the official total."
             )
             _col_pais = "Country"
@@ -314,9 +315,10 @@ def home():
             _otros    = "Other 13 countries ✝"
         else:
             st.warning(
-                "⚠️ **El total oficial (2.624 rescatistas · 137 perros) es el dato consolidado "
-                "reportado por Jorge Rodríguez el 28 jun 2026.** Las cifras por país son las "
-                "publicadas individualmente — la mayoría no ha dado un desglose detallado, "
+                "⚠️ **El total oficial (3.660 rescatistas extranjeros · 148 perros) es el dato "
+                "consolidado reportado por Jorge Rodríguez el 1 jul 2026** (más 26.121 efectivos "
+                "venezolanos y 15.467 voluntarios registrados). Las cifras por país son las "
+                "publicadas individualmente el 28 jun — la mayoría no ha dado un desglose detallado, "
                 "por eso la suma de la tabla es menor que el total oficial."
             )
             _col_pais = "País"
@@ -362,7 +364,7 @@ def home():
                 "Germany, Czech Rep., Jordan, Lithuania, Qatar · "
                 "US: VA-TF1 (80p·6🐕) + LA County (71p·6🐕) · "
                 "n/a = no figure published · "
-                "Total workers & dogs: [J. Rodríguez 28 Jun](https://www.univision.com/noticias/america-latina/ultimas-noticias-del-terremoto-en-venezuela-un-nuevo-sismo-de-4-2-vuelve-a-impactar-la-zona-norte-de-venezuela-en-medio-de-la-busqueda-de-mas-de-50-000-personas-atrapadas-hoy-29-de-junio-de-2026) · "
+                "Total workers & dogs: [J. Rodríguez 1 Jul](https://www.eltiempo.com/mundo/venezuela/venezuela-hoy-1-de-julio-tras-terremotos-organizaciones-de-venezolanos-en-estados-unidos-denuncian-obstaculos-a-la-llegada-y-distribucion-de-ayuda-3568145) · "
                 "countries & teams: [OCHA 27 Jun](https://news.un.org/en/story/2026/06/1167825) · "
                 "[State Dept.](https://www.state.gov/responding-to-venezuela-earthquakes) · "
                 "[Wikipedia](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes)"
@@ -373,7 +375,7 @@ def home():
                 "Alemania, Rep. Checa, Jordania, Lituania, Qatar · "
                 "EE.UU.: VA-TF1 (80p·6🐕) + Condado LA (71p·6🐕) · "
                 "s/d = sin dato publicado · "
-                "Total rescatistas y perros: [J. Rodríguez 28 jun](https://www.univision.com/noticias/america-latina/ultimas-noticias-del-terremoto-en-venezuela-un-nuevo-sismo-de-4-2-vuelve-a-impactar-la-zona-norte-de-venezuela-en-medio-de-la-busqueda-de-mas-de-50-000-personas-atrapadas-hoy-29-de-junio-de-2026) · "
+                "Total rescatistas y perros: [J. Rodríguez 1 jul](https://www.eltiempo.com/mundo/venezuela/venezuela-hoy-1-de-julio-tras-terremotos-organizaciones-de-venezolanos-en-estados-unidos-denuncian-obstaculos-a-la-llegada-y-distribucion-de-ayuda-3568145) · "
                 "países y equipos: [OCHA 27 jun](https://news.un.org/en/story/2026/06/1167825) · "
                 "[Depto. de Estado](https://www.state.gov/responding-to-venezuela-earthquakes) · "
                 "[Wikipedia](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes)"
