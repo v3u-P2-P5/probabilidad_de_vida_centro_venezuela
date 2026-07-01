@@ -470,40 +470,48 @@ def render_zone(zone_id: str) -> None:
         st.caption(t("nasa_experimental_caption", lang, n=len(nasa_buildings)))
 
     # ── CLIMA: actual + pronóstico ────────────────────────────────────────────
+    # st.fragment con run_every alineado al TTL de get_weather (1800s): refresca
+    # solo este bloque en su propio ciclo, sin remontar el mapa Folium ni el
+    # resto de la página (ver core/weather.py:97 para el TTL).
     lat_c = (zone["bbox"][1] + zone["bbox"][3]) / 2
     lon_c = (zone["bbox"][0] + zone["bbox"][2]) / 2
-    wx = get_weather(lat_c, lon_c, lang)
-    if wx:
-        cur = wx["current"]
-        wc = st.columns(4)
-        wc[0].metric(t("clima_temperatura", lang), f"{cur['temp']:.0f} °C")
-        wc[1].metric(t("clima_lluvia_1h",   lang), f"{cur['precip']:.1f} mm")
-        wc[2].metric(t("clima_viento",       lang), f"{cur['wind']:.0f} km/h")
-        wc[3].metric(cur["icon"] + " " + t("clima_cielo", lang), cur["condition"])
 
-        with st.expander(t("clima_expander", lang), expanded=False):
-            if wx["hourly"]:
-                st.markdown(f"**{t('clima_proximas_horas', lang)}**")
-                rows = [{
-                    t("clima_col_hora",  lang): f"{h['icon']} {h['hora']}",
-                    "Temp (°C)":               f"{h['temp']:.0f}",
-                    t("clima_col_prob",  lang): f"{int(h['precip_prob'] or 0)} %",
-                    t("clima_col_lluvia",lang): f"{h['precip']:.1f}",
-                } for h in wx["hourly"]]
-                st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+    @st.fragment(run_every="30m")
+    def _clima_fragment(lat_c=lat_c, lon_c=lon_c, lang=lang):
+        wx = get_weather(lat_c, lon_c, lang)
+        if wx:
+            cur = wx["current"]
+            wc = st.columns(4)
+            wc[0].metric(t("clima_temperatura", lang), f"{cur['temp']:.0f} °C")
+            wc[1].metric(t("clima_lluvia_1h",   lang), f"{cur['precip']:.1f} mm")
+            wc[2].metric(t("clima_viento",       lang), f"{cur['wind']:.0f} km/h")
+            wc[3].metric(cur["icon"] + " " + t("clima_cielo", lang), cur["condition"])
 
-            if wx["daily"]:
-                st.markdown(f"**{t('clima_2_dias', lang)}**")
-                dc = st.columns(len(wx["daily"]))
-                for col, d in zip(dc, wx["daily"]):
-                    col.markdown(
-                        f"**{d['dia']}**  \n"
-                        f"{d['icon']} {d['condition']}  \n"
-                        f"🌡️ {d['tmax']:.0f}° / {d['tmin']:.0f}°  \n"
-                        f"🌧️ {d['precip']:.1f} mm"
-                    )
+            with st.expander(t("clima_expander", lang), expanded=False):
+                if wx["hourly"]:
+                    st.markdown(f"**{t('clima_proximas_horas', lang)}**")
+                    rows = [{
+                        t("clima_col_hora",  lang): f"{h['icon']} {h['hora']}",
+                        "Temp (°C)":               f"{h['temp']:.0f}",
+                        t("clima_col_prob",  lang): f"{int(h['precip_prob'] or 0)} %",
+                        t("clima_col_lluvia",lang): f"{h['precip']:.1f}",
+                    } for h in wx["hourly"]]
+                    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
 
-        st.caption(f"{t('clima_caption', lang)} {cur['fetched_at']} · [Open-Meteo](https://open-meteo.com) (CC BY 4.0)")
+                if wx["daily"]:
+                    st.markdown(f"**{t('clima_2_dias', lang)}**")
+                    dc = st.columns(len(wx["daily"]))
+                    for col, d in zip(dc, wx["daily"]):
+                        col.markdown(
+                            f"**{d['dia']}**  \n"
+                            f"{d['icon']} {d['condition']}  \n"
+                            f"🌡️ {d['tmax']:.0f}° / {d['tmin']:.0f}°  \n"
+                            f"🌧️ {d['precip']:.1f} mm"
+                        )
+
+            st.caption(f"{t('clima_caption', lang)} {cur['fetched_at']} · [Open-Meteo](https://open-meteo.com) (CC BY 4.0)")
+
+    _clima_fragment()
 
     # ── KPIs informativos ─────────────────────────────────────────────────────
     c1, c2, c3 = st.columns(3)
