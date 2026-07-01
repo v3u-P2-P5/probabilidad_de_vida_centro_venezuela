@@ -482,7 +482,7 @@ def home():
                 "[OPS/OMS, Reporte de Situación N.º 1](https://www.paho.org/en/documents/situation-report-no1-earthquakes-venezuela-m72-and-m75)"
             )
             st.divider()
-            st.markdown("**Emergencia aparte: inundaciones en el estado Portuguesa (independiente del sismo):**")
+            st.markdown("**Emergencia: inundaciones en el estado Portuguesa (independiente del sismo):**")
             st.markdown(
                 "Fuertes lluvias provocaron el desbordamiento de los ríos Chabasquén y Chabasquencito y "
                 "varias quebradas en el estado Portuguesa el **28 jun 2026**, inundando calles y viviendas "
