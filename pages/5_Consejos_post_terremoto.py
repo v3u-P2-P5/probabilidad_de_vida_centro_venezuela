@@ -32,7 +32,7 @@ CONTENIDO = {
             "**No entres** a edificaciones con grietas grandes, columnas dañadas, pisos hundidos o inclinación: pueden colapsar en una réplica.",
             "Si tu casa quedó dañada, sal con calma y no regreses hasta que un técnico la evalúe.",
             "Cuidado con escombros, vidrios y estructuras inestables al caminar.",
-            "Reporta edificios en riesgo a Protección Civil.",
+            "Reporta edificios en riesgo a Protección Civil; no improvises rescates en estructuras colapsadas.",
         ]),
         ("🔥 Gas, electricidad y agua", [
             "**Si hueles gas**: no enciendas luces, fósforos ni aparatos; cierra la llave, abre ventanas y sal.",
@@ -44,7 +44,7 @@ CONTENIDO = {
             "Atiende primero a quien tenga hemorragias graves o dificultad para respirar.",
             "No muevas a personas con posibles lesiones de columna salvo peligro inmediato.",
             "Mantén a mano medicinas esenciales y botiquín.",
-            "Si hay tiempo: lávate las manos y sécalas bien antes de ayudar a personas que lo necesiten.",
+            "Si hay tiempo: lávate las manos y sécalas bien antes de ayudar a personas que lo necesiten; el agua contaminada y las aglomeraciones aumentan el riesgo de enfermedades.",
         ]),
         ("🎒 Kit de emergencia", [
             "Agua (4 L por persona/día), alimentos no perecederos y abrelatas.",
@@ -90,7 +90,7 @@ CONTENIDO = {
             "Help first those with severe bleeding or breathing difficulty.",
             "Do not move people with possible spinal injuries unless in immediate danger.",
             "Keep essential medicines and a first-aid kit at hand.",
-            "Wash hands; contaminated water and crowding increase disease.",
+            "If there is time: wash and dry your hands well before helping others; contaminated water and crowding increase disease.",
         ]),
         ("🎒 Emergency kit", [
             "Water (4 L per person/day), non-perishable food and a can opener.",
