@@ -448,7 +448,10 @@ def _build_map(df, zone, ctx, lang, nasa_buildings=None):
 def render_zone(zone_id: str) -> None:
     from streamlit_folium import st_folium
     config = load_config()
-    lang = apply_chrome(config)
+    # autorefresh=False: el mapa Folium (heatmap + marcadores OSM) es pesado de
+    # remontar; igual que en la página NASA, evitamos re-renderizarlo solo cada
+    # autorefresco_segundos. Los datos igual se refrescan por TTL de caché.
+    lang = apply_chrome(config, autorefresh=False)
     zone = get_zone(config, zone_id)
     df, ctx = _cached_zone(zone_id, config.get("autorefresco_segundos", 0))
     render_sources(ctx, lang)
