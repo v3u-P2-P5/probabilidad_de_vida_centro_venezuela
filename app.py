@@ -429,6 +429,74 @@ def home():
                 "[Korea Herald](https://www.koreaherald.com/article/10789913) · 30 jun 2026"
             )
 
+    # ── OTRAS ZONAS Y CONTEXTO HUMANITARIO ────────────────────────────────────
+    # Informativo, sin mapas propios: solo enlaces a fuentes multilaterales
+    # neutrales (Wikipedia, OCHA, PAHO/OMS, ACNUR, OIM). Se evita deliberadamente
+    # cualquier encuadre político; el foco son cifras humanitarias verificables.
+    with st.expander(t("expander_otras_zonas", lang), expanded=False):
+        if lang == "en":
+            st.markdown("**Other states hit by the earthquake (not covered by this app's zone maps):**")
+            st.markdown(
+                "- 🏔️ **Yaracuy** (epicenter): ~3.9 M people exposed to severe shaking; "
+                "damage reported in San Felipe, Cocorote and Independencia.\n"
+                "- 🏗️ **Carabobo**: 14 dead, 67 injured (Naguanagua, Juan José Mora, Puerto Cabello, "
+                "San Diego); over 25 homes destroyed in Morón and Urama from landslides and collapses.\n"
+                "- 🏥 **Falcón**: 12 dead and 33 injured in the La Mar Suites building collapse; "
+                "32 people treated for injuries overall."
+            )
+            st.caption(
+                "🔗 Sources: "
+                "[Wikipedia EN — consolidated](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes) · "
+                "[OCHA Situation Report No. 5, 28 Jun](https://www.unocha.org/publications/report/venezuela-bolivarian-republic/earthquakes-venezuela-situation-report-no-5-28-june-2026-time-500-pm) · "
+                "[PAHO/WHO Situation Report No. 1](https://www.paho.org/en/documents/situation-report-no1-earthquakes-venezuela-m72-and-m75)"
+            )
+            st.divider()
+            st.markdown("**Pre-existing humanitarian situation in Venezuela (independent of the earthquake):**")
+            st.markdown(
+                "- 7.9 M people needed humanitarian assistance at the start of 2026, per the UN.\n"
+                "- Over 40% of the population faces moderate-to-severe food insecurity (OCHA/WFP).\n"
+                "- 7.6 M Venezuelans are displaced worldwide (UNHCR).\n"
+                "- Venezuela's 2025 Humanitarian Response Plan was among the least funded globally (17%), per OCHA."
+            )
+            st.caption(
+                "ℹ️ Figures from neutral multilateral agencies (UN OCHA, UNHCR, IOM), cited for humanitarian "
+                "context only — not a political assessment. 🔗 Sources: "
+                "[OCHA Venezuela](https://www.unocha.org/venezuela) · "
+                "[UNHCR — Venezuela emergency](https://www.unrefugees.org/emergencies/venezuela/) · "
+                "[IOM Crisis Response Plan 2026](https://crisisresponse.iom.int/response/venezuela-bolivarian-republic-crisis-response-plan-2026)"
+            )
+        else:
+            st.markdown("**Otros estados afectados por el sismo (no cubiertos por los mapas de esta app):**")
+            st.markdown(
+                "- 🏔️ **Yaracuy** (epicentro): ~3,9 M de personas expuestas a sacudimiento severo; "
+                "daños reportados en San Felipe, Cocorote e Independencia.\n"
+                "- 🏗️ **Carabobo**: 14 fallecidos, 67 heridos (Naguanagua, Juan José Mora, Puerto Cabello, "
+                "San Diego); más de 25 viviendas destruidas en Morón y Urama por deslizamientos y colapsos.\n"
+                "- 🏥 **Falcón**: 12 fallecidos y 33 heridos por el colapso del edificio La Mar Suites; "
+                "32 personas atendidas por lesiones en total."
+            )
+            st.caption(
+                "🔗 Fuentes: "
+                "[Wikipedia EN — consolidado](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes) · "
+                "[OCHA, Reporte de Situación N.º 5, 28 jun](https://www.unocha.org/publications/report/venezuela-bolivarian-republic/earthquakes-venezuela-situation-report-no-5-28-june-2026-time-500-pm) · "
+                "[OPS/OMS, Reporte de Situación N.º 1](https://www.paho.org/en/documents/situation-report-no1-earthquakes-venezuela-m72-and-m75)"
+            )
+            st.divider()
+            st.markdown("**Situación humanitaria preexistente en Venezuela (independiente del sismo):**")
+            st.markdown(
+                "- 7,9 M de personas requerían asistencia humanitaria a inicios de 2026, según la ONU.\n"
+                "- Más del 40 % de la población enfrenta inseguridad alimentaria moderada o severa (OCHA/PMA).\n"
+                "- 7,6 M de venezolanos están desplazados a nivel mundial (ACNUR).\n"
+                "- El Plan de Respuesta Humanitaria 2025 de Venezuela fue de los menos financiados a nivel global (17 %), según OCHA."
+            )
+            st.caption(
+                "ℹ️ Cifras de agencias multilaterales neutrales (OCHA, ACNUR, OIM), citadas solo con fin "
+                "de contexto humanitario — no como evaluación política. 🔗 Fuentes: "
+                "[OCHA Venezuela](https://www.unocha.org/venezuela) · "
+                "[ACNUR — Emergencia Venezuela](https://www.unrefugees.org/emergencies/venezuela/) · "
+                "[OIM, Plan de Respuesta a la Crisis 2026](https://crisisresponse.iom.int/response/venezuela-bolivarian-republic-crisis-response-plan-2026)"
+            )
+
     # ── PERSONAS DESAPARECIDAS ────────────────────────────────────────────────
     st.subheader("🔎 " + t("desaparecidos_titulo", lang))
     st.markdown(t("desaparecidos_texto", lang))

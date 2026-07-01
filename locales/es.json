@@ -114,6 +114,7 @@
   "clima_caption": "🕒 Clima:",
 
   "expander_ayuda_financiera": "💰 Ayuda financiera internacional desplegada",
+  "expander_otras_zonas": "🗺️ Otras zonas afectadas y contexto humanitario",
 
   "expander_nasa_danos": "🛰️ Daños observados por satélite (NASA / Copernicus)",
   "nasa_experimental_caption": "🛰️ Puntos coloreados: {n} edificios con probabilidad de daño ≥ 50 % según análisis Sentinel-1 SAR (NASA, experimental, sin validar en campo). Rojo ≥ 75 % · Naranja 50–75 % · Ámbar < 50 %. Cobertura parcial.",
