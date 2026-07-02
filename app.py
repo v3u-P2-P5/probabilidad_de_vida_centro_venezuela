@@ -82,7 +82,8 @@ def home():
 """, unsafe_allow_html=True)
 
     st.title(t("app_title", lang))
-    st.caption(t("app_subtitle", lang))
+    st.markdown(f'<p style="font-size:1.2rem;opacity:0.85;">{t("app_subtitle", lang)}</p>',
+                unsafe_allow_html=True)
     st.image("assets/caritas.webp", use_container_width=True,
              caption=f"{t('img_caritas', lang)} — {fecha_larga_vet(lang)}")
 
@@ -96,8 +97,8 @@ def home():
         st.warning(t("cifras_disclaimer", lang))
         for x in cifras:
             _notas_html = (
-                f'<div style="font-size:0.85rem;color:var(--text-color,#1a1a1a);'
-                f'opacity:0.85;margin-top:6px;">{x.get("notas", "")}</div>'
+                f'<div style="font-size:1rem;color:var(--text-color,#1a1a1a);'
+                f'opacity:0.9;margin-top:6px;">{x.get("notas", "")}</div>'
                 if x.get("notas") else ""
             )
             _campos = [
@@ -549,7 +550,8 @@ def home():
 
     # ── ENCUENTRA AYUDA EN TU ZONA (color por intensidad) ─────────────────────
     st.subheader("🆘 " + t("ayuda_zona_titulo", lang))
-    st.caption(t("ayuda_zona_nota", lang))
+    st.markdown(f'<p style="opacity:0.85;">{t("ayuda_zona_nota", lang)}</p>',
+                unsafe_allow_html=True)
     recs = resumen.to_dict("records")
     mmis = [r["mmi"] for r in recs if pd.notna(r["mmi"])]
     mlo, mhi = (min(mmis), max(mmis)) if mmis else (0, 1)
@@ -580,14 +582,15 @@ def home():
 <div style="border:1px solid var(--border-color,#e6dada);border-left:10px solid {color};
   border-radius:12px;padding:12px 14px 8px;
   background:var(--secondary-background-color,#f5f0ef);margin-bottom:4px;">
-  <div style="font-size:1.05rem;font-weight:700;color:var(--text-color,#1a1a1a);">
+  <div style="font-size:1.2rem;font-weight:700;color:var(--text-color,#1a1a1a);">
     <span style="color:{color};">📍</span> {row['nombre']}</div>
-  <div style="font-size:0.82rem;color:var(--text-color,#1a1a1a);opacity:0.78;">
-    {t('kpi_mmi_max', lang)}: <b>{mmi}</b>
-    &nbsp;·&nbsp; {t('kpi_poblacion_residente', lang)}: <b>{pob}</b></div>
+  <div style="font-size:1.05rem;color:var(--text-color,#1a1a1a);opacity:0.92;">
+    {t('kpi_mmi_max', lang)}: <span style="font-weight:800;font-size:1.15rem;">{mmi}</span>
+    &nbsp;·&nbsp; {t('kpi_poblacion_residente', lang)}: <span style="font-weight:800;font-size:1.15rem;">{pob}</span></div>
 </div>""", unsafe_allow_html=True)
                 st.page_link(path, label="🆘 " + t("ver_ayuda_zona", lang))
-    st.caption(t("leyenda_zonas", lang))
+    st.markdown(f'<p style="opacity:0.85;">{t("leyenda_zonas", lang)}</p>',
+                unsafe_allow_html=True)
     st.page_link("pages/7_Asistente.py", label=t("ver_asistente", lang), icon="💬")
     st.image("assets/donar.png", use_container_width=True,
              caption=t("img_donar", lang))
