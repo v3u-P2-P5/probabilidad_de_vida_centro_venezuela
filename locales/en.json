@@ -62,7 +62,7 @@
 
   "ayuda_zona_titulo": "Hospitals near the most affected areas",
   "ayuda_zona_nota": "Select your area to view nearby hospitals, clinics and fire stations, with contact numbers and addresses.",
-  "ver_ayuda_zona": "View area map and help",
+  "ver_ayuda_zona": "View health centers and fire stations in the area",
   "leyenda_zonas": "Color by felt intensity (USGS): 🔴 most affected → 🟠 least affected. All zones were affected.",
   "kpi_poblacion_residente": "Resident population",
 

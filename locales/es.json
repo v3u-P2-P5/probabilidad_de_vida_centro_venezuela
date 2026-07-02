@@ -62,7 +62,7 @@
 
   "ayuda_zona_titulo": "Hospitales cercanos a las zonas más afectadas",
   "ayuda_zona_nota": "Abre tu zona para ver hospitales, clínicas y bomberos cercanos, con teléfono y dirección.",
-  "ver_ayuda_zona": "Ver ayuda y mapa de la zona",
+  "ver_ayuda_zona": "Ver centros de salud y bomberos en la zona",
   "leyenda_zonas": "Color según intensidad sentida (USGS): 🔴 más afectada → 🟠 menos afectada. Todas las zonas resultaron afectadas.",
   "kpi_poblacion_residente": "Población residente",
 
