@@ -92,14 +92,32 @@ def home():
     gd = get_gdacs(config)
     rw = get_reliefweb_reports(config)
     cifras = config.get("cifras_oficiales", [])
+    _ALERT_LVL = {
+        "es": {"green": "VERDE", "yellow": "AMARILLA", "orange": "NARANJA", "red": "ROJA"},
+        "en": {"green": "GREEN", "yellow": "YELLOW", "orange": "ORANGE", "red": "RED"},
+    }
+    _pager_live = ctx.get("pager") if isinstance(ctx, dict) else None
+
     if cifras:
         st.markdown("**" + t("cifras_titulo", lang) + "**")
         st.warning(t("cifras_disclaimer", lang))
         for x in cifras:
+            _notas_texto = x.get("notas", "")
+            # Único dato de esta tabla con fuente 100% en vivo (USGS): el nivel de
+            # alerta PAGER actual se consulta ahora, sin depender de que alguien
+            # lo actualice a mano. El detalle histórico (%/umbral) sigue citado tal
+            # cual lo publicó USGS el día del evento.
+            if x.get("fuente", "").startswith("USGS PAGER") and _pager_live and _pager_live.get("alertlevel"):
+                _lvl_raw = (_pager_live.get("alertlevel") or "").lower()
+                _lvl = _ALERT_LVL["en" if lang == "en" else "es"].get(_lvl_raw, _lvl_raw.upper())
+                _live_txt = (f"🔴 Live check (USGS, now): current alert level {_lvl}."
+                             if lang == "en" else
+                             f"🔴 Consulta en vivo (USGS, ahora): nivel de alerta actual {_lvl}.")
+                _notas_texto = f"{_notas_texto} {_live_txt}" if _notas_texto else _live_txt
             _notas_html = (
                 f'<div style="font-size:1rem;color:var(--text-color,#1a1a1a);'
-                f'opacity:0.9;margin-top:6px;">{x.get("notas", "")}</div>'
-                if x.get("notas") else ""
+                f'opacity:0.9;margin-top:6px;">{_notas_texto}</div>'
+                if _notas_texto else ""
             )
             _campos = [
                 (t("col_fallecidos", lang), x.get("fallecidos")),
@@ -253,6 +271,7 @@ def home():
                 {"Date": "2026-jun-24 – 2026-jul-01",   "Magnitude": "≤M4.8", "Area": "Epicentral region",
                  "Note": "782+ aftershocks recorded; largest M4.8 (Nat'l Assembly, Jul 1)"},
             ]
+            st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>', unsafe_allow_html=True)
             st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
             st.markdown("**USGS forecast (first week):**")
             _pronostico = [
@@ -260,6 +279,7 @@ def home():
                 {"Threshold": "M6.0+", "Estimated probability": "~40 %",                 "Meaning": "Possible, not certain"},
                 {"Threshold": "M7.0+", "Estimated probability": "Very low",               "Meaning": "Extremely unlikely"},
             ]
+            st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>', unsafe_allow_html=True)
             st.dataframe(pd.DataFrame(_pronostico), hide_index=True, use_container_width=True)
             st.info(
                 "**The probability of a new earthquake of comparable magnitude (M7+) in the "
@@ -285,6 +305,7 @@ def home():
                 {"Fecha": "2026-jun-24 – 2026-jul-01",   "Magnitud": "≤M4.8", "Zona": "Región epicentral",
                  "Nota": "Más de 782 réplicas registradas; mayor en M4.8 (Asamblea Nacional, 1 jul)"},
             ]
+            st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>', unsafe_allow_html=True)
             st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
             st.markdown("**Pronóstico USGS (primera semana):**")
             _pronostico = [
@@ -292,6 +313,7 @@ def home():
                 {"Umbral": "M6.0+", "Probabilidad estimada": "~40 %",                 "Significado": "Posible, no segura"},
                 {"Umbral": "M7.0+", "Probabilidad estimada": "Muy baja",              "Significado": "Extremadamente improbable"},
             ]
+            st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>', unsafe_allow_html=True)
             st.dataframe(pd.DataFrame(_pronostico), hide_index=True, use_container_width=True)
             st.info(
                 "**La probabilidad de un nuevo sismo de magnitud comparable (M7+) en las "
