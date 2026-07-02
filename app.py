@@ -10,7 +10,7 @@ from core.config import load_config
 from core.geo import haversine_m
 from core.i18n import fmt_int, fuente_nombre, t
 from core.relief import get_gdacs, get_reliefweb_reports
-from core.sources import fmt_vet_utc, parse_iso
+from core.sources import fecha_larga_vet, fmt_fecha_corta, fmt_vet_utc, parse_iso
 from core.ui import apply_chrome, render_sources, _cached_zone
 
 st.set_page_config(page_title="Venezuela 2026 — Doble Sismo / Double Earthquake", page_icon="🌎", layout="wide")
@@ -63,10 +63,88 @@ def home():
     render_sources(ctx, lang)
     cofu = config["fuentes"]
 
+    # Letra general más grande y legible en Home; las citas/fuentes (st.caption)
+    # se mantienen en su tamaño pequeño actual explícitamente.
+    st.markdown("""
+<style>
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li,
+[data-testid="stAlertContainer"] [data-testid="stMarkdownContainer"] p {
+    font-size: 1.08rem !important;
+    line-height: 1.65 !important;
+}
+.stCaption, [data-testid="stCaptionContainer"],
+[data-testid="stCaptionContainer"] p {
+    font-size: 0.8rem !important;
+    line-height: 1.4 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
     st.title(t("app_title", lang))
     st.caption(t("app_subtitle", lang))
     st.image("assets/caritas.webp", use_container_width=True,
-             caption=t("img_caritas", lang))
+             caption=f"{t('img_caritas', lang)} — {fecha_larga_vet(lang)}")
+
+    # ── IMPACTO Y CIFRAS (sección más importante: siempre visible, sin desplegable) ──
+    st.subheader("📊 " + t("impacto_titulo", lang))
+    gd = get_gdacs(config)
+    rw = get_reliefweb_reports(config)
+    cifras = config.get("cifras_oficiales", [])
+    if cifras:
+        st.markdown("**" + t("cifras_titulo", lang) + "**")
+        st.warning(t("cifras_disclaimer", lang))
+        for x in cifras:
+            _notas_html = (
+                f'<div style="font-size:0.85rem;color:var(--text-color,#1a1a1a);'
+                f'opacity:0.85;margin-top:6px;">{x.get("notas", "")}</div>'
+                if x.get("notas") else ""
+            )
+            _campos = [
+                (t("col_fallecidos", lang), x.get("fallecidos")),
+                (t("col_heridos", lang), x.get("heridos")),
+                (t("col_desaparecidos", lang), x.get("desaparecidos")),
+            ]
+            _cifras_html = "<br>".join(
+                f'<span style="font-size:1.05rem;">{label}:</span> '
+                f'<span style="font-size:1.4rem;font-weight:800;">{valor}</span>'
+                for label, valor in _campos if valor
+            )
+            _fecha_fmt = fmt_fecha_corta(x.get("fecha", ""), lang)
+            st.markdown(f"""
+<div style="border:1px solid var(--border-color,#e6dada);border-left:6px solid #b3261e;
+  border-radius:10px;padding:10px 14px;margin-bottom:10px;
+  background:var(--secondary-background-color,#f5f0ef);">
+  <div style="font-weight:700;font-size:1.1rem;color:var(--text-color,#1a1a1a);">{x.get('fuente', '')}</div>
+  <div style="font-size:0.78rem;color:var(--text-color,#1a1a1a);opacity:0.7;margin-bottom:6px;">{_fecha_fmt}</div>
+  <div style="line-height:1.9;color:var(--text-color,#1a1a1a);">
+    {_cifras_html}
+  </div>
+  {_notas_html}
+</div>""", unsafe_allow_html=True)
+        st.caption("🔗 " + " · ".join(
+            f"[{x.get('fuente','fuente')}]({x['url']})" for x in cifras if x.get("url")))
+
+    st.markdown("**" + t("damnificados_stats_titulo", lang) + "**")
+    _dc = st.columns(3)
+    _dc[0].metric(t("damnificados_sin_hogar", lang),   "~16.000" if lang == "es" else "~16,000")
+    _dc[1].metric(t("damnificados_afectados", lang),   "~6,76 M" if lang == "es" else "~6.76 M")
+    _dc[2].metric(t("damnificados_en_calle", lang),    "39 %")
+    st.caption(t("damnificados_stats_nota", lang))
+
+    if rw.get("reports"):
+        st.markdown("**" + t("reportes_oficiales", lang) + "**")
+        for r in rw["reports"]:
+            st.markdown(f"- [{r['title']}]({r['url']}) — *{r['source']}, {r['date']}*")
+    else:
+        st.caption(t("reportes_oficiales_link", lang, url=rw.get("url", "https://reliefweb.int")))
+
+    upd = []
+    if gd.get("datemodified"):
+        upd.append(f"GDACS: {gd['datemodified'][:16].replace('T', ' ')}")
+    upd.append(f"{t('consulta_fuentes', lang)}: {gd.get('fetched_at', '')}")
+    st.caption(t("impacto_nota", lang) + "  ·  " + "  ·  ".join(upd))
+    st.divider()
 
     # ── RÉPLICAS + OPINIÓN DE EXPERTOS (primera sección desplegable) ─────────
     with st.expander(t("expander_replicas", lang), expanded=False):
@@ -77,11 +155,11 @@ def home():
                 "process of post-rupture crustal stabilization."
             )
             _replicas = [
-                {"Date": "26 Jun 2026", "Magnitude": "M4.7", "Area": "La Guaira",
+                {"Date": "2026-jun-26", "Magnitude": "M4.7", "Area": "La Guaira",
                  "Note": "Bridge collapse in Caraballeda; additional damage in Caracas"},
-                {"Date": "29 Jun 2026", "Magnitude": "M4.6", "Area": "N. Venezuela",
+                {"Date": "2026-jun-29", "Magnitude": "M4.6", "Area": "N. Venezuela",
                  "Note": "Felt in Caracas and coastal area"},
-                {"Date": "24 Jun–1 Jul",   "Magnitude": "≤M4.8", "Area": "Epicentral region",
+                {"Date": "2026-jun-24 – 2026-jul-01",   "Magnitude": "≤M4.8", "Area": "Epicentral region",
                  "Note": "782+ aftershocks recorded; largest M4.8 (Nat'l Assembly, Jul 1)"},
             ]
             st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
@@ -109,11 +187,11 @@ def home():
                 "estabilización cortical post-ruptura."
             )
             _replicas = [
-                {"Fecha": "26 jun 2026", "Magnitud": "M4.7", "Zona": "La Guaira",
+                {"Fecha": "2026-jun-26", "Magnitud": "M4.7", "Zona": "La Guaira",
                  "Nota": "Colapso de puente en Caraballeda; daños adicionales en Caracas"},
-                {"Fecha": "29 jun 2026", "Magnitud": "M4.6", "Zona": "Norte de Venezuela",
+                {"Fecha": "2026-jun-29", "Magnitud": "M4.6", "Zona": "Norte de Venezuela",
                  "Nota": "Sentida en Caracas y zona costera"},
-                {"Fecha": "24 jun–1 jul",   "Magnitud": "≤M4.8", "Zona": "Región epicentral",
+                {"Fecha": "2026-jun-24 – 2026-jul-01",   "Magnitud": "≤M4.8", "Zona": "Región epicentral",
                  "Nota": "Más de 782 réplicas registradas; mayor en M4.8 (Asamblea Nacional, 1 jul)"},
             ]
             st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
@@ -202,65 +280,6 @@ def home():
             c2[0].metric(t("magnitud", lang), f"M{a.get('magnitud')}")
             c2[1].metric(t("profundidad", lang), _km(a.get("profundidad_km")))
             _epicentro_linea(a)
-
-    # ── IMPACTO Y CIFRAS ──────────────────────────────────────────────────────
-    # Abierto por defecto: las cifras de víctimas son el dato informativo de mayor
-    # relevancia; no deben requerir un clic. GDACS/ReliefWeb se piden aquí dentro
-    # (no en el render principal) para no añadir una llamada de red al cargar Home.
-    with st.expander("📊 " + t("impacto_titulo", lang), expanded=True):
-        gd = get_gdacs(config)
-        rw = get_reliefweb_reports(config)
-        cifras = config.get("cifras_oficiales", [])
-        if cifras:
-            st.markdown("**" + t("cifras_titulo", lang) + "**")
-            st.warning(t("cifras_disclaimer", lang))
-            for x in cifras:
-                _notas_html = (
-                    f'<div style="font-size:0.8rem;color:var(--text-color,#1a1a1a);'
-                    f'opacity:0.85;margin-top:6px;">{x.get("notas", "")}</div>'
-                    if x.get("notas") else ""
-                )
-                _campos = [
-                    (t("col_fallecidos", lang), x.get("fallecidos")),
-                    (t("col_heridos", lang), x.get("heridos")),
-                    (t("col_desaparecidos", lang), x.get("desaparecidos")),
-                ]
-                _cifras_html = "<br>".join(
-                    f"<b>{label}:</b> {valor}" for label, valor in _campos if valor
-                )
-                st.markdown(f"""
-<div style="border:1px solid var(--border-color,#e6dada);border-left:6px solid #b3261e;
-  border-radius:10px;padding:10px 14px;margin-bottom:10px;
-  background:var(--secondary-background-color,#f5f0ef);">
-  <div style="font-weight:700;color:var(--text-color,#1a1a1a);">{x.get('fuente', '')}</div>
-  <div style="font-size:0.78rem;color:var(--text-color,#1a1a1a);opacity:0.7;margin-bottom:6px;">{x.get('fecha', '')}</div>
-  <div style="font-size:0.92rem;line-height:1.6;color:var(--text-color,#1a1a1a);">
-    {_cifras_html}
-  </div>
-  {_notas_html}
-</div>""", unsafe_allow_html=True)
-            st.caption("🔗 " + " · ".join(
-                f"[{x.get('fuente','fuente')}]({x['url']})" for x in cifras if x.get("url")))
-
-        st.markdown("**" + t("damnificados_stats_titulo", lang) + "**")
-        _dc = st.columns(3)
-        _dc[0].metric(t("damnificados_sin_hogar", lang),   "~16.000" if lang == "es" else "~16,000")
-        _dc[1].metric(t("damnificados_afectados", lang),   "~6,76 M" if lang == "es" else "~6.76 M")
-        _dc[2].metric(t("damnificados_en_calle", lang),    "39 %")
-        st.caption(t("damnificados_stats_nota", lang))
-
-        if rw.get("reports"):
-            st.markdown("**" + t("reportes_oficiales", lang) + "**")
-            for r in rw["reports"]:
-                st.markdown(f"- [{r['title']}]({r['url']}) — *{r['source']}, {r['date']}*")
-        else:
-            st.caption(t("reportes_oficiales_link", lang, url=rw.get("url", "https://reliefweb.int")))
-
-        upd = []
-        if gd.get("datemodified"):
-            upd.append(f"GDACS: {gd['datemodified'][:16].replace('T', ' ')}")
-        upd.append(f"{t('consulta_fuentes', lang)}: {gd.get('fetched_at', '')}")
-        st.caption(t("impacto_nota", lang) + "  ·  " + "  ·  ".join(upd))
 
     # ── DAÑOS POR SATÉLITE (NASA / Copernicus) ────────────────────────────────
     with st.expander(t("expander_nasa_danos", lang), expanded=False):
