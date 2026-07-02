@@ -163,6 +163,80 @@ def home():
     st.caption(t("impacto_nota", lang) + "  ·  " + "  ·  ".join(upd))
     st.divider()
 
+    # ── PERSONAS DESAPARECIDAS ────────────────────────────────────────────────
+    st.subheader("🔎 " + t("desaparecidos_titulo", lang))
+    st.markdown(t("desaparecidos_texto", lang))
+    dcols = st.columns(2)
+    for key, col in zip(
+        ("desaparecidos_terremoto_ve", "localiza_pacientes",
+         "pacientes_terremoto_vzla",   "cruz_roja_venezolana"),
+        (dcols[0], dcols[1], dcols[0], dcols[1]),
+    ):
+        if key in cofu:
+            col.markdown(f"🔗 [{fuente_nombre(cofu[key], lang)}]({cofu[key]['url']})")
+
+    # ── ENCUENTRA AYUDA EN TU ZONA (color por intensidad) ─────────────────────
+    st.subheader("🆘 " + t("ayuda_zona_titulo", lang))
+    st.markdown(f'<p style="opacity:0.85;">{t("ayuda_zona_nota", lang)}</p>',
+                unsafe_allow_html=True)
+    recs = resumen.to_dict("records")
+    mmis = [r["mmi"] for r in recs if pd.notna(r["mmi"])]
+    mlo, mhi = (min(mmis), max(mmis)) if mmis else (0, 1)
+
+    def _color(mmi):
+        # Todas las zonas están afectadas: escala rojo (más) → naranja (menos).
+        # Nunca verde (verde sugeriría "están bien", inapropiado en emergencia).
+        if pd.isna(mmi) or mhi - mlo < 1e-9:
+            return "hsl(20, 80%, 45%)"
+        frac = (mmi - mlo) / (mhi - mlo)      # 1 = mayor intensidad
+        return f"hsl({int(35 * (1 - frac))}, 85%, 45%)"   # 0 rojo → 35 naranja
+
+    pairs = list(zip(recs, ZONA_PAGES))
+    for i in range(0, len(pairs), 2):
+        ccs = st.columns(2, gap="medium")
+        for j, col in enumerate(ccs):
+            if i + j >= len(pairs):
+                break
+            row, (path, _) = pairs[i + j]
+            mmi = f"{row['mmi']:.1f}" if pd.notna(row["mmi"]) else "—"
+            pob = fmt_int(row["pob"], lang) if pd.notna(row["pob"]) else "—"
+            color = _color(row["mmi"])
+            with col:
+                # El color de intensidad va en el borde y el pin (señal no textual);
+                # el nombre va en texto de alto contraste (WCAG AA) y las superficies
+                # usan tokens de tema (legibles en claro y oscuro).
+                st.markdown(f"""
+<div style="border:1px solid var(--border-color,#e6dada);border-left:10px solid {color};
+  border-radius:12px;padding:12px 14px 8px;
+  background:var(--secondary-background-color,#f5f0ef);margin-bottom:4px;">
+  <div style="font-size:1.2rem;font-weight:700;color:var(--text-color,#1a1a1a);">
+    <span style="color:{color};">📍</span> {row['nombre']}</div>
+  <div style="font-size:1.05rem;color:var(--text-color,#1a1a1a);opacity:0.92;">
+    {t('kpi_mmi_max', lang)}: <span style="font-weight:800;font-size:1.15rem;">{mmi}</span>
+    &nbsp;·&nbsp; {t('kpi_poblacion_residente', lang)}: <span style="font-weight:800;font-size:1.15rem;">{pob}</span></div>
+</div>""", unsafe_allow_html=True)
+                st.page_link(path, label="🆘 " + t("ver_ayuda_zona", lang))
+    st.markdown(f'<p style="opacity:0.85;">{t("leyenda_zonas", lang)}</p>',
+                unsafe_allow_html=True)
+    st.page_link("pages/7_Asistente.py", label=t("ver_asistente", lang), icon="💬")
+    st.image("assets/donar.png", use_container_width=True,
+             caption=t("img_donar", lang))
+
+    # ── CÓMO AYUDAR (donaciones) ──────────────────────────────────────────────
+    if "centros_acopio_vzla" in cofu or "caritas_venezuela" in cofu:
+        st.subheader("💚 " + t("ayudar_titulo", lang))
+        if "centros_ayuda_vzla" in cofu:
+            st.markdown(f"🔗 [{fuente_nombre(cofu['centros_ayuda_vzla'], lang)}]({cofu['centros_ayuda_vzla']['url']})")
+        if "caritas_venezuela" in cofu:
+            st.markdown(f"🔗 [{fuente_nombre(cofu['caritas_venezuela'], lang)}]({cofu['caritas_venezuela']['url']})")
+
+    # ── RECURSOS PARA DAMNIFICADOS (página aparte) ────────────────────────────
+    st.page_link("pages/9_Damnificados.py", label=t("ver_damnificados", lang), icon="🆘")
+
+    # ── CONSEJOS POST-TERREMOTO (página aparte) ───────────────────────────────
+    st.subheader("🧭 " + t("consejos_titulo", lang))
+    st.page_link("pages/5_Consejos_post_terremoto.py", label="🧭 " + t("ver_consejos", lang))
+
     # ── RÉPLICAS + OPINIÓN DE EXPERTOS (primera sección desplegable) ─────────
     with st.expander(t("expander_replicas", lang), expanded=False):
         if lang == "en":
@@ -535,80 +609,6 @@ def home():
                 "[El Heraldo, 28 jun](https://www.elheraldo.co/mundo/2026/06/28/lluvias-e-inundaciones-agravan-la-emergencia-en-venezuela-tras-los-devastadores-terremotos/) · "
                 "[NOAA Climate Prediction Center — pronóstico regional de riesgos](https://www.cpc.ncep.noaa.gov/products/international/nsamerica/nsamerica_hazard.pdf)"
             )
-
-    # ── PERSONAS DESAPARECIDAS ────────────────────────────────────────────────
-    st.subheader("🔎 " + t("desaparecidos_titulo", lang))
-    st.markdown(t("desaparecidos_texto", lang))
-    dcols = st.columns(2)
-    for key, col in zip(
-        ("desaparecidos_terremoto_ve", "localiza_pacientes",
-         "pacientes_terremoto_vzla",   "cruz_roja_venezolana"),
-        (dcols[0], dcols[1], dcols[0], dcols[1]),
-    ):
-        if key in cofu:
-            col.markdown(f"🔗 [{fuente_nombre(cofu[key], lang)}]({cofu[key]['url']})")
-
-    # ── ENCUENTRA AYUDA EN TU ZONA (color por intensidad) ─────────────────────
-    st.subheader("🆘 " + t("ayuda_zona_titulo", lang))
-    st.markdown(f'<p style="opacity:0.85;">{t("ayuda_zona_nota", lang)}</p>',
-                unsafe_allow_html=True)
-    recs = resumen.to_dict("records")
-    mmis = [r["mmi"] for r in recs if pd.notna(r["mmi"])]
-    mlo, mhi = (min(mmis), max(mmis)) if mmis else (0, 1)
-
-    def _color(mmi):
-        # Todas las zonas están afectadas: escala rojo (más) → naranja (menos).
-        # Nunca verde (verde sugeriría "están bien", inapropiado en emergencia).
-        if pd.isna(mmi) or mhi - mlo < 1e-9:
-            return "hsl(20, 80%, 45%)"
-        frac = (mmi - mlo) / (mhi - mlo)      # 1 = mayor intensidad
-        return f"hsl({int(35 * (1 - frac))}, 85%, 45%)"   # 0 rojo → 35 naranja
-
-    pairs = list(zip(recs, ZONA_PAGES))
-    for i in range(0, len(pairs), 2):
-        ccs = st.columns(2, gap="medium")
-        for j, col in enumerate(ccs):
-            if i + j >= len(pairs):
-                break
-            row, (path, _) = pairs[i + j]
-            mmi = f"{row['mmi']:.1f}" if pd.notna(row["mmi"]) else "—"
-            pob = fmt_int(row["pob"], lang) if pd.notna(row["pob"]) else "—"
-            color = _color(row["mmi"])
-            with col:
-                # El color de intensidad va en el borde y el pin (señal no textual);
-                # el nombre va en texto de alto contraste (WCAG AA) y las superficies
-                # usan tokens de tema (legibles en claro y oscuro).
-                st.markdown(f"""
-<div style="border:1px solid var(--border-color,#e6dada);border-left:10px solid {color};
-  border-radius:12px;padding:12px 14px 8px;
-  background:var(--secondary-background-color,#f5f0ef);margin-bottom:4px;">
-  <div style="font-size:1.2rem;font-weight:700;color:var(--text-color,#1a1a1a);">
-    <span style="color:{color};">📍</span> {row['nombre']}</div>
-  <div style="font-size:1.05rem;color:var(--text-color,#1a1a1a);opacity:0.92;">
-    {t('kpi_mmi_max', lang)}: <span style="font-weight:800;font-size:1.15rem;">{mmi}</span>
-    &nbsp;·&nbsp; {t('kpi_poblacion_residente', lang)}: <span style="font-weight:800;font-size:1.15rem;">{pob}</span></div>
-</div>""", unsafe_allow_html=True)
-                st.page_link(path, label="🆘 " + t("ver_ayuda_zona", lang))
-    st.markdown(f'<p style="opacity:0.85;">{t("leyenda_zonas", lang)}</p>',
-                unsafe_allow_html=True)
-    st.page_link("pages/7_Asistente.py", label=t("ver_asistente", lang), icon="💬")
-    st.image("assets/donar.png", use_container_width=True,
-             caption=t("img_donar", lang))
-
-    # ── CÓMO AYUDAR (donaciones) ──────────────────────────────────────────────
-    if "centros_acopio_vzla" in cofu or "caritas_venezuela" in cofu:
-        st.subheader("💚 " + t("ayudar_titulo", lang))
-        if "centros_ayuda_vzla" in cofu:
-            st.markdown(f"🔗 [{fuente_nombre(cofu['centros_ayuda_vzla'], lang)}]({cofu['centros_ayuda_vzla']['url']})")
-        if "caritas_venezuela" in cofu:
-            st.markdown(f"🔗 [{fuente_nombre(cofu['caritas_venezuela'], lang)}]({cofu['caritas_venezuela']['url']})")
-
-    # ── RECURSOS PARA DAMNIFICADOS (página aparte) ────────────────────────────
-    st.page_link("pages/9_Damnificados.py", label=t("ver_damnificados", lang), icon="🆘")
-
-    # ── CONSEJOS POST-TERREMOTO (página aparte) ───────────────────────────────
-    st.subheader("🧭 " + t("consejos_titulo", lang))
-    st.page_link("pages/5_Consejos_post_terremoto.py", label="🧭 " + t("ver_consejos", lang))
 
     st.caption(f"🕒 {t('ultima_actualizacion', lang)}: {ctx['updated_at']}")
 
