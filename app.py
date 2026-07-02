@@ -78,15 +78,6 @@ def home():
     font-size: 0.8rem !important;
     line-height: 1.4 !important;
 }
-[data-testid="stMetricValue"] > div,
-[data-testid="stMetricValue"] {
-    font-size: 1.6rem !important;
-    font-weight: 800 !important;
-}
-[data-testid="stMetricLabel"] > div,
-[data-testid="stMetricLabel"] {
-    font-size: 0.95rem !important;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -135,10 +126,25 @@ def home():
             f"[{x.get('fuente','fuente')}]({x['url']})" for x in cifras if x.get("url")))
 
     st.markdown("**" + t("damnificados_stats_titulo", lang) + "**")
-    _dc = st.columns(3)
-    _dc[0].metric(t("damnificados_sin_hogar", lang),   "~16.000" if lang == "es" else "~16,000")
-    _dc[1].metric(t("damnificados_afectados", lang),   "~6,76 M" if lang == "es" else "~6.76 M")
-    _dc[2].metric(t("damnificados_en_calle", lang),    "39 %")
+    _dc_items = [
+        (t("damnificados_sin_hogar", lang), "~16.000" if lang == "es" else "~16,000"),
+        (t("damnificados_afectados", lang), "~6,76 M" if lang == "es" else "~6.76 M"),
+        (t("damnificados_en_calle", lang),  "39 %"),
+    ]
+    _dc_html = "".join(
+        f'<div style="flex:1 1 0;min-width:120px;text-align:center;padding:6px 4px;">'
+        f'<div style="font-size:0.95rem;color:var(--text-color,#1a1a1a);opacity:0.85;">{label}</div>'
+        f'<div style="font-size:1.6rem;font-weight:800;color:var(--text-color,#1a1a1a);">{valor}</div>'
+        f"</div>"
+        for label, valor in _dc_items
+    )
+    st.markdown(
+        f'<div style="display:flex;flex-wrap:wrap;gap:4px;'
+        f'border:1px solid var(--border-color,#e6dada);border-radius:10px;'
+        f'padding:10px 6px;background:var(--secondary-background-color,#f5f0ef);">'
+        f"{_dc_html}</div>",
+        unsafe_allow_html=True,
+    )
     st.caption(t("damnificados_stats_nota", lang))
 
     if rw.get("reports"):
