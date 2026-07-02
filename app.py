@@ -104,6 +104,7 @@ def home():
                 (t("col_fallecidos", lang), x.get("fallecidos")),
                 (t("col_heridos", lang), x.get("heridos")),
                 (t("col_desaparecidos", lang), x.get("desaparecidos")),
+                (t("col_desplazados", lang), x.get("desplazados")),
             ]
             _cifras_html = "<br>".join(
                 f'<span style="font-size:1.05rem;">{label}:</span> '
