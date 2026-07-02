@@ -78,6 +78,15 @@ def home():
     font-size: 0.8rem !important;
     line-height: 1.4 !important;
 }
+[data-testid="stMetricValue"] > div,
+[data-testid="stMetricValue"] {
+    font-size: 1.6rem !important;
+    font-weight: 800 !important;
+}
+[data-testid="stMetricLabel"] > div,
+[data-testid="stMetricLabel"] {
+    font-size: 0.95rem !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
