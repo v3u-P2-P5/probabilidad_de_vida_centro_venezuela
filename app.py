@@ -259,7 +259,7 @@ def home():
     with st.expander(t("expander_replicas", lang), expanded=False):
         if lang == "en":
             st.markdown(
-                "Since the double earthquake on **24 Jun 2026**, **more than 782 aftershocks** "
+                "Since the double earthquake on **24 Jun 2026**, **more than 890 aftershocks** "
                 "have been recorded (largest M4.8). They are expected and are part of the natural "
                 "process of post-rupture crustal stabilization."
             )
@@ -268,8 +268,8 @@ def home():
                  "Note": "Bridge collapse in Caraballeda; additional damage in Caracas"},
                 {"Date": "2026-jun-29", "Magnitude": "M4.6", "Area": "N. Venezuela",
                  "Note": "Felt in Caracas and coastal area"},
-                {"Date": "2026-jun-24 – 2026-jul-01",   "Magnitude": "≤M4.8", "Area": "Epicentral region",
-                 "Note": "782+ aftershocks recorded; largest M4.8 (Nat'l Assembly, Jul 1)"},
+                {"Date": "2026-jun-24 – 2026-jul-03",   "Magnitude": "≤M4.8", "Area": "Epicentral region",
+                 "Note": "890+ aftershocks recorded; largest M4.8 (Nat'l Assembly, Jul 3)"},
             ]
             st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>', unsafe_allow_html=True)
             st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
@@ -293,7 +293,7 @@ def home():
             )
         else:
             st.markdown(
-                "Tras el doble sismo del **24 jun 2026** se han registrado **más de 782 réplicas** "
+                "Tras el doble sismo del **24 jun 2026** se han registrado **más de 890 réplicas** "
                 "(la mayor en M4.8). Son esperables y forman parte del proceso natural de "
                 "estabilización cortical post-ruptura."
             )
@@ -302,8 +302,8 @@ def home():
                  "Nota": "Colapso de puente en Caraballeda; daños adicionales en Caracas"},
                 {"Fecha": "2026-jun-29", "Magnitud": "M4.6", "Zona": "Norte de Venezuela",
                  "Nota": "Sentida en Caracas y zona costera"},
-                {"Fecha": "2026-jun-24 – 2026-jul-01",   "Magnitud": "≤M4.8", "Zona": "Región epicentral",
-                 "Nota": "Más de 782 réplicas registradas; mayor en M4.8 (Asamblea Nacional, 1 jul)"},
+                {"Fecha": "2026-jun-24 – 2026-jul-03",   "Magnitud": "≤M4.8", "Zona": "Región epicentral",
+                 "Nota": "Más de 890 réplicas registradas; mayor en M4.8 (Asamblea Nacional, 3 jul)"},
             ]
             st.markdown(f'<p class="swipe-hint">{t("swipe_hint", lang)}</p>', unsafe_allow_html=True)
             st.dataframe(pd.DataFrame(_replicas), hide_index=True, use_container_width=True)
@@ -428,16 +428,17 @@ def home():
         _equipos_lbl   = "🔍 USAR Teams"    if lang == "en" else "🔍 Equipos USAR"
         _rescatist_lbl = "🧑‍🚒 Rescue Workers" if lang == "en" else "🧑‍🚒 Rescatistas"
         _perros_lbl    = "🐕 Dogs"           if lang == "en" else "🐕 Perros"
-        rc[0].metric(_paises_lbl,    "27")
+        rc[0].metric(_paises_lbl,    "33")
         rc[1].metric(_equipos_lbl,   "44")
-        rc[2].metric(_rescatist_lbl, "3,660" if lang == "en" else "3.660")
+        rc[2].metric(_rescatist_lbl, "3,305" if lang == "en" else "3.305")
         rc[3].metric(_perros_lbl,    "148")
         _na = "n/a" if lang == "en" else "s/d"
         if lang == "en":
             st.warning(
-                "⚠️ **The official total (3,660 foreign rescue workers · 148 dogs) is the consolidated "
-                "figure reported by Jorge Rodríguez on 1 Jul 2026** (plus 26,121 Venezuelan personnel "
-                "and 15,467 registered volunteers). Individual "
+                "⚠️ **The official total (3,305 foreign rescue workers from 33 countries) is the "
+                "consolidated figure reported by Jorge Rodríguez on 3 Jul 2026** (plus 29,567 Venezuelan "
+                "personnel and 25,800+ registered volunteers). Some teams (e.g. Netherlands) have since "
+                "concluded their mission, which is reflected in the lower total vs. earlier days. Individual "
                 "country figures below are those published separately on 28 Jun — most have not released "
                 "detailed breakdowns, which is why the table sum is lower than the official total."
             )
@@ -447,11 +448,12 @@ def home():
             _otros    = "Other 13 countries ✝"
         else:
             st.warning(
-                "⚠️ **El total oficial (3.660 rescatistas extranjeros · 148 perros) es el dato "
-                "consolidado reportado por Jorge Rodríguez el 1 jul 2026** (más 26.121 efectivos "
-                "venezolanos y 15.467 voluntarios registrados). Las cifras por país son las "
-                "publicadas individualmente el 28 jun — la mayoría no ha dado un desglose detallado, "
-                "por eso la suma de la tabla es menor que el total oficial."
+                "⚠️ **El total oficial (3.305 rescatistas extranjeros de 33 países) es el dato "
+                "consolidado reportado por Jorge Rodríguez el 3 jul 2026** (más 29.567 efectivos "
+                "venezolanos y 25.800+ voluntarios registrados). Algunos equipos (ej. Países Bajos) ya "
+                "concluyeron su misión, lo que explica el total menor frente a días anteriores. Las cifras "
+                "por país son las publicadas individualmente el 28 jun — la mayoría no ha dado un desglose "
+                "detallado, por eso la suma de la tabla es menor que el total oficial."
             )
             _col_pais = "País"
             _col_resc = "🧑‍🚒 Rescatistas"
@@ -496,7 +498,7 @@ def home():
                 "Germany, Czech Rep., Jordan, Lithuania, Qatar · "
                 "US: VA-TF1 (80p·6🐕) + LA County (71p·6🐕) · "
                 "n/a = no figure published · "
-                "Total workers & dogs: [J. Rodríguez 1 Jul](https://www.eltiempo.com/mundo/venezuela/venezuela-hoy-1-de-julio-tras-terremotos-organizaciones-de-venezolanos-en-estados-unidos-denuncian-obstaculos-a-la-llegada-y-distribucion-de-ayuda-3568145) · "
+                "Total workers & dogs: [J. Rodríguez 3 Jul](https://www.eltiempo.com/mundo/venezuela/nuevo-balance-oficial-del-gobierno-tras-terremotos-de-7-2-y-7-5-que-sacudieron-a-venezuela-se-reportan-al-menos-2-645-muertos-y-12-666-heridos-3568893) · "
                 "countries & teams: [OCHA 27 Jun](https://news.un.org/en/story/2026/06/1167825) · "
                 "[State Dept.](https://www.state.gov/responding-to-venezuela-earthquakes) · "
                 "[Wikipedia](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes)"
@@ -507,7 +509,7 @@ def home():
                 "Alemania, Rep. Checa, Jordania, Lituania, Qatar · "
                 "EE.UU.: VA-TF1 (80p·6🐕) + Condado LA (71p·6🐕) · "
                 "s/d = sin dato publicado · "
-                "Total rescatistas y perros: [J. Rodríguez 1 jul](https://www.eltiempo.com/mundo/venezuela/venezuela-hoy-1-de-julio-tras-terremotos-organizaciones-de-venezolanos-en-estados-unidos-denuncian-obstaculos-a-la-llegada-y-distribucion-de-ayuda-3568145) · "
+                "Total rescatistas y perros: [J. Rodríguez 3 jul](https://www.eltiempo.com/mundo/venezuela/nuevo-balance-oficial-del-gobierno-tras-terremotos-de-7-2-y-7-5-que-sacudieron-a-venezuela-se-reportan-al-menos-2-645-muertos-y-12-666-heridos-3568893) · "
                 "países y equipos: [OCHA 27 jun](https://news.un.org/en/story/2026/06/1167825) · "
                 "[Depto. de Estado](https://www.state.gov/responding-to-venezuela-earthquakes) · "
                 "[Wikipedia](https://en.wikipedia.org/wiki/2026_Venezuela_earthquakes)"
