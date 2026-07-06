@@ -518,13 +518,14 @@ def home():
     # ── AYUDA FINANCIERA INTERNACIONAL ───────────────────────────────────────
     with st.expander(t("expander_ayuda_financiera", lang), expanded=False):
         if lang == "en":
-            st.markdown("Financial commitments from governments and international organizations (as of 30 Jun 2026):")
+            st.markdown("Financial commitments from governments and international organizations (as of 5 Jul 2026):")
             _fin_rows = [
                 {"Country / Organization": "🇺🇸 United States",     "Amount": ">$300 M",          "Channel": "USAID / OCHA / WFP / partners"},
                 {"Country / Organization": "🇨🇳 China",              "Amount": "$14.7 M (¥100 M)", "Channel": "Government + Red Cross China"},
                 {"Country / Organization": "🇪🇺 European Union",     "Amount": "€5 M (~$5.7 M)",   "Channel": "EU ECHO humanitarian aid"},
                 {"Country / Organization": "🇰🇷 South Korea",        "Amount": "$5 M",              "Channel": "International organizations"},
                 {"Country / Organization": "🇨🇦 Canada",             "Amount": "$5 M",              "Channel": "Humanitarian aid"},
+                {"Country / Organization": "🇬🇧 United Kingdom",     "Amount": "£2 M (~$2.5 M)",   "Channel": "Initial emergency donation"},
                 {"Country / Organization": "🏳 IFRC",                "Amount": "$2.5 M",            "Channel": "Red Cross Emergency Fund"},
                 {"Country / Organization": "🇳🇱 Netherlands",        "Amount": "€2 M (~$2.3 M)",   "Channel": "Humanitarian operations"},
                 {"Country / Organization": "🇪🇸 Spain",              "Amount": "€1 M (~$1.1 M)",   "Channel": "Emergency aid"},
@@ -539,16 +540,18 @@ def home():
                 "Sources: [State Dept.](https://www.state.gov/responding-to-venezuela-earthquakes) · "
                 "[Al Jazeera](https://www.aljazeera.com/news/2026/6/26/which-countries-have-pledged-aid-to-venezuela-after-powerful-earthquakes) · "
                 "[EU ECHO](https://civil-protection-humanitarian-aid.ec.europa.eu/news-stories/news/eu-delivers-emergency-aid-and-organises-humanitarian-flight-response-earthquakes-venezuela-2026-06-29_en) · "
-                "[Korea Herald](https://www.koreaherald.com/article/10789913) · 30 Jun 2026"
+                "[GOV.UK](https://www.gov.uk/government/news/uk-deploys-search-and-rescue-team-and-emergency-funding-to-support-venezuela-earthquake-response) · "
+                "[Korea Herald](https://www.koreaherald.com/article/10789913) · 5 Jul 2026"
             )
         else:
-            st.markdown("Compromisos financieros de gobiernos y organismos internacionales (al 30 jun 2026):")
+            st.markdown("Compromisos financieros de gobiernos y organismos internacionales (al 5 jul 2026):")
             _fin_rows = [
                 {"País / Organismo": "🇺🇸 Estados Unidos",        "Monto": ">$300 M",           "Canal": "USAID / OCHA / WFP / socios"},
                 {"País / Organismo": "🇨🇳 China",                  "Monto": "$14,7 M (¥100 M)", "Canal": "Gob. + Cruz Roja China"},
                 {"País / Organismo": "🇪🇺 Unión Europea",         "Monto": "€5 M (~$5,7 M)",   "Canal": "EU ECHO ayuda humanitaria"},
                 {"País / Organismo": "🇰🇷 Corea del Sur",         "Monto": "$5 M",              "Canal": "Organizaciones internacionales"},
                 {"País / Organismo": "🇨🇦 Canadá",                "Monto": "$5 M",              "Canal": "Ayuda humanitaria"},
+                {"País / Organismo": "🇬🇧 Reino Unido",           "Monto": "£2 M (~$2,5 M)",   "Canal": "Donación inicial de emergencia"},
                 {"País / Organismo": "🏳 FICR",                    "Monto": "$2,5 M",            "Canal": "Fondo emergencias Cruz Roja"},
                 {"País / Organismo": "🇳🇱 Países Bajos",          "Monto": "€2 M (~$2,3 M)",   "Canal": "Operaciones humanitarias"},
                 {"País / Organismo": "🇪🇸 España",                "Monto": "€1 M (~$1,1 M)",   "Canal": "Ayuda de emergencia"},
@@ -563,7 +566,8 @@ def home():
                 "Fuentes: [Depto. de Estado](https://www.state.gov/responding-to-venezuela-earthquakes) · "
                 "[Al Jazeera](https://www.aljazeera.com/news/2026/6/26/which-countries-have-pledged-aid-to-venezuela-after-powerful-earthquakes) · "
                 "[EU ECHO](https://civil-protection-humanitarian-aid.ec.europa.eu/news-stories/news/eu-delivers-emergency-aid-and-organises-humanitarian-flight-response-earthquakes-venezuela-2026-06-29_en) · "
-                "[Korea Herald](https://www.koreaherald.com/article/10789913) · 30 jun 2026"
+                "[GOV.UK](https://www.gov.uk/government/news/uk-deploys-search-and-rescue-team-and-emergency-funding-to-support-venezuela-earthquake-response) · "
+                "[Korea Herald](https://www.koreaherald.com/article/10789913) · 5 jul 2026"
             )
 
     # ── OTRAS ZONAS Y CONTEXTO HUMANITARIO ────────────────────────────────────
